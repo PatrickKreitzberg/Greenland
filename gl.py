@@ -133,39 +133,18 @@ bp.addItem(velocity.pathPlotItem)
 iiContainer.addWidget(velocity.plotWidget)
 iiContainer.setCurrentWidget(velocity.plotWidget)
 
+smb = dataset('smb', bpLegend, greenPlotPen)
+bp.addItem(smb.pathPlotItem)
+
+surface = dataset('surface', bpLegend, greenPlotPen, map=True)
+bp.addItem(surface.pathPlotItem)
+iiContainer.addWidget(surface.plotWidget)
+
+bed = dataset('bed', bpLegend, greenPlotPen, map=True)
+bp.addItem(bed.pathPlotItem)
+iiContainer.addWidget(bed.plotWidget)
 
 
-#####################################################
-####         INITIATE SMB                        ####
-#####################################################
-
-def initSMB():
-    smb = dataset('smb', bpLegend, greenPlotPen)
-    bp.addItem(smb.pathPlotItem)
-
-
-
-#####################################################
-####         INITIATE SURFACE                    ####
-#####################################################
-
-def initSurface():
-    surface = dataset('surface', bpLegend, greenPlotPen, map=True)
-    bp.addItem(surface.pathPlotItem)
-    iiContainer.addWidget(surface.plotWidget)
-    surface.imageItem.hoverEvent = mouseMoved
-
-
-
-#####################################################
-####         INITIATE BED                        ####
-#####################################################
-
-def initBed():
-    bed = dataset('bed', bpLegend, greenPlotPen, map=True)
-    bp.addItem(bed.pathPlotItem)
-    iiContainer.addWidget(bed.plotWidget)
-    bed.imageItem.hoverEvent = mouseMoved
 
 
 def changeMap(index):
@@ -178,16 +157,16 @@ def changeMap(index):
     if index == 0 and currentMap != 0:
         print "Show Vel"
         currentMap = 0
-        iiContainer.setCurrentWidget(velW)
-        iiVel.mouseClickEvent = mouseClick
+        iiContainer.setCurrentWidget(velocity.plotWidget)
+        velocity.imageItem.mouseClickEvent = mouseClick
     elif index == 1 and currentMap != 1:
         currentMap = 1
         print "SHow bed"
-        iiContainer.setCurrentWidget(bedW)
-        iiBed.mouseClickEvent = mouseClick
+        iiContainer.setCurrentWidget(bed.plotWidget)
+        bed.imageItem.mouseClickEvent = mouseClick
     elif index == 2 and currentMap != 2:
         currentMap = 2
-        iiContainer.setCurrentWidget(surfaceW)
+        iiContainer.setCurrentWidget(surface.plotWidget)
 
 
 mapList.currentIndexChanged.connect(changeMap)
@@ -427,7 +406,7 @@ def _t(ox, oy, again):
 
 
 def intMesh():
-    rng = iiVel.getViewBox().viewRange()
+    rng = velocity.imageItem.getViewBox().viewRange()
     t1 = time.time()
     c = 0
     print 'view range: ', rng
@@ -678,8 +657,8 @@ def arrows():
     Plot velocity vectors
     '''
     print 'arrows'
-    print iiVel.getViewBox().viewRange() # [y0, y1] [x0, x1]
-    rngx, rngy = iiVel.getViewBox().viewRange()
+    print velocity.imageItem.getViewBox().viewRange() # [y0, y1] [x0, x1]
+    rngx, rngy = velocity.imageItem.getViewBox().viewRange()
     print rngx
     print rngy
     print 'Starting arrows'
@@ -812,7 +791,7 @@ def mouseClick(e):
                 vyd = vyInterp([px], [py], grid=False)
                 sur = surfaceInterp([px], [py], grid=False)
                 velocity = sqrt(vxd**2 + vyd**2)
-                vpts.append(vpt(x, y, velocity, velW)) #in projected coordinates, like 600000
+                vpts.append(vpt(x, y, velocity, velocity.plotWidget)) #in projected coordinates, like 600000
                 txt = 'x: ' + str(x) + '\t y: ' + str(y) + '\t v: ' + str(velocity)+ '\t surface ele: ' + str(sur)
                 velTF.append(txt)
                 iiContainer.currentWidget().addItem(vpts[-1].getCross()[0])
@@ -877,15 +856,17 @@ def ky(e):
     # 16777249 is shift
 
 shift = False
-velocity.imageItem.hoverEvent = mouseMoved
+#fixme velocity.imageItem.hoverEvent = mouseMoved
 
-initBed()
-initSMB()
-initSurface()
+bed.imageItem.hoverEvent = mouseMoved
+surface.imageItem.hoverEvent = mouseMoved
+
+
+
 
 # proxy = pg.SignalProxy(bp.getPlotItem().scene().sigMouseMoved, rateLimit=60, slot=mouseMovedBP)
 
-velocity.imageItem.mouseClickEvent = mouseClick # Default map is vel FIXME
+#fixme velocity.imageItem.mouseClickEvent = mouseClick # Default map is vel FIXME
 
 # iiContainer.keyboardGrabber()
 # iiContainer.keyPressEvent = ky

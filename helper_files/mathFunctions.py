@@ -3,6 +3,14 @@ from pylab import sqrt,linspace,array,argmax
 from scipy.interpolate import RegularGridInterpolator, RectBivariateSpline
 import math
 
+def projCoord(x,y):
+    # returns x,y in the global projected coordinates
+    return ((150*x) - 637925), ((-150*y) - 657675)
+
+def mapCoord(x,y):
+    # returns x,y in map coordinates which is x <- (0,1018) y<- (0,1746) roughly
+    return ((637925 + x)/150.0), (-(657675 + y)/150.0)
+
 
 def findSlopes(lines, vlist):
 
@@ -17,13 +25,26 @@ def findSlopes(lines, vlist):
     lines.append([m, b])
     return lines
 
-def getInterpolators(d1, choice, d2=None):
-    vel_x0 = -638000  # first x coordinate
-    vel_x1 = 864550  # last x coordinate
-    vel_y0 = -657600  # first y coordinate
-    vel_y1 = -3349350  # last y coordinate
+def getInterpolators(d1, choice, p1, p2, d2=None):
+    # vel_x0 = -638000  # first x coordinate
+    # vel_x1 = 864550  # last x coordinate
+    # vel_y0 = -657600  # first y coordinate
+    # vel_y1 = -3349350  # last y coordinate
+    # vel_xarray = linspace(vel_x0, vel_x1, 10018, endpoint=True)
+    # vel_yarray = linspace(vel_y1, vel_y0, 17946, endpoint=True)
+    minSpacing = 10
+
+    # Need to look at y first
+
+    if p1[1] < p2[1]:
+        vel_
+
+    dx = max(math.fabs(p2[0] - p1[0])/150 +1, minSpacing)
+    dy = max(math.fabs(p2[1] - p1[1]) / 150 + 1, minSpacing)
+
     vel_xarray = linspace(vel_x0, vel_x1, 10018, endpoint=True)
     vel_yarray = linspace(vel_y1, vel_y0, 17946, endpoint=True)
+
     if choice is 'velocity':
         return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1)).transpose()), RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d2)).transpose()),
     elif choice is 'bed':
@@ -45,12 +66,6 @@ def circArr(x,y):
     yArr = y + r*np.sin(t)
     return xArr, yArr
 
-def projCoord(x,y):
-    return ((150*x) - 637925), ((-150*y) - 657675)
-
-def mapCoord(x,y):
-    #returns x,y in map coordinates which is x <- (0,1018) y<- (0,1746) roughly
-    return ((637925 + x)/150.0), (-(657675 + y)/150.0)
 
 def curveDistance(x0, y0, cData):
     imin = -1

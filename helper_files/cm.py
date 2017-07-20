@@ -1,5 +1,6 @@
 import pyqtgraph as pg
 from colorbar import *
+from b import *
 
 def getCM(dataSet):
     if dataSet == 'velocity':
@@ -31,7 +32,7 @@ def getCM(dataSet):
     elif dataSet == 'bed':
         bedMin, bedMax = -5052.39510208, 3675.78314839
         lcArr = []
-        linCMFile = open('./helper_files/bathCPT.txt', 'r')
+        linCMFile = open('/home/pat/GL_clean/helper_files/bathCPT.txt', 'r')
         for line in linCMFile:
             vals = line.split()
             v0 = []
@@ -39,6 +40,8 @@ def getCM(dataSet):
             v0.append(int(vals[2]))
             v0.append(int(vals[3]))
             lcArr.append(v0)
+        # print 'bath is '
+        # print lcArr
 
         div = float(np.abs(bedMin)) / float(len(lcArr) - 1)
         linPos = []

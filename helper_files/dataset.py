@@ -16,10 +16,10 @@ class dataset():
             self.vxInterp, self.vyInterp = getInterpolators(self.vx, dataDictName, self.vy)
         elif dataDictName == 'smb':
             self.data = self.setData(dataFileName, 'SMB_rec')
-            self.interp = getInterpolators(self.data, dataDictName)  # bedInterp
+            # self.interp = getInterpolators(self.data, dataDictName)  # bedInterp
         else:
             self.data = self.setData(dataFileName, dataDictName)
-            self.interp = getInterpolators(self.data, dataDictName)  # bedInterp
+            # self.interp = getInterpolators(self.data, dataDictName)  # bedInterp
         if map:
             self.colorData    = self.setColorData(dataCMFileName, dataDictName)
             self.colorMap     = getCM(dataDictName)
@@ -74,3 +74,13 @@ class dataset():
 # datFile = h5py.File(dataFileName, 'r')
 # print datFile.keys()
 # datFile.close()
+
+vel_x0 = -638000  # first x coordinate
+vel_x1 = 864550  # last x coordinate
+vel_y0 = -657600  # first y coordinate
+vel_y1 = -3349350  # last y coordinate
+
+print (vel_x1 - vel_x0)/150 + 1
+print min(10,11)
+# vel_xarray = linspace(vel_x0, vel_x1, 10018, endpoint=True)
+# vel_yarray = linspace(vel_y1, vel_y0, 17946, endpoint=True)
