@@ -14,7 +14,6 @@ from helper_files.profile_driver import runModel
 from helper_files.dataset import dataset
 from helper_files.pens import *
 from helper_files.gui import *
-# from helper_files.gui_functions import calcProf
 
 import sys
 sys.path.append("/home/pat/")
@@ -43,7 +42,10 @@ inSurface = False
 clickedCurve = False
 dataCMFileName = './data/dataCMValues.h5'
 dataFileName   = './data/AllDataSets.h5'
+
 vpts = [] #holds [x,y,v] values, where x,y are the coordinates and v is the velocity magnitude at those coordinates
+
+
 
 #####################################################
 ####         CREATE INITIAL DATA SET(S)          ####
@@ -493,8 +495,6 @@ def interpolateData(botPlotBool):
     vxInterp, vyInterp = getInterpolators(velocity.vx,  velocity.name,  mix, miy, x1=mxx, y1=mxy, d2=velocity.vy)
     smbInterp          = getInterpolators(smb.data,     smb.name,       mix, miy, x1=mxx, y1=mxy)
 
-    # Find a distance ~150m which gets close to dividing the distance between first 2 spots
-
     for i in range(1, len(vpts)):
         '''
         This part compares neighbor points to each other. 
@@ -694,13 +694,14 @@ def runModelButt():
         V = fc.FunctionSpace(mesh,"CG",1)
         functBed     = fc.Function(V, name="Bed")
         functSurface = fc.Function(V, name="Surface")
-        functBed.vector()[:]     = bed.pathData[::-1]
-        functSurface.vector()[:] = surface.pathData[::-1]
+        functBed.vector()[:]     = bed.pathData
+        functSurface.vector()[:] = surface.pathData
         hfile.write(functBed.vector(), "/bed")
         hfile.write(functSurface.vector(), "/surface")
         hfile.write(mesh, "/mesh")
         hfile.close()
         runModel(hdf_name)
+    print 'done 3'
 
 
 
@@ -715,6 +716,7 @@ cProfButton.clicked.connect(calcBP) #FIXME should change names so calcProf isn't
 cRegionButton.clicked.connect(intLine)
 cVelArrowsButton.clicked.connect(arrows)
 modelButton.clicked.connect(runModelButt)
+
 
 
 def mouseClick(e):
@@ -775,11 +777,11 @@ def mouseClick(e):
                 x = int(np.floor(x))
                 y = int(np.floor(y))
                 txt = 'Point ' + str(len(vpts)-1) + \
-                ':\n=================\n' + \
-                'v: ' +      "{:.3f}".format(velocity.data[y][x]) + \
-                '\nbed: ' +  "{:.3f}".format(bed.data[y][x]) + \
+                ':\n====================\n' + \
+                'v: ' + "{:.3f}".format(velocity.data[y][x]) + \
+                '\nbed: ' + "{:.3f}".format(bed.data[y][x]) + \
                 '\nsurf: ' + "{:.3f}".format(surface.data[y][x]) + \
-                '\nSMB: ' +  "{:.3f}".format(smb.data[y][x]) + '\n\n'
+                '\nSMB: ' + "{:.3f}".format(smb.data[y][x]) + '\n\n'
 
                 textOut.append(txt)
                 iiContainer.currentWidget().addItem(vpts[-1].getCross()[0])
@@ -874,16 +876,18 @@ if __name__ == '__main__':
         QtGui.QApplication.instance().exec_()
 
 '''
-TO DO 
 
-    GENERAL
-- Work on velocity width alg.
-- TRY AND GET MESH WORKING!
-- Shift+click vpt to integrate from there
+Monday June 12: 
+Added constant cursor coordinates with velocity readout
 
-    MODEL
-- Align extrapolated points with fenics mesh
-- Allow modeling down integrated line
+*Jesse's width search is strange.  Shouldn't look over such a large area.
 
+Tuesday June 13:
+Did velocity width WITHOUT interpolation.  Interpolation makes the dv so small that the program 
+has troubles finding large drops.  Could be improved by maybe makine 3 lines instead of 1
+
+
+Wednesday June 14:
+used np.flipup on the 
 
 '''

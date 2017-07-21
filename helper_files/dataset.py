@@ -1,29 +1,32 @@
 import h5py
 from mathFunctions import *
 from cm import *
+import numpy as np
 
 class dataset():
-    def __init__(self, dataDictName, bpLegend, pen, map=False, dataFileName='./data/AllDataSets.h5', dataCMFileName='./data/dataCMValues.h5',):
+    def __init__(self, name, bpLegend, pen, map=False, dataFileName='./data/AllDataSets.h5', dataCMFileName='./data/dataCMValues.h5', ):
         '''
-        dataDictNames: bed, surface, SMB_rec
+        names: bed, surface, SMB_rec
         dataFileName is the name of the hdf5 file with all the data in it
-        dataDictName is name of the data inside the dataFileName
+        name is name of the data inside the dataFileName
         interpParamter is parameter to send to mathFunctions.getInterpolators()
         pen is the pen for the bottom plot legend
         '''
-        if dataDictName == 'velocity':
-            self.data, self.vx, self.vy = self.setData(dataFileName, dataDictName)
-            self.vxInterp, self.vyInterp = getInterpolators(self.vx, dataDictName, self.vy)
-        elif dataDictName == 'smb':
-            self.data = self.setData(dataFileName, 'SMB_rec')
-            # self.interp = getInterpolators(self.data, dataDictName)  # bedInterp
+
+        self.name = name
+        if self.name == 'velocity':
+            self.data, self.vx, self.vy = self.setData(dataFileName, name)
+            # self.vxInterp, self.vyInterp = getInterpolators(self.vx, dataDictName, self.vy)
+        elif self.name == 'velocitywidth':
+            self.data = None
         else:
-            self.data = self.setData(dataFileName, dataDictName)
+            self.data = self.setData(dataFileName, name)
             # self.interp = getInterpolators(self.data, dataDictName)  # bedInterp
         if map:
-            self.colorData    = self.setColorData(dataCMFileName, dataDictName)
-            self.colorMap     = getCM(dataDictName)
-            self.colorBar     = getColorBar(dataDictName, self.colorMap)
+            self.colorData    = self.setColorData(dataCMFileName, name)
+            self.colorMap     = getCM(name)
+            self.colorBar     = getColorBar(name, self.colorMap)
+            # Setup imageitem
             self.imageItem    = pg.ImageItem(self.colorData)
             self.imageItem.setOpts(axisOrder='row-major')
 
@@ -33,8 +36,8 @@ class dataset():
             self.plotWidget.setAspectLocked(True)
             self.plotWidget.invertY(True)
 
-        self.pathPlotItem = pg.PlotDataItem([0,0],  pen=pen)  # bpSurf
-        self.legendItem   = bpLegend.addItem(self.pathPlotItem, dataDictName)      # bplSMB
+        self.pathPlotItem = pg.PlotDataItem([0,0], pen=pen)  # bpSurf
+        self.legendItem   = bpLegend.addItem(self.pathPlotItem, name)      # bplSMB
         self.pathData     = None        # nsmb nv etc.
 
 
@@ -68,19 +71,3 @@ class dataset():
             print 'ERROR: ', str(dataDictName + 'CM'), ' Dataset not found in ', dataCMFileName
             datFile.close()
             return 1
-
-
-# dataFileName='../data/AllDataSets.h5'
-# datFile = h5py.File(dataFileName, 'r')
-# print datFile.keys()
-# datFile.close()
-
-vel_x0 = -638000  # first x coordinate
-vel_x1 = 864550  # last x coordinate
-vel_y0 = -657600  # first y coordinate
-vel_y1 = -3349350  # last y coordinate
-
-print (vel_x1 - vel_x0)/150 + 1
-print min(10,11)
-# vel_xarray = linspace(vel_x0, vel_x1, 10018, endpoint=True)
-# vel_yarray = linspace(vel_y1, vel_y0, 17946, endpoint=True)

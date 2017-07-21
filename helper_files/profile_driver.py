@@ -23,6 +23,7 @@ def winclose(e):
 
 def runModel(hdf_name):
     global run
+    run = True
 
     ##########################################################
     ################           FILES         #################
@@ -44,30 +45,25 @@ def runModel(hdf_name):
 
 
     # PyQt gui items
-    app = QtGui.QApplication([])
-    mw = QtGui.QMainWindow()
-    mw.setWindowTitle('PyQt PLOTTER')  # MAIN WINDOW
-    mw.closeEvent = winclose
-    cw = QtGui.QWidget()  # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
-    mw.setCentralWidget(cw)
+    mw2 = QtGui.QMainWindow()
+    mw2.setWindowTitle('PyQt PLOTTER')  # MAIN WINDOW
+    mw2.closeEvent = winclose
+    cw2 = QtGui.QWidget()  # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
+    mw2.setCentralWidget(cw2)
     l = QtGui.QVBoxLayout()  # CENTRAL WIDGET LAYOUT (layout of the central widget)
-    cw.setLayout(l)
+    cw2.setLayout(l)
     plt1 = pg.PlotWidget()
     plt2 = pg.PlotWidget()
     plt3 = pg.PlotWidget()
-
     l.addWidget(plt1)
     l.addWidget(plt2)
     l.addWidget(plt3)
-    mw.show()
+    mw2.show()
 
     ##########################################################
     ################           MESH          #################
     ##########################################################
     in_file.read(mesh,"/mesh", False)
-
-
-
 
     # H5FILE Data:
     # bed and surface are datasets shape (378,)
@@ -235,6 +231,11 @@ def runModel(hdf_name):
         pPlt.refresh_plot()
         pg.QtGui.QApplication.processEvents()
         # time.sleep(10)
+    print 'done 1'
+    in_file.close()
+    # pg.exit()
+    print 'done 2'
+    # mw2.at
 
 # runModel("./input_data/peterman.h5")
 #
@@ -264,8 +265,8 @@ def runModel(hdf_name):
 
 
 # m = model()
-# ## Start Qt event loop unless running in interactive mode.
-# if __name__ == '__main__':
-#     import sys
-#     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-#         QtGui.QApplication.instance().exec_()
+## Start Qt event loop unless running in interactive mode.
+if __name__ == '__main__':
+    import sys
+    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+        QtGui.QApplication.instance().exec_()

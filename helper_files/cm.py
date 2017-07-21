@@ -31,18 +31,7 @@ def getCM(dataSet):
 
     elif dataSet == 'bed':
         bedMin, bedMax = -5052.39510208, 3675.78314839
-        lcArr = []
-        linCMFile = open('/home/pat/GL_clean/helper_files/bathCPT.txt', 'r')
-        for line in linCMFile:
-            vals = line.split()
-            v0 = []
-            v0.append(int(vals[1]))
-            v0.append(int(vals[2]))
-            v0.append(int(vals[3]))
-            lcArr.append(v0)
-        # print 'bath is '
-        # print lcArr
-
+        lcArr = geta()
         div = float(np.abs(bedMin)) / float(len(lcArr) - 1)
         linPos = []
         for i in range(len(lcArr)):
@@ -84,6 +73,13 @@ def getCM(dataSet):
         ]
         return pg.ColorMap(spos, colors, mode='byte')
 
+    elif dataSet == 'smb':
+        colors = [[255,0,0],
+                  [0,0,0],
+                  [0,0,255]]
+        pos = [-11494,0,6061]
+        return pg.ColorMap(pos, colors, mode='byte')
+
 
 def getColorBar(dataSet, cm):
     if dataSet == 'velocity':
@@ -101,6 +97,14 @@ def getColorBar(dataSet, cm):
         cbItem.translate(400.0, 90.0)
         return cbItem
     elif dataSet == 'surface':
+        cbItem = ColorBar(cm, 10, 200, label='Surface Ele. (m)',
+                          tick_labels=['-323', '0', '460', '920', '1839', '2758', '3677'],
+                          ticks=[-323, 0, 460, 920, 1839, 2758, 3677])  # , [0., 0.5, 1.0])
+        cbItem.scale(50, 50)
+        cbItem.translate(400.0, 90.0)
+        return cbItem
+
+    elif dataSet == 'smb':
         cbItem = ColorBar(cm, 10, 200, label='Surface Ele. (m)',
                           tick_labels=['-323', '0', '460', '920', '1839', '2758', '3677'],
                           ticks=[-323, 0, 460, 920, 1839, 2758, 3677])  # , [0., 0.5, 1.0])
