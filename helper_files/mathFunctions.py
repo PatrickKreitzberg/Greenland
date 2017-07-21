@@ -119,8 +119,8 @@ def getInterpolators(d1, choice, x0, y0, x1=-99, y1=-99, d2=None):
         x0 = p1[0]
         x1 = p0[0] + 1
     y0, y1, x0, x1 = int(y0), int(y1), int(x0), int(x1)
-    print 'vel_xarray, vel_yarray ', vel_xarray, vel_yarray
-    print '              d1.shape ',d1[y0:y1, x0:x1].shape
+    # print 'vel_xarray, vel_yarray ', vel_xarray, vel_yarray
+    # print '              d1.shape ',d1[y0:y1, x0:x1].shape
     if choice is 'velocity':
         return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose()), RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d2[y0:y1, x0:x1])).transpose())
     elif choice is 'bed':

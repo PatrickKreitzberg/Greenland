@@ -39,6 +39,7 @@ class dataset():
         self.pathPlotItem = pg.PlotDataItem([0,0], pen=pen)  # bpSurf
         self.legendItem   = bpLegend.addItem(self.pathPlotItem, name)      # bplSMB
         self.pathData     = None        # nsmb nv etc.
+        self.distanceData = None    # x data for plots.  Which is distance in proj coordinates
 
 
     def setData(self, dataFileName, dataDictName):

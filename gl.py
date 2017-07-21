@@ -500,12 +500,13 @@ def interpolateData(botPlotBool):
         This part compares neighbor points to each other. 
         '''
         theta = np.arctan2(float(vpts[i].getY() - vpts[i - 1].getY()), float(vpts[i].getX() - vpts[i - 1].getX()))
-        pvx0, pvy0 = projCoord(vpts[i-1].x, vpts[i-1].y)
-        pvx1, pvy1 = projCoord(vpts[i].x, vpts[i].y)
+        # pvx0, pvy0 = projCoord(vpts[i-1].x, vpts[i-1].y)
+        # pvx1, pvy1 = projCoord(vpts[i].x, vpts[i].y)
         # distance = (sqrt((vpts[i].getY() - vpts[i - 1].getY()) ** 2 + (vpts[i].getX() - vpts[i - 1].getX()) ** 2))
-        distance = sqrt((pvx1-pvx0)**2 + (pvy1-pvy0)**2)
+        distance = sqrt((vpts[i-1].x-vpts[i].x)**2 + (vpts[i-1].y-vpts[i].y)**2)
         remainder = distance%dr
-        xline = linspace(0, distance, distance/150, endpoint=True)  # * const makes it every 150/const meters
+        # Xline needs to be in map coordinates because tx,ty are in map coordinates
+        xline = linspace(0, distance, distance, endpoint=True)  # * const makes it every 150/const meters
         '''
         #FIXME NEED TO CHANGE SO IT LINES UP WITH FENICS MESH
         '''
@@ -530,13 +531,16 @@ def interpolateData(botPlotBool):
             px.append(tx)
             py.append(ty)
             if len(px) > 1:
-                graphX.append(graphX[-1] + sqrt((px[-1]-px[-2])**2 + (py[-1]-py[-2])**2))
+                graphX.append(graphX[len(graphX)-1] + sqrt((px[-1]-px[-2])**2 + (py[-1]-py[-2])**2))
                 # print 'dist: ', graphX[-1] + sqrt((px[-1]-px[-2])**2 + (py[-1]-py[-2])**2)
             elif len(graphX) == 0:
                 graphX.append(0)
             else:
-                graphX.append(graphX[-1])# + sqrt((px[-1]) ** 2 + (py[-1]) ** 2))
+                graphX.append(graphX[len(graphX)-1])# + sqrt((px[-1]) ** 2 + (py[-1]) ** 2))
             #     print 'dis3: ', graphX[-1] + sqrt((px[-1]) ** 2 + (py[-1]) ** 2)
+        print 'px ', px
+        print 'py ', py
+        print 'gx ', graphX
 
         ########################################
         ##    CALCULATE SURFACE ELEVATION     ##
@@ -601,12 +605,22 @@ def interpolateData(botPlotBool):
                 smb.pathData           = np.append(smb.pathData,      smbValues[i])
                 velocityWidth.pathData = np.append(velocityWidth.pathData, vwValues[i])
 
-    print 'graphx[-1]: ', graphX[-1]
-    xd0, yd0 = projCoord(vpts[0].x, vpts[0].y)
-    xd1, yd1 = projCoord(vpts[1].x, vpts[1].y)
-    xd2, yd2 = projCoord(vpts[2].x, vpts[2].y)
-    print 'dist: ', (sqrt(((xd1-xd0)**2 + (yd1-yd0)**2)) + sqrt(((xd2-xd1)**2 + (yd2-yd1)**2)))
+
+    print 'graphx[-1]: ', graphX[len(graphX)-1]
+    dist = 0
+    for i in range(len(vpts)-1):
+        print 'calc distance...'
+        xd0, yd0 = projCoord(vpts[i].x, vpts[i].y)
+        xd1, yd1 = projCoord(vpts[i+1].x, vpts[i+1].y)
+        print xd0, yd0, xd1, yd1
+        dist += sqrt(((xd1 - xd0) ** 2 + (yd1 - yd0) ** 2))
+    print 'dist: ', dist
+    surface.distanceData = graphX
+    bed.distanceData = graphX
     if botPlotBool:
+        velocity.distanceData = graphX
+        smb.distanceData = graphX
+        velocityWidth.distanceData = graphX
         return linePoints, np.array(graphX)
     # else:
     #     return nbed, nsurf  # , linePoints
@@ -622,11 +636,11 @@ def calcBP():
         print 'plotting'
         # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
         linePoints, graphX = interpolateData(True)
-        # velocity.pathPlotItem.setData(graphX     , velocity.pathData)
-        # smb.pathPlotItem.setData(graphX          , smb.pathData)
-        # velocityWidth.pathPlotItem.setData(graphX, velocityWidth.pathData)
-        surface.pathPlotItem.setData(graphX      , surface.pathData)
-        # bed.pathPlotItem.setData(graphX          , bed.pathData)
+        # velocity.pathPlotItem.setData(velocity.distanceData          , velocity.pathData)
+        # smb.pathPlotItem.setData(smb.distanceData                    , smb.pathData)
+        # velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
+        surface.pathPlotItem.setData(surface.distanceData              , surface.pathData)
+        # bed.pathPlotItem.setData(bed.distanceData                    , bed.pathData)
         pg.QtGui.QApplication.processEvents()
 
 def arrows():
@@ -678,24 +692,33 @@ def clearPoints():
 def runModelButt():
     global dr
     if len(vpts) > 0:
+
         interpolateData(False)
         print 'bed data:'
         print bed.pathData
         print 'surface data:'
         print surface.pathData
+
+
+
         THICKLIMIT = 10.  # Ice is never less than this thick
         H = surface.pathData - bed.pathData
         surface.pathData[H <= THICKLIMIT] = bed.pathData[H <= THICKLIMIT]
         N = len(bed.pathData)
+
         mesh = fc.IntervalMesh(N-1, 0, dr*(N-1))
+
         #FIXME the intervalMesh is consistantly 150 between each datapoint this not true for the data being sent
         hdf_name = '/home/pat/research/latest_profile.h5'
         hfile = fc.HDF5File(mesh.mpi_comm(), hdf_name, "w")
         V = fc.FunctionSpace(mesh,"CG",1)
+
         functBed     = fc.Function(V, name="Bed")
         functSurface = fc.Function(V, name="Surface")
-        functBed.vector()[:]     = bed.pathData[::-1]
-        functSurface.vector()[:] = surface.pathData[::-1]
+
+        functBed.vector()[:]     = bed.pathData
+        functSurface.vector()[:] = surface.pathData
+
         hfile.write(functBed.vector(), "/bed")
         hfile.write(functSurface.vector(), "/surface")
         hfile.write(mesh, "/mesh")
