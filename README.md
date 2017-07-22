@@ -4,7 +4,8 @@ These are the dependencies.  I am using Python2.7
 
   INSTALL FENICS	
 sudo add-apt-repository ppa:fenics-packages/fenics
-sudo apt-get update
+
+sudo apt-get update\n
 sudo apt-get install --no-install-recommends fenics
 sudo apt-get dist-upgrade
 
