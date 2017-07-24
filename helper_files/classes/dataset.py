@@ -1,7 +1,8 @@
 import h5py
-from mathFunctions import *
-from cm import *
+from helper_files.math_functions import *
+from helper_files.cm import *
 import numpy as np
+from ..gui import *
 
 class dataset():
     def __init__(self, name, bpLegend, pen, map=False, dataFileName='./data/AllDataSets.h5', dataCMFileName='./data/dataCMValues.h5', ):
@@ -35,6 +36,13 @@ class dataset():
             self.plotWidget.addItem(self.imageItem)
             self.plotWidget.setAspectLocked(True)
             self.plotWidget.invertY(True)
+            self.plotWidget.addItem(self.colorBar)
+            # self.ax = pg.AxisItem('bottom')
+            # self.ax.setMinimumWidth(1000)
+            # self.ax.setLabel('bleh')
+            # self.plotWidget.getPlotItem().getViewBox().addItem(self.ax)
+            # self.plotWidget.getPlotItem().setRotation(90)
+
 
         self.pathPlotItem = pg.PlotDataItem([0,0], pen=pen)  # bpSurf
         self.legendItem   = bpLegend.addItem(self.pathPlotItem, name)      # bplSMB

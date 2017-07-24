@@ -142,7 +142,7 @@ def onButtonPress(event):
             for x,y in zip(xf,yf):
                 B.append(Binterp(x,y))
                 S.append(Sinterp(x,y))
-            print x,y,B[-1],S[-1]
+            # print x,y,B[-1],S[-1]
         B = array(B)[:,0]
         S = array(S)[:,0]
 
@@ -159,12 +159,16 @@ def onButtonPress(event):
         mesh = fc.IntervalMesh(N-1,0,RESOLUTION*(N-1))
         V = fc.FunctionSpace(mesh,"CG",1)
         hfile = fc.HDF5File(mesh.mpi_comm(),"latest_profile.h5","w")
-        Bed     = fc.Function(V,name="Bed")
-        Surface = fc.Function(V, name="Surface")
+
         H = S-B
         S[H<=THICKLIMIT] = B[H<=THICKLIMIT]
+
+        # Functions with the data as a vector and V is the functionspace
+        Bed     = fc.Function(V, name="Bed")
+        Surface = fc.Function(V, name="Surface")
         Bed.vector()[:]     =  B
         Surface.vector()[:] =  S
+
         hfile.write(Bed.vector(),"/bed")
         hfile.write(Surface.vector(),"/surface")
         hfile.write(mesh,"/mesh")

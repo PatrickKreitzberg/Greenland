@@ -13,6 +13,7 @@ from dolfin import parameters
 import fenics as fc
 import h5py
 from support.pyQtPlotter import *
+from gui import *
 
 run = True
 
@@ -108,9 +109,11 @@ def runModel(hdf_name):
     S0 = Function(Q) # Initial surface elevation
     B  = Function(Q) # Bed elevation
     H0 = Function(Q) # Thickness at previous time step
+    A  = Function(Q) # SMB data
 
-    in_file.read(S0.vector(),"/surface",True)
-    in_file.read(B.vector(),"/bed",True)
+    in_file.read(S0.vector(), "/surface", True)
+    in_file.read(B.vector(),  "/bed",     True)
+    in_file.read(A.vector(),  "/smb",     True)
     H0.assign(S0-B)   # Initial thickness
 
     # A generalization of the Crank-Nicolson method, which is theta = .5
@@ -120,7 +123,13 @@ def runModel(hdf_name):
     S = B + Hmid
 
     # Expressions for now, later move to data from files
-    adot = interpolate(Adot(degree=1),Q)
+    # adot = interpolate(Adot(degree=1),Q)
+    # dolfin.fem.interpolation.interpolate: adot is an expression, Q is a functionspace
+        # returns an interpolation of a given function into a given finite element space
+        # i think this is a vector
+    # print 'adot: ', adot.vector()[:][0]
+    # Q is a functionspace
+    # print 'adot: ', adot  #printed 'f_51
     width = interpolate(Width(degree=2),Q)
 
     #############################################################################
@@ -152,8 +161,9 @@ def runModel(hdf_name):
            ocean[f] = 2
 
     # Directly write the form, with SPUG and area correction,
-    R += ((H-H0)/dt*xsi - xsi.dx(0)*U[0]*Hmid + D*xsi.dx(0)*Hmid.dx(0) - (adot - U[0]*H/width*width.dx(0))*xsi)*dx\
+    R += ((H-H0)/dt*xsi - xsi.dx(0)*U[0]*Hmid + D*xsi.dx(0)*Hmid.dx(0) - (A - U[0]*H/width*width.dx(0))*xsi)*dx\
            + U[0]*area*xsi*ds(1) - U[0]*area*xsi*ds(0)
+    print 'smb: ', A.vector()[:]
 
 
     #####################################################################
@@ -201,7 +211,9 @@ def runModel(hdf_name):
 
     # Time interval
     t = 0
-    t_end = 20000.
+    # t_end = 20000.
+    t_end = float(t_end_lineEdit.text())
+    dt_float = float(t_step_lineEdit.text())
     pPlt = pyqtplotter(strs, mesh, plt1, plt2, plt3)
 
 
@@ -236,31 +248,6 @@ def runModel(hdf_name):
     # pg.exit()
     print 'done 2'
     # mw2.at
-
-# runModel("./input_data/peterman.h5")
-#
-#
-# hdf_name = '/home/pat/research/latest_profile.h5'
-# f = h5py.File(hdf_name, "r")
-# print f.keys()
-# print f.values()
-# print 'surface'
-# print f['surface'][:]
-# print 'bed'
-# print f['bed'][:]
-# g = f['mesh']
-# print g.keys()
-# print g['cell_indices']
-# print 'Coordinates:'
-# print g['coordinates']
-# print 'Topology'
-# print g['topology']
-# f.close()
-#
-# hdf_name = '/home/pat/research/latest_profile.h5'
-# runModel(hdf_name)
-#
-
 
 
 

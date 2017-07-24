@@ -36,10 +36,3 @@ def createCMData():
     outF.close()
 
 createCMData()
-
-# allData = h5py.File('../data/AllDataSets.h5', 'a')
-# smb = allData['smb'][:]
-# allData.__delitem__('smb')
-# allData.create_dataset('smb_norm', data=smb)
-# allData.create_dataset('smb', data=np.flipud(smb))
-# allData.close()

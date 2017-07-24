@@ -1,21 +1,18 @@
 import fenics as fc
-import numpy as np
-from scipy.integrate import ode
-from pylab import sqrt,linspace,array,argmax, meshgrid, argmin
-from pyqtgraph.Qt import QtCore, QtGui #, QtWidgets
-import pyqtgraph as pg
-import PyQt4
-from helper_files.mathFunctions import *
-import time
-import h5py
-from helper_files.pltPoints import *
-from helper_files.cm import *
-from helper_files.profile_driver import runModel
-from helper_files.dataset import dataset
-from helper_files.pens import *
-from helper_files.gui import *
-
 import sys
+import time
+
+from pyqtgraph.Qt import QtCore  # , QtWidgets
+from scipy.integrate import ode
+
+from helper_files.classes.dataset import dataset
+from helper_files.classes.pltPoints import *
+from helper_files.cm import *
+from helper_files.gui import *
+from helper_files.math_functions import *
+from helper_files.pens import *
+from helper_files.profile_driver import runModel
+
 sys.path.append("/home/pat/")
 '''
 https://stackoverflow.com/questions/38065570/pyqtgraph-is-it-possible-to-have-a-imageview-without-histogram
