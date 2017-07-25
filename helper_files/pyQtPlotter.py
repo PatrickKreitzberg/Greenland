@@ -35,6 +35,7 @@ class pyqtplotter(object):
 
         self.plt1 = plt1
         self.plt1.showGrid(x=True, y=True)
+
         self.plt1.getPlotItem().getViewBox().setRange(xRange=(mesh_min, mesh_max), yRange=(Bmin * 1.05, Smax * 1.2))
         self.ph0   =  self.plt1.plot(self.x,self.strs.B.compute_vertex_values(), pen=bluePen)
         self.ph100 =  self.plt1.plot(self.x,S.compute_vertex_values(), pen=redPen)

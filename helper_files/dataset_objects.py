@@ -9,7 +9,7 @@ from pens import *
 #####################################################
 vpts = [] #holds [x,y,v] values, where x,y are the coordinates and v is the velocity magnitude at those coordinates
 
-velocity = dataset('velocity', bpLegend, greyPlotPen, map=True)
+velocity = dataset('velocity', bpLegend, greenPlotPen, map=True)
 bp.addItem(velocity.pathPlotItem)
 iiContainer.addWidget(velocity.plotWidget)
 iiContainer.setCurrentWidget(velocity.plotWidget)
@@ -19,7 +19,7 @@ print 'SMB: ', np.amin(smb.data), np.amax(smb.data) #-11493.3860928 6060.8033930
 bp.addItem(smb.pathPlotItem)
 iiContainer.addWidget(smb.plotWidget)
 
-surface = dataset('surface', bpLegend, greenPlotPen, map=True)
+surface = dataset('surface', bpLegend, greyPlotPen, map=True)
 bp.addItem(surface.pathPlotItem)
 iiContainer.addWidget(surface.plotWidget)
 

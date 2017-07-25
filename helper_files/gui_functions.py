@@ -6,6 +6,7 @@ import numpy as np
 from data_functions import *
 from scipy.integrate import ode
 from classes.pltPoints import *
+from velocity_functions import *
 
 def centerVelocityStream(x, y):
     x0p, y0p = projCoord(x, y)
@@ -38,7 +39,6 @@ def centerVelocityStream(x, y):
 def mouseClick(e):
     global vptSel, vptCur, integrateLine, shift
     first = False
-    print 'mouseclick ', e.pos().x(), ' ', e.pos().y()
     if len(vpts) == 0:
         first = True
         x = e.pos().x()
@@ -55,13 +55,12 @@ def mouseClick(e):
                 if pt.checkClicked(e.pos()):
                     vptSel = True
                     vptCur = pt
-                    print 'Found it! at ', pt.getPos()
             if not vptSel:
                 if not first:
                     x = e.pos().x()
                     y = e.pos().y()
                 px, py = projCoord(x,y)
-                vxInterp, vyInterp = getInterpolators(velocity.vx, 'velocity', x, y, d2=velocity.vy)
+                vxInterp, vyInterp = getInterpolators(velocity.vx, 'vxvy', x, y, d2=velocity.vy)
                 surfaceInterp = getInterpolators(surface.data, surface.name, x, y)
                 vxd = vxInterp([px], [py], grid=False)
                 vyd = vyInterp([px], [py], grid=False)
@@ -75,6 +74,7 @@ def mouseClick(e):
                 'v: ' +      "{:.3f}".format(velocity.data[y][x]) + \
                 '\nbed: ' +  "{:.3f}".format(bed.data[y][x]) + \
                 '\nsurf: ' + "{:.3f}".format(surface.data[y][x]) + \
+                '\nSMB: ' +  "{:.3f}".format(smb.data[y][x]*(1.0/1000.0)*(916.7/1000.0)) + \
                 '\nSMB: ' +  "{:.3f}".format(smb.data[y][x]) + '\n\n'
 
                 textOut.append(txt)
@@ -107,7 +107,7 @@ def calcProf(e):
         ox.append(np.real(xi))
         oy.append(np.real(yi))
 
-    print 'ox, oy: ', ox, oy
+    # print 'ox, oy: ', ox, oy
     integrateLine = pg.PlotDataItem(ox,oy,pen=plotPen2)
     iiContainer.currentWidget().addItem(integrateLine)
 
@@ -152,22 +152,31 @@ def calcBP():
     :return:
     '''
     global dr, bpLegend, dataLen, botPlot
+    # Empty the graph
+    velocity.pathPlotItem.clear()
+    surface.pathPlotItem.clear()
+    smb.pathPlotItem.clear()
+    bed.pathPlotItem.clear()
     if len(vpts) > 0:
-        print 'plotting'
+        print 'Plotting...'
         # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
-        linePoints, graphX = interpolateData(True)
-        # velocity.pathPlotItem.setData(velocity.distanceData          , velocity.pathData)
-        smb.pathPlotItem.setData(smb.distanceData                    , smb.pathData)
-        # velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
-        surface.pathPlotItem.setData(surface.distanceData              , surface.pathData)
-        # bed.pathPlotItem.setData(bed.distanceData                    , bed.pathData)
+        interpolateData(True)
+        if velocityCheck.checkState() == 2:
+            velocity.pathPlotItem.setData(velocity.distanceData          , velocity.pathData)
+        if smbCheck.checkState() == 2:
+            smb.pathPlotItem.setData(smb.distanceData                    , smb.pathData)
+        if vWidthCheck.checkState() == 2:
+            velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
+        if surfaceCheck.checkState() == 2:
+            surface.pathPlotItem.setData(surface.distanceData              , surface.pathData)
+        if bedCheck.checkState() == 2:
+            bed.pathPlotItem.setData(bed.distanceData                    , bed.pathData)
         pg.QtGui.QApplication.processEvents()
+        print 'Done plotting'
 
 def mouseMoved(e):
     global vptSel, vptCur, integrateLine, currentMap
-    # print 'mm 1'
     if e.isExit() is False:
-        # print 'mm 2'
         if vptSel and integrateLine is not None:
             cData = integrateLine.curve.getData()
             imin = curveDistance(e.pos().x(), e.pos().y(), cData)
@@ -181,13 +190,11 @@ def mouseMoved(e):
         x = int(np.floor(e.pos().x()))
         y = int(np.floor(e.pos().y()))
         if np.abs(x) <= 10018 and np.abs(y) <= 17946:
-            # print 'mm 3'
             if currentMap == 0:
                 # Interpolating every spot is too much, causes lag
                 # vInt = getInterpolators(sqrt(velocity.vx**2 + velocity.vy**2), 'v', x,y)
                 # px, py = projCoord(x,y)
                 # vLocal = vInt([px],[py], grid=False)
-                # print 'mm 30'
                 t = 'v: ' + str(velocity.data[y][x]) + '\tbed: ' + str(bed.data[y][x]) + '\tsurf: ' + str(surface.data[y][x]) + '\tSMB: ' + str(smb.data[y][x])
                 # t = t + '\t bed: ' + str(bed[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))])  + '\t surface: ' + str(surfaceVals[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))])
                 # mouseCoordinates.setText(t)
@@ -265,12 +272,14 @@ def calcProf(e):
     integrateLine = pg.PlotDataItem(ox,oy,pen=plotPen2)
     iiContainer.currentWidget().addItem(integrateLine)
 
-def _intMesh0(t,y):
-    vxInterp, vyInterp = getInterpolators(velocity.vx, 'velocity', [math.floor(y[0]) - 1, math.floor(y[1]) - 1],
-                                          p1=[math.ceil(y[0]) + 1, math.ceil(y[1]) + 1], d2=velocity.vy)
-    return np.array([t * (vxInterp([y[0]], [y[1]], grid=False)), t * (vyInterp([y[0]], [y[1]], grid=False))])
+
 
 def regionIntLine(e):
+    '''
+    Calculates and prints the integrated velocity path for several paths in a velocity stream.
+    :param e:
+    :return:
+    '''
     xp0 = vpts[-1].getX()
     yp0 = vpts[-1].getY()
     xp1 = vpts[-2].getX()
@@ -298,59 +307,6 @@ def regionIntLine(e):
         iiContainer.currentWidget().addItem(lines[-1])
 
 
-
-def intLine(x, y):
-    '''
-    Shows the line which follows the path in the velocity field
-    This will show a bunch of lines
-    :param e:
-    :return:
-    '''
-
-    #
-    # Removing the requirement to find the center of velocity stream to integrate from
-    # This will be turned on if the check function works
-    #
-
-    x0p, y0p = projCoord(x, y)
-    print 'x,y ', x0p, '  ----  ', y0p
-    y0 = np.array([x0p, y0p])
-    print y0
-    t0, t1, dt = 0, 80, .1
-
-    r = ode(getProfile).set_integrator('zvode', method='bdf')
-    r.set_initial_value(y0, t0)
-    print "Printing integration points"
-
-    ox = []
-    oy = []
-    ivx, ivy = 5,5
-    while r.successful() and sqrt(ivx**2 + ivy**2) > 5:
-        ai = r.integrate(r.t + dt)
-        xi, yi = mapCoord(ai[0], ai[1])
-        ivx = vxInterp([ai[0]], [ai[1]], grid=False)
-        ivy = vyInterp([ai[0]], [ai[1]], grid=False)
-        # print 'xi, iy: ', xi, yi
-        ox.append(np.real(xi))
-        oy.append(np.real(yi))
-
-    r2 = ode(_intMesh0).set_integrator('zvode', method='bdf')
-    r2.set_initial_value(y0, 0)
-    print "Printing integration points"
-    # ox2 = []
-    # oy2 = []
-    ivx, ivy = 5, 5
-    while r2.successful() and sqrt(ivx**2 + ivy**2) > 5:
-        ai2 = r2.integrate(r2.t + dt)
-        xi, yi = mapCoord(ai2[0], ai2[1])
-        ivx = vxInterp([ai2[0]], [ai2[1]], grid=False)
-        ivy = vyInterp([ai2[0]], [ai2[1]], grid=False)
-        # print 'xi, iy: ', xi, yi
-        ox.append(np.real(xi))
-        oy.append(np.real(yi))
-    return pg.PlotDataItem(ox, oy, pen=plotPen2)
-    # iiContainer.currentWidget().addItem(pg.PlotDataItem(ox, oy, pen=plotPen2))
-    # iiContainer.currentWidget().addItem(pg.PlotDataItem(ox2, oy2, pen=plotPen2))
 
 
 def ky(e):

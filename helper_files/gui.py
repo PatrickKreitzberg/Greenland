@@ -48,6 +48,8 @@ cProfButton      = QtGui.QPushButton('Plot Path') #FIXME should automatically ge
 cRegionButton    = QtGui.QPushButton('Region')
 cVelArrowsButton = QtGui.QPushButton('Arrows')
 modelButton      = QtGui.QPushButton('Run Model')
+# mouseCoordinates = QtGui.QLabel('x:\ty:')
+
 
 
 
@@ -77,6 +79,7 @@ buttonBox.addWidget(cProfButton)
 buttonBox.addWidget(cRegionButton)
 buttonBox.addWidget(cVelArrowsButton)
 buttonBox.addWidget(modelButton)
+# buttonBox.addWidget(mouseCoordinates)
 
 
 time_widget    = QtGui.QWidget()
@@ -88,11 +91,13 @@ t_end_lineEdit = QtGui.QLineEdit('20000')
 
 t_step_label    = QtGui.QLabel('t_step:')
 t_step_lineEdit = QtGui.QLineEdit('10')
+t_current = QtGui.QLabel('Current year: ')
 
 time_container.addWidget(t_end_label, 0, 0)
 time_container.addWidget(t_end_lineEdit, 0, 1)
 time_container.addWidget(t_step_label, 1, 0)
 time_container.addWidget(t_step_lineEdit, 1, 1)
+time_container.addWidget(t_current, 2, 0, 1, 2)
 
 buttonBox.addWidget(time_widget)
 buttonBox.addWidget(textOut)
@@ -107,15 +112,63 @@ bp = pg.PlotWidget()
 bpLegend = bp.getPlotItem().addLegend()
 
 iiContainer.setMinimumHeight(mw.height()*(2/3))
+
 lsw = QtGui.QWidget()
 leftSide = QtGui.QVBoxLayout()
 lsw.setLayout(leftSide)
 leftSide.addWidget(iiContainer,2)
 leftSide.addWidget(bp,1)
+dataCheckContainer = QtGui.QWidget()
+dCClayout = QtGui.QHBoxLayout()
+
+dataCheckContainer.setLayout(dCClayout)
+
+velocityCheck   = QtGui.QCheckBox('Velocity')
+vWidthCheck     = QtGui.QCheckBox('Velocity Width')
+smbCheck        = QtGui.QCheckBox('SMB')
+surfaceCheck    = QtGui.QCheckBox('Surface')
+bedCheck        = QtGui.QCheckBox('Bed')
+
+
+# velocityCheck.setMaximumWidth(80)
+# vWidthCheck.setMaximumWidth(80)
+# smbCheck.setMaximumWidth(80)
+# surfaceCheck.setMaximumWidth(80)
+# bedCheck.setMaximumWidth(80)
+
+
+checkBoxW = QtGui.QWidget()
+checkBLayout = QtGui.QVBoxLayout()
+checkBoxW.setLayout(checkBLayout)
+
+velocityCheck.setTristate(False)
+vWidthCheck.setTristate(False)
+smbCheck.setTristate(False)
+surfaceCheck.setTristate(False)
+bedCheck.setTristate(False)
+
+velocityCheck.setCheckState(2)
+vWidthCheck.setCheckState(2)
+smbCheck.setCheckState(2)
+surfaceCheck.setCheckState(2)
+bedCheck.setCheckState(2)
+
+
+checkBLayout.addWidget(velocityCheck)
+checkBLayout.addWidget(vWidthCheck)
+checkBLayout.addWidget(smbCheck)
+checkBLayout.addWidget(surfaceCheck)
+checkBLayout.addWidget(bedCheck)
+checkBLayout.setSpacing(0)
+
+buttonBox.addWidget(checkBoxW)
+dataCheckContainer.setMaximumWidth(500)
+# leftSide.addWidget(dataCheckContainer)
 
 mainLayout.addWidget(lsw)
 mainLayout.addWidget(bbW)
 bbW.setMaximumWidth(maxWidth+12)
+
 mw.show()
 
 
@@ -124,5 +177,4 @@ mw.show()
 #####################################################
 currentMap = 0  # selects which data map to show [velocity, bed, surface]
 vptSel = False
-mouseCoordinates = QtGui.QLabel('x:\ty:')
 shift = False

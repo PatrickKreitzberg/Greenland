@@ -1,19 +1,12 @@
-import sys
+import fenics as fc
+from time import *
 from dolfin import *
-import time
-from dolfin import cpp
-from support.physical_constants import *
-from support.simulation_parameters import *
+
+from gui import *
+from helper_files.pyQtPlotter import *
+from support.expressions import *
 from support.fenics_optimizations import *
 from support.momentum import *
-from support.expressions import *
-from support.plotter import *
-from dolfin.common import globalparameters
-from dolfin import parameters
-import fenics as fc
-import h5py
-from support.pyQtPlotter import *
-from gui import *
 
 run = True
 
@@ -215,11 +208,13 @@ def runModel(hdf_name):
     t_end = float(t_end_lineEdit.text())
     dt_float = float(t_step_lineEdit.text())
     pPlt = pyqtplotter(strs, mesh, plt1, plt2, plt3)
-
+    pPlt.refresh_plot()
+    pg.QtGui.QApplication.processEvents()
 
     while t<t_end and run:
-        time0 = time.time()
+        # time0 = time.time()
         print( "Solving for time: ",t)
+        t_current.setText("Current year: " + str(t))
         coupled_problem = NonlinearVariationalProblem(R, U, bcs=[dbc0, dbc1, dbc3], J=J)
         coupled_problem.set_bounds(l_bound, u_bound)
         coupled_solver = NonlinearVariationalSolver(coupled_problem)
@@ -238,11 +233,8 @@ def runModel(hdf_name):
 
         assigner_inv.assign([un,u2n,H0],U)
         t+=dt_float
-        time1 = time.time()
-        print 'time: ', time1 - time0
         pPlt.refresh_plot()
         pg.QtGui.QApplication.processEvents()
-        # time.sleep(10)
     print 'done 1'
     in_file.close()
     # pg.exit()

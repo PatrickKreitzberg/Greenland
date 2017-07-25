@@ -30,7 +30,7 @@ class vpt:
         xV1 = [self.x - c, self.x + c]
         yV0 = [self.y - c, self.y + c]
         yV1 = [self.y + c, self.y - c]
-        self.cross[0].setData(xV0, yV0, connect='all', pen=self.pen)
+        self.cross[0].setDataa(xV0, yV0, connect='all', pen=self.pen)
         self.cross[1].setData(xV1, yV1, connect='all', pen=self.pen)
         self.cross[0].updateItems()
         self.cross[1].updateItems()

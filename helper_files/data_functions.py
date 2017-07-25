@@ -1,6 +1,7 @@
 from gui import *
 from dataset_objects import *
 from math_functions import *
+import time
 
 
 dr = 150
@@ -14,7 +15,7 @@ def getProfile(t,y):
     '''
     # print 'getPro ', np.real(y[0]), ' ', np.real(y[1])
     mx, my = mapCoord(np.real(y[0]), np.real(y[1]))
-    vxInterp, vyInterp = getInterpolators(velocity.vx, 'velocity', np.floor(mx), np.floor(my), d2=velocity.vy)
+    vxInterp, vyInterp = getInterpolators(velocity.vx, "vxvy", np.floor(mx), np.floor(my), d2=velocity.vy)
     return np.array([t * (-vxInterp([y[0]], [y[1]], grid=False)), t * (-vyInterp([y[0]], [y[1]], grid=False))])
 
 
@@ -45,19 +46,17 @@ def calcVelWidth(x0, y0, x1, y1, draw):
 
     # input is in map coordinates
     #
-    #    This is with interpolation
+    # This is with interpolation
     #
     theta = np.arctan2(float(y1 - y0), float(x1-x0))
     #Rotation matrix:
     # rotMatrix = np.matrix([[np.cos(theta), -1*np.sin(theta)],[np.sin(theta), np.cos(theta)]])
     # cos    -sin    x    =    x*cos + y*-sin    = y*-sin
     # sin     cos    y    =    x*sin + y*cos    = y*cos
-    vxInterp, vyInterp = getInterpolators(velocity.vx, 'velocity', x1, y1, d2=velocity.vy)
-    tx1, ty1 = projCoord(x1,y1)
 
-    vx0 = vxInterp(tx1,ty1, grid=False)
-    vy0 = vyInterp(tx1,ty1, grid=False)
-    v0 = sqrt(vx0**2 + vy0**2)
+    velInterp = getInterpolators(velocity.data, 'velocity', x1, y1)
+    tx1, ty1 = projCoord(x1,y1)
+    v0 = velInterp(tx1,ty1, grid=False)
 
     dv = [[0, 0, 0], [0, 0, 0]]  # x, y, dv for left and right
     endPoints = [[0, 0], [0, 0]]  # end points [left[x,y], right[x,y]]
@@ -74,17 +73,14 @@ def calcVelWidth(x0, y0, x1, y1, draw):
         # print 'min([int(v0%100),8]) ', min([int(v0%100),8])
         while currentVelocity > 5 and startEndRatio <= min([int(v0%100),8]):
             dr += 1
-            vxInterp, vyInterp = getInterpolators(velocity.vx, velocity.name, (x1 + (dr*dis * -np.sin(theta))), (y1 + (dr*dis * np.cos(theta))), d2=velocity.vy)
+            velInterp = getInterpolators(velocity.data, 'velocity', (x1 + (dr*dis * -np.sin(theta))), (y1 + (dr*dis * np.cos(theta))))
             tx, ty = projCoord(x1 + (dr*dis * -np.sin(theta)), y1 + (dr*dis * np.cos(theta)))  # Line perpindicular to flow
-            vxd = vxInterp(tx, ty, grid=False)
-            vyd = vyInterp(tx, ty, grid=False)
-            currentVelocity = sqrt(vxd ** 2 + vyd ** 2)
+            currentVelocity = velInterp(tx, ty, grid=False)
             if np.abs(currentVelocity - vOld) > dv[i][2]:
                 dv[i][0], dv[i][1] = x1 + (dr*dis * -np.sin(theta)), y1 + (dr*dis * np.cos(theta))
                 dv[i][2] = np.abs(currentVelocity - vOld)
             if currentVelocity !=0:
                 startEndRatio = v0/currentVelocity
-            # print currentVelocity, startEndRatio, v0
             vOld = currentVelocity
         if currentVelocity < 5:
             # plotting line
@@ -102,12 +98,10 @@ def calcVelWidth(x0, y0, x1, y1, draw):
         iiContainer.currentWidget().addItem(pg.PlotDataItem([cax], [cay], pen=plotPen3))
     return endPoints[0][0], endPoints[0][1], endPoints[1][0], endPoints[1][1]
 
-def interpolateData(botPlotBool):
+def interpolateData(runModel):
     '''
     Calculate the data for bottom plot or to run the model.
-
     If botPlotBool, calculate all the data.  Else, calculate just bed/surface.
-
     :return:
     '''
     global dr, bpLegend, dataLen, botPlot
@@ -129,10 +123,17 @@ def interpolateData(botPlotBool):
     mix = min(pt.x for pt in vpts)
     miy = min(pt.y for pt in vpts)
 
-    surfaceInterp = getInterpolators(surface.data, surface.name, mix, miy, x1=mxx, y1=mxy)
-    bedInterp = getInterpolators(bed.data, bed.name, mix, miy, x1=mxx, y1=mxy)
-    vxInterp, vyInterp = getInterpolators(velocity.vx, velocity.name, mix, miy, x1=mxx, y1=mxy, d2=velocity.vy)
-    smbInterp = getInterpolators(smb.data, smb.name, mix, miy, x1=mxx, y1=mxy)
+    t0 = time.time()
+    if velocityCheck.checkState() == 2 or runModel:
+        # vxInterp, vyInterp = getInterpolators(velocity.vx, velocity.name, mix, miy, x1=mxx, y1=mxy, d2=velocity.vy)
+        velInterp = getInterpolators(velocity.data, 'velocity', mix, miy, x1=mxx, y1=mxy)
+    if surfaceCheck.checkState() == 2 or runModel:
+        surfaceInterp = getInterpolators(surface.data, surface.name, mix, miy, x1=mxx, y1=mxy)
+    if bedCheck.checkState() == 2 or runModel:
+        bedInterp = getInterpolators(bed.data, bed.name, mix, miy, x1=mxx, y1=mxy)
+    if smbCheck.checkState() == 2 or runModel:
+        smbInterp = getInterpolators(smb.data, smb.name, mix, miy, x1=mxx, y1=mxy)
+    print 'all interp in seconds: ', time.time() - t0
 
     # Find a distance ~150m which gets close to dividing the distance between first 2 spots
 
@@ -175,82 +176,103 @@ def interpolateData(botPlotBool):
             else:
                 graphX.append(graphX[len(graphX) - 1])  # + sqrt((px[-1]) ** 2 + (py[-1]) ** 2))
                 #     print 'dis3: ', graphX[-1] + sqrt((px[-1]) ** 2 + (py[-1]) ** 2)
-        print 'px ', px
-        print 'py ', py
-        print 'gx ', graphX
 
         ########################################
         ##    CALCULATE SURFACE ELEVATION     ##
         ########################################
-        localSurface = surfaceInterp(px, py, grid=False)
-        surfValues.append(localSurface)
+        if surfaceCheck.checkState() == 2 or runModel:
+            localSurface = surfaceInterp(px, py, grid=False)
+            surfValues.append(localSurface)
 
         ########################################
         ##         CALCULATE BED              ##
         ########################################
-        localBed = bedInterp(px, py, grid=False)
-        bedValues.append(localBed)
+        if bedCheck.checkState() == 2 or runModel:
+            localBed = bedInterp(px, py, grid=False)
+            bedValues.append(localBed)
 
         ########################################
         ##        CALCULATE VELOCITY          ##
         ########################################
-        vxd = vxInterp(px, py, grid=False)
-        vyd = vyInterp(px, py, grid=False)  # 1D array
-        vi = sqrt(vxd ** 2 + vyd ** 2)
-        xValues.append(xline)
-        velValues.append(vi)
-        print 'velocity len ', len(vi)
-        print 'px len ', len(px)
+
+        # vxd = vxInterp(px, py, grid=False)
+        # vyd = vyInterp(px, py, grid=False)  # 1D array
+        # vi = sqrt(vxd ** 2 + vyd ** 2)
+        if velocityCheck.checkState() == 2 or runModel:
+            vi = velInterp(px, py, grid=False)
+            xValues.append(xline)
+            velValues.append(vi)
+
         ########################################
         ##     CALCULATE VELOCITY WIDTH       ##
         ########################################
-
-        vwd = []
-        for i in range(len(px)):
-            xp0, yp0 = mapCoord(px[i - 1], py[i - 1])
-            xp1, yp1 = mapCoord(px[i], py[i])
-            xril, yril, xrir, yrir = calcVelWidth(xp0, yp0, xp1, yp1, False)
-            vwd.append(sqrt((xril - xrir) ** 2 + (yril - yrir) ** 2))
-        vwValues.append(vwd)
+        if vWidthCheck == 2 or runModel:
+            vwd = []
+            for i in range(len(px)):
+                xp0, yp0 = mapCoord(px[i - 1], py[i - 1])
+                xp1, yp1 = mapCoord(px[i], py[i])
+                xril, yril, xrir, yrir = calcVelWidth(xp0, yp0, xp1, yp1, False)
+                vwd.append(sqrt((xril - xrir) ** 2 + (yril - yrir) ** 2))
+            vwValues.append(vwd)
 
         ########################################
         ##   CALCULATE SURFACE MASS-BALANCE   ##
         ########################################
-        localSMB = smbInterp(px, py, grid=False)
-        smbValues.append(localSMB)
+        if smbCheck == 2 or runModel:
+            localSMB = smbInterp(px, py, grid=False)
+            smbValues.append(localSMB)
 
         ########################################
         ##   COMPILE DATA                     ##
         ########################################
-        bed.pathData = np.array(bedValues[0])
-        surface.pathData = np.array(surfValues[0])
-        velocity.pathData = np.array(velValues[0])
-        smb.pathData = np.array(smbValues[0])
-        velocityWidth.pathData = np.array(vwValues[0])
+        if bedCheck.checkState() == 2 or runModel:
+            bed.pathData = np.array(bedValues[0])
+        if surfaceCheck.checkState() == 2 or runModel:
+            surface.pathData = np.array(surfValues[0])
+        if velocityCheck.checkState() == 2 or runModel:
+            velocity.pathData = np.array(velValues[0])
+        if smbCheck.checkState() == 2 or runModel:
+            smb.pathData = np.array(smbValues[0])
+        if vWidthCheck.checkState() == 2 or runModel:
+            velocityWidth.pathData = np.array(vwValues[0])
 
         for i in range(1, len(velValues)):
-            velocity.pathData      = np.append(velocity.pathData, velValues[i])
-            smb.pathData           = np.append(smb.pathData, smbValues[i])
-            velocityWidth.pathData = np.append(velocityWidth.pathData, vwValues[i])
-            bed.pathData           = np.append(bed.pathData, bedValues[i])
-            surface.pathData       = np.append(surface.pathData, surfValues[i])
+            if velocityCheck.checkState() == 2 or runModel:
+                velocity.pathData      = np.append(velocity.pathData, velValues[i])
+            if smbCheck.checkState() == 2 or runModel:
+                smb.pathData           = np.append(smb.pathData, smbValues[i])
+            if vWidthCheck.checkState() == 2 or runModel:
+                velocityWidth.pathData = np.append(velocityWidth.pathData, vwValues[i])
+            if bedCheck.checkState() == 2 or runModel:
+                bed.pathData           = np.append(bed.pathData, bedValues[i])
+            if surfaceCheck.checkState() == 2 or runModel:
+                surface.pathData       = np.append(surface.pathData, surfValues[i])
 
-    smb.pathData = smb.pathData*(1/1000)*(916.7/1000) # millimeters -> meters then water-equivalent to ice-equivalent
-    print 'graphx[-1]: ', graphX[len(graphX) - 1]
+    smb.pathData = smb.pathData*(1.0/1000.0)*(916.7/1000.0) # millimeters -> meters then water-equivalent to ice-equivalent
+    # print 'graphx[-1]: ', graphX[len(graphX) - 1]
     dist = 0
     for i in range(len(vpts) - 1):
-        print 'calc distance...'
+        # print 'calc distance...'
         xd0, yd0 = projCoord(vpts[i].x, vpts[i].y)
         xd1, yd1 = projCoord(vpts[i + 1].x, vpts[i + 1].y)
-        print xd0, yd0, xd1, yd1
+        # print xd0, yd0, xd1, yd1
         dist += sqrt(((xd1 - xd0) ** 2 + (yd1 - yd0) ** 2))
-    print 'dist: ', dist
-    surface.distanceData = graphX
-    bed.distanceData = graphX
-    if botPlotBool:
-        velocity.distanceData = graphX
-        smb.distanceData = graphX
-        velocityWidth.distanceData = graphX
-        return linePoints, np.array(graphX)
+    # print 'dist: ', dist
+    if surfaceCheck.checkState() == 2 or runModel:
+        surface.distanceData = graphX
+    if bedCheck.checkState() == 2 or runModel:
+        bed.distanceData = graphX
+    if runModel:
+        if velocityCheck.checkState() == 2 or runModel:
+            velocity.distanceData = graphX
+        if smbCheck.checkState() == 2 or runModel:
+            smb.distanceData = graphX
+        if vWidthCheck.checkState() == 2 or runModel:
+            velocityWidth.distanceData = graphX
+        if bedCheck.checkState() == 2 or runModel:
+            bed.distanceData = graphX
+        if surfaceCheck.checkState() == 2 or runModel:
+            surface.distanceData = graphX
+        # return linePoints, np.array(graphX)
         # else:
         #     return nbed, nsurf  # , linePoints

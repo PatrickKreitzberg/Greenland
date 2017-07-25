@@ -47,13 +47,10 @@ import pyqtgraph.examples
 
 
 
-from pyqtgraph.Qt import QtGui, QtCore
-import numpy as np
-import pyqtgraph as pg
+
 
 #QtGui.QApplication.setGraphicsSystem('raster')
-app = QtGui.QApplication([])
-#mw = QtGui.QMainWindow()
+
 #mw.resize(800,800)
 
 # win = pg.GraphicsWindow(title="Basic plotting examples")
@@ -74,36 +71,33 @@ app = QtGui.QApplication([])
 #
 # plotWidget.getPlotItem().getViewBox().addItem(ax)
 
-import pyqtgraph as pg
-import sys
 from pyqtgraph.Qt import QtGui, QtCore
+import numpy as np
+import pyqtgraph as pg
+app = QtGui.QApplication([])
+mw = QtGui.QMainWindow()
+win = pg.PlotWidget()
+x = np.arange(0, 2*np.pi, 0.1)
+y = np.sin(x)
+l = pg.PlotDataItem(x=x,y=y)
+win.addItem(l)
+cw = QtGui.QWidget()            # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
+lay = QtGui.QGridLayout()
+cw.setLayout(lay)
+lay.addWidget(win)
+l.rotate(90)
+win.getPlotItem().invertX(True)
 
-
-class plotWidget(pg.GraphicsView):
-
-    def __init__(self):
-        super(plotWidget,self).__init__()
-        self.layout = pg.GraphicsLayout()
-        self.setCentralWidget(self.layout)
-
-        self.main_plot = pg.PlotItem()
-        ax = self.main_plot.getAxis('left')
-        new_min_width = 100
-        ax.setMinimumWidth(new_min_width)
-        self.layout.addItem(self.main_plot)
-        # assert test will fail
-        # assert ax.minimumWidth() == new_min_width
-
-
-
+ax = win.getPlotItem().getAxis('left')
+ax.setLabel('Y')
+ax = win.getPlotItem().getAxis('bottom')
+ax.setLabel('X')
+mw.setCentralWidget(cw)
+mw.show()
 if __name__ == '__main__':
-    pg.mkQApp()
-    win = plotWidget()
-
-    win.show()
+    import sys
     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
         QtGui.QApplication.instance().exec_()
-
 
 #
 # p2 = win.addPlot(title="Multiple curves")
