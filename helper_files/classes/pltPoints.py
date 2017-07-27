@@ -15,7 +15,7 @@ class vpt:
         yV0 = [y - c, y + c]
         yV1 = [y + c, y - c]
         self.cross = [pg.PlotDataItem(xV0, yV0, connect='all', pen=self.pen), pg.PlotDataItem(xV1, yV1, connect='all', pen=self.pen)]
-        self.lines = []
+        self.line = None
 
     def __del__(self):
         self.velW.removeItem(self.line)
@@ -42,12 +42,11 @@ class vpt:
             return False
 
 
-    def setLine(self, line, index):
-        #0 connects to the previous vpt, 1 connects to the second
-        self.lines[index] = line
+    def setLine(self, line):
+        self.line = line
 
-    def getLine(self, index):
-        return self.lines[index]
+    def getLine(self):
+        return self.line
 
     def getCross(self):
         return self.cross[0], self.cross[1]
