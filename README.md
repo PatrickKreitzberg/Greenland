@@ -1,5 +1,8 @@
 # GL_clean
 
+run gl.py
+
+
 These are the dependencies.  I am using Python2.7
 
     INSTALL FENICS	
