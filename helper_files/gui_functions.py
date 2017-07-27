@@ -85,7 +85,7 @@ def mouseClick(e):
                 if len(vpts) > 1:
                     xa = [vpts[-1].getX(), vpts[-2].getX()]
                     ya = [vpts[-1].getY(), vpts[-2].getY()]
-                    vpts[-2].setLine(pg.PlotDataItem(xa,ya,connect='all'), 0)
+                    vpts[-2].setLine(pg.PlotDataItem(xa,ya,connect='all'))
                     iiContainer.currentWidget().addItem(vpts[-2].getLine())#,pen=plotPen)
         else:
             vptSel = False
