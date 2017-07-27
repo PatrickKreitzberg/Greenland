@@ -41,9 +41,24 @@ inSMB = False
 inSurface = False
 clickedCurve = False
 dataCMFileName = './data/dataCMValues.h5'
-dataFileName   = './data/AllDataSets.h5'
+dataFileName   = '/home/pat/research/Greenland/data/GreenlandInBedCoord.h5'
 mapList.currentIndexChanged.connect(changeMap)
 integrateLine = None
+
+#####################################################
+####                    GUI                     #####
+#####################################################
+'''
+    GUI is created by importing the gui.py file.  
+        RIGHTSIDE OF GUI
+    buttonBoxWidget: Generic QWidget which holds the buttons
+    buttonBox: QLayout widget which controls the buttons/their placement
+    dataCheckContainer: QWidget which holds the checkboxes which choose what to display on bot plot
+        LEFTSIDE OF GUI
+    lsw: Generic QWidget which holds the two plots
+    leftSide: QLayout widget which controls the plots/their placement
+    
+'''
 
 
 
@@ -53,6 +68,7 @@ def clearPoints():
     surface.pathPlotItem.clear()
     smb.pathPlotItem.clear()
     bed.pathPlotItem.clear()
+    thickness.pathPlotItem.clear()
 
 
 def runModelButt():
@@ -68,10 +84,11 @@ def runModelButt():
         Interpolating data at an even interval so the data points align with the 
         invterval mesh.
         '''
-        bed1dInterp      = interp1d(bed.distanceData,      bed.pathData)
-        surface1dInterp  = interp1d(surface.distanceData,  surface.pathData)
-        smb1dInterp      = interp1d(smb.distanceData,      smb.pathData)
-        velocity1dInterp = interp1d(velocity.distanceData, velocity.pathData)
+        thickness1dInterp = interp1d(thickness.distanceData, thickness.pathData)
+        bed1dInterp       = interp1d(bed.distanceData,       bed.pathData)
+        surface1dInterp   = interp1d(surface.distanceData,   surface.pathData)
+        smb1dInterp       = interp1d(smb.distanceData,       smb.pathData)
+        velocity1dInterp  = interp1d(velocity.distanceData,  velocity.pathData)
 
         # N is the number of total data points including the last
         # Data points on interval [0, N*dr] inclusive on both ends
@@ -80,10 +97,11 @@ def runModelButt():
         x = np.arange(0, (N+1)*dr, dr) # start point, end point, number of segments. END POINT NOT INCLUDED!
         mesh = fc.IntervalMesh(N, 0, dr * N)  # number of cells, start point, end point
 
-        bedModelData      = bed1dInterp(x)
-        surfaceModelData  = surface1dInterp(x)
-        smbModelData      = smb1dInterp(x)
-        velocityModelData = velocity1dInterp(x)
+        thicknessModelData = thickness1dInterp(x)
+        bedModelData       = bed1dInterp(x)
+        surfaceModelData   = surface1dInterp(x)
+        smbModelData       = smb1dInterp(x)
+        velocityModelData  = velocity1dInterp(x)
 
 
 
@@ -96,24 +114,28 @@ def runModelButt():
         hfile = fc.HDF5File(mesh.mpi_comm(), hdf_name, "w")
         V = fc.FunctionSpace(mesh,"CG",1)
 
-        functBed      = fc.Function(V, name="Bed")
-        functSurface  = fc.Function(V, name="Surface")
-        functSMB      = fc.Function(V, name='SMB')
-        functVelocity = fc.Function(V, name='Velocity')
+        functThickness = fc.Function(V, name="Thickness")
+        functBed       = fc.Function(V, name="Bed")
+        functSurface   = fc.Function(V, name="Surface")
+        functSMB       = fc.Function(V, name='SMB')
+        functVelocity  = fc.Function(V, name='Velocity')
 
         print 'model data:  ', len(bedModelData)
         print 'mesh length: ', N
         surface.pathPlotItem.setData(x, surfaceModelData)
         pg.QtGui.QApplication.processEvents()
-        functBed.vector()[:]      = bedModelData
-        functSurface.vector()[:]  = surfaceModelData
-        functSMB.vector()[:]      = smbModelData
-        functVelocity.vector()[:] = velocityModelData
 
-        hfile.write(functBed.vector(), "/bed")
-        hfile.write(functSurface.vector(), "/surface")
-        hfile.write(functSMB.vector(), '/smb')
-        hfile.write(functVelocity.vector(), '/velocity')
+        functThickness.vector()[:] = thicknessModelData
+        functBed.vector()[:]       = bedModelData
+        functSurface.vector()[:]   = surfaceModelData
+        functSMB.vector()[:]       = smbModelData
+        functVelocity.vector()[:]  = velocityModelData
+
+        hfile.write(functThickness.vector(), "/thickness")
+        hfile.write(functBed.vector(),       "/bed")
+        hfile.write(functSurface.vector(),   "/surface")
+        hfile.write(functSMB.vector(),       "/smb")
+        hfile.write(functVelocity.vector(),  "/velocity")
         hfile.write(mesh, "/mesh")
         hfile.close()
         runModel(hdf_name)
@@ -140,6 +162,8 @@ modelButton.clicked.connect(runModelButt)
 velocity.imageItem.hoverEvent = mouseMoved
 bed.imageItem.hoverEvent = mouseMoved
 surface.imageItem.hoverEvent = mouseMoved
+thickness.imageItem.hoverEvent = mouseMoved
+# oldthick.imageItem.hoverEvent = mouseMoved
 
 velocity.imageItem.mouseClickEvent = mouseClick
 

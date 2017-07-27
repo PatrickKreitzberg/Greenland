@@ -1,17 +1,16 @@
-# Found the way to load a QImage into the label on GraphicsLayoutWidget.
-#
-# Cheers,
-# Vasilije
 
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui #, QtWidgets
-import h5py
-import pyqtgraph.examples
-
+# import pyqtgraph as pg
+# from pyqtgraph.Qt import QtCore, QtGui #, QtWidgets
+# import h5py
+# # from helper_files.classes.dataset import *
+# from helper_files.cm import *
+# from helper_files.pens import *
+# import pyqtgraph.examples
 #
+# #
 # app = QtGui.QApplication([])
 # mw = QtGui.QMainWindow()
-# mw.setWindowTitle('GREENLAND')    # MAIN WINDOW
+# mw.setWindowTitle('QUICKPLOT')    # MAIN WINDOW
 # cw = QtGui.QWidget()            # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
 # mw.setCentralWidget(cw)
 # l = QtGui.QGridLayout()            # CENTRAL WIDGET LAYOUT (layout of the central widget)
@@ -25,7 +24,16 @@ import pyqtgraph.examples
 # # allData.create_dataset('smb', data=np.flipud(smb))
 # allData.close()
 #
+# # smbDS = dataset('smb', bpLegend, redPlotPen, map=True)
+# cm = getCM('smb')
+# cb = getColorBar('smb', cm)
+#
 # pw = pg.PlotWidget()
+# vb = pg.ViewBox()
+# vb.addItem(cb)
+# # w1 = pw.addItem(cb)
+# # pw.addItem(vb)
+# pw.getPlotItem().getViewBox().addItem(vb)
 # ii = pg.ImageItem(smb)
 # ii.setOpts(axisOrder='row-major')
 # pw.addItem(ii)
@@ -39,14 +47,14 @@ import pyqtgraph.examples
 #
 # mw.show()
 #
-#
+# print 'downfeafe'
 # if __name__ == '__main__':
 #     import sys
 #     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
 #         pg.QtGui.QApplication.instance().exec_( )
-
-
-
+#
+#
+#
 
 
 #QtGui.QApplication.setGraphicsSystem('raster')
@@ -70,34 +78,53 @@ import pyqtgraph.examples
 # ax.setLabel('bleh')
 #
 # plotWidget.getPlotItem().getViewBox().addItem(ax)
+#
+# from pyqtgraph.Qt import QtGui, QtCore
+# import numpy as np
+# import pyqtgraph as pg
+# app = QtGui.QApplication([])
+# mw = QtGui.QMainWindow()
+# win = pg.PlotWidget()
+# # win.rotate(90)
+# # win.getPlotItem().getViewBox().rotate(90)
+# x = np.arange(0, 2*np.pi, 0.1)
+# y = np.sin(x)
+# l = pg.PlotDataItem(x=x,y=y)
+# l.rotate(90)
+# # win.getPlotItem().rotate(90)
+# win.addItem(l)
+# cw = QtGui.QWidget()
+# lay = QtGui.QGridLayout()
+# cw.setLayout(lay)
+# lay.addWidget(win)
+# win.getPlotItem().invertX(True)
 
-from pyqtgraph.Qt import QtGui, QtCore
-import numpy as np
-import pyqtgraph as pg
-app = QtGui.QApplication([])
-mw = QtGui.QMainWindow()
-win = pg.PlotWidget()
-x = np.arange(0, 2*np.pi, 0.1)
-y = np.sin(x)
-l = pg.PlotDataItem(x=x,y=y)
-win.addItem(l)
-cw = QtGui.QWidget()            # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
-lay = QtGui.QGridLayout()
-cw.setLayout(lay)
-lay.addWidget(win)
-l.rotate(90)
-win.getPlotItem().invertX(True)
+# ay = win.getPlotItem().getAxis('left')
+# ay.setLabel('Y')
+# ax = win.getPlotItem().getAxis('bottom')
+# ax.setLabel('X')
+# ax.linkToView(win.getPlotItem().getViewBox())
+# ay = win.getPlotItem().getViewBox().getAxis()
+# win.getPlotItem().getViewBox().updateMatrix()
+# win.getPlotItem().getViewBox().sigYRangeChanged.emit(win.getPlotItem().getViewBox(), tuple(win.getPlotItem().getViewBox().state['viewRange'][ax]))
+# win.getPlotItem().getViewBox().setRange(xRange=win.getPlotItem().getViewBox().childrenBounds()[1])
+# win.getPlotItem().getViewBox().setRange(yRange=win.getPlotItem().getViewBox().childrenBounds()[0])
+# print win.getPlotItem().getViewBox().viewRange()
+# win.getPlotItem()
+# win.getPlotItem().getViewBox().setRange(xRange=win.getPlotItem().getViewBox().childrenBounds()[0], yRange=win.getPlotItem().getViewBox().childrenBounds()[1])
+# print win.getPlotItem().getViewBox().state['targetRange']
 
-ax = win.getPlotItem().getAxis('left')
-ax.setLabel('Y')
-ax = win.getPlotItem().getAxis('bottom')
-ax.setLabel('X')
-mw.setCentralWidget(cw)
-mw.show()
-if __name__ == '__main__':
-    import sys
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
+# win.getPlotItem().getViewBox().updateViewRange()
+
+# print win.getPlotItem().getViewBox().childrenBounds()
+
+#
+# mw.setCentralWidget(cw)
+# mw.show()
+# if __name__ == '__main__':
+#     import sys
+#     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+#         QtGui.QApplication.instance().exec_()
 
 #
 # p2 = win.addPlot(title="Multiple curves")

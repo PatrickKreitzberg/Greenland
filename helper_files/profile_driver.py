@@ -38,21 +38,7 @@ def runModel(hdf_name):
     ##########################################################
 
 
-    # PyQt gui items
-    mw2 = QtGui.QMainWindow()
-    mw2.setWindowTitle('PyQt PLOTTER')  # MAIN WINDOW
-    mw2.closeEvent = winclose
-    cw2 = QtGui.QWidget()  # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
-    mw2.setCentralWidget(cw2)
-    l = QtGui.QVBoxLayout()  # CENTRAL WIDGET LAYOUT (layout of the central widget)
-    cw2.setLayout(l)
-    plt1 = pg.PlotWidget()
-    plt2 = pg.PlotWidget()
-    plt3 = pg.PlotWidget()
-    l.addWidget(plt1)
-    l.addWidget(plt2)
-    l.addWidget(plt3)
-    mw2.show()
+
 
     ##########################################################
     ################           MESH          #################
@@ -104,17 +90,18 @@ def runModel(hdf_name):
     H0 = Function(Q) # Thickness at previous time step
     A  = Function(Q) # SMB data
 
-    in_file.read(S0.vector(), "/surface", True)
-    in_file.read(B.vector(),  "/bed",     True)
-    in_file.read(A.vector(),  "/smb",     True)
-    H0.assign(S0-B)   # Initial thickness
+    # in_file.read(H0.vector(), "/thickness", True) #NEW
+    in_file.read(S0.vector(), "/surface",   True)
+    in_file.read(B.vector(),  "/bed",       True)
+    in_file.read(A.vector(),  "/smb",       True)
+    H0.assign(S0-B)   # Initial thickness  #OLD
 
     # A generalization of the Crank-Nicolson method, which is theta = .5
     Hmid = theta*H + (1-theta)*H0
 
     # Define surface elevation
-    S = B + Hmid
-
+    S = B + Hmid  #OLD
+    # S = Max(Hmid+B, rho/rho_w * Hmid)
     # Expressions for now, later move to data from files
     # adot = interpolate(Adot(degree=1),Q)
     # dolfin.fem.interpolation.interpolate: adot is an expression, Q is a functionspace
@@ -207,6 +194,23 @@ def runModel(hdf_name):
     # t_end = 20000.
     t_end = float(t_end_lineEdit.text())
     dt_float = float(t_step_lineEdit.text())
+
+    # PyQt gui items
+    mw2 = QtGui.QMainWindow(mw)
+    mw2.setWindowTitle('PyQt PLOTTER')  # MAIN WINDOW
+    mw2.closeEvent = winclose
+    cw2 = QtGui.QWidget()  # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
+    mw2.setCentralWidget(cw2)
+    l = QtGui.QVBoxLayout()  # CENTRAL WIDGET LAYOUT (layout of the central widget)
+    cw2.setLayout(l)
+    plt1 = pg.PlotWidget()
+    plt2 = pg.PlotWidget()
+    plt3 = pg.PlotWidget()
+    l.addWidget(plt1)
+    l.addWidget(plt2)
+    l.addWidget(plt3)
+    mw2.show()
+
     pPlt = pyqtplotter(strs, mesh, plt1, plt2, plt3)
     pPlt.refresh_plot()
     pg.QtGui.QApplication.processEvents()
@@ -245,7 +249,7 @@ def runModel(hdf_name):
 
 # m = model()
 ## Start Qt event loop unless running in interactive mode.
-if __name__ == '__main__':
-    import sys
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
+# if __name__ == '__main__':
+#     import sys
+#     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+#         QtGui.QApplication.instance().exec_()

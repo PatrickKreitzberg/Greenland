@@ -2,10 +2,10 @@ import numpy as np
 import pyqtgraph as pg
 # https://gist.github.com/maedoc/b61090021d2a5161c5b9
 
-class LogColorBar(pg.GraphicsObject):
+class LogColorBar(pg.GraphicsWidget):
     def __init__(self, cmap, width, height, ticks=None, tick_labels=None, label=None):
-        pg.GraphicsObject.__init__(self)
-
+        pg.GraphicsWidget.__init__(self)
+        # self.autoAnchor(pos=(1,1))
         # handle args
         label = label or ''
         w, h = width, height
@@ -54,6 +54,7 @@ class LogColorBar(pg.GraphicsObject):
         # compute rect bounds for underlying mask
         self.zone = mintx - 12.0, -15.0, br.width() - mintx, h + br.height() + 30.0
 
+
     def paint(self, p, *args):
         # paint underlying mask
         p.setPen(pg.QtGui.QColor(255, 255, 255, 0))
@@ -67,10 +68,9 @@ class LogColorBar(pg.GraphicsObject):
         return pg.QtCore.QRectF(self.pic.boundingRect())
 
 
-class ColorBar(pg.GraphicsObject):
+class ColorBar(pg.GraphicsWidget):
     def __init__(self, cmap, width, height, ticks=None, tick_labels=None, label=None, name=None):
-        pg.GraphicsObject.__init__(self)
-
+        pg.GraphicsWidget.__init__(self)
         # handle args
         label = label or ''
         w, h = width, height

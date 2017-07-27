@@ -29,6 +29,18 @@ def getCM(dataSet):
         pos.append(8000)
         return pg.ColorMap(pos, [row[0] for row in c], mode='byte')
 
+    elif dataSet == 'thickness' or dataSet == 'oldthick':
+        thickMin = 0.0
+        thickMax = 3428
+        colors = [[255,0,255],
+                  [255,255,255],
+                  [6,6,94],
+                  [0, 213, 253],
+                  [255,253,3],
+                  [138,0,0]]
+        pos = [-0.00001, 0.0, 0.00001, 1000.0, 2000.0, 3000.0]
+        return pg.ColorMap(pos, colors, mode='byte')
+
     elif dataSet == 'bed':
         bedMin, bedMax = -5052.39510208, 3675.78314839
         lcArr = geta()
@@ -40,6 +52,7 @@ def getCM(dataSet):
         ######### ELEVATION COLORMAP
         lcArr1 = [
             [0, 153, 0],
+
             [102, 255, 102],
             [255, 255, 0],
             [255, 0, 0],
@@ -54,6 +67,7 @@ def getCM(dataSet):
     elif dataSet == 'surface':
         colors = [
             [255,   0, 255],
+            [255, 255, 255],
             [0,   132,  53],
             [51,  204,   0],
             [244, 240, 113],
@@ -65,6 +79,7 @@ def getCM(dataSet):
         spos = [
             -324,
             0,
+            0.0001,
             .125 * mx,
             .25 * mx,
             .5 * mx,
@@ -91,7 +106,7 @@ def getColorBar(dataSet, cm):
         cbItem.translate(400.0, 90.0)  # may need to be in the regular script
         return cbItem
 
-    elif dataSet == 'bed':
+    elif dataSet == 'bed' or dataSet == 'thickness' or dataSet == 'oldthick':
         cbItem = ColorBar(cm, 10, 200,
                           label='Bed Ele. (m)',
                           tick_labels=['-1000', '-500', '0', '500', '1,000', '1,500', '2,000', '2700'],

@@ -111,6 +111,7 @@ def interpolateData(runModel):
     smbValues = []
     surfValues = []
     bedValues = []
+    thickValues = []
     linePoints = [0]
     vwValues = []
     graphX = []
@@ -133,6 +134,7 @@ def interpolateData(runModel):
         bedInterp = getInterpolators(bed.data, bed.name, mix, miy, x1=mxx, y1=mxy)
     if smbCheck.checkState() == 2 or runModel:
         smbInterp = getInterpolators(smb.data, smb.name, mix, miy, x1=mxx, y1=mxy)
+    thickInterp   = getInterpolators(thickness.data, thickness.name, mix, miy, x1=mxx, y1=mxy)
     print 'all interp in seconds: ', time.time() - t0
 
     # Find a distance ~150m which gets close to dividing the distance between first 2 spots
@@ -195,9 +197,6 @@ def interpolateData(runModel):
         ##        CALCULATE VELOCITY          ##
         ########################################
 
-        # vxd = vxInterp(px, py, grid=False)
-        # vyd = vyInterp(px, py, grid=False)  # 1D array
-        # vi = sqrt(vxd ** 2 + vyd ** 2)
         if velocityCheck.checkState() == 2 or runModel:
             vi = velInterp(px, py, grid=False)
             xValues.append(xline)
@@ -223,6 +222,13 @@ def interpolateData(runModel):
             smbValues.append(localSMB)
 
         ########################################
+        ##   CALCULATE THICKNESS              ##
+        ########################################
+        # if smbCheck == 2 or runModel:
+        localThick = thickInterp(px, py, grid=False)
+        thickValues.append(localThick)
+
+        ########################################
         ##   COMPILE DATA                     ##
         ########################################
         if bedCheck.checkState() == 2 or runModel:
@@ -235,6 +241,7 @@ def interpolateData(runModel):
             smb.pathData = np.array(smbValues[0])
         if vWidthCheck.checkState() == 2 or runModel:
             velocityWidth.pathData = np.array(vwValues[0])
+        thickness.pathData = np.array(thickValues[0])
 
         for i in range(1, len(velValues)):
             if velocityCheck.checkState() == 2 or runModel:
@@ -247,6 +254,7 @@ def interpolateData(runModel):
                 bed.pathData           = np.append(bed.pathData, bedValues[i])
             if surfaceCheck.checkState() == 2 or runModel:
                 surface.pathData       = np.append(surface.pathData, surfValues[i])
+            thickness.pathData = np.append(thickness.pathData, thickValues[i])
 
     smb.pathData = smb.pathData*(1.0/1000.0)*(916.7/1000.0) # millimeters -> meters then water-equivalent to ice-equivalent
     # print 'graphx[-1]: ', graphX[len(graphX) - 1]
@@ -258,6 +266,7 @@ def interpolateData(runModel):
         # print xd0, yd0, xd1, yd1
         dist += sqrt(((xd1 - xd0) ** 2 + (yd1 - yd0) ** 2))
     # print 'dist: ', dist
+    thickness.distanceData = graphX
     if surfaceCheck.checkState() == 2 or runModel:
         surface.distanceData = graphX
     if bedCheck.checkState() == 2 or runModel:
@@ -276,3 +285,6 @@ def interpolateData(runModel):
         # return linePoints, np.array(graphX)
         # else:
         #     return nbed, nsurf  # , linePoints
+    print 'SHAPES'
+    print len(thickness.distanceData)
+    print len(bed.distanceData)

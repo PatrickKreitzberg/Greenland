@@ -2,28 +2,29 @@ import numpy as np
 from pylab import sqrt,linspace,array,argmax
 from scipy.interpolate import RegularGridInterpolator, RectBivariateSpline
 import math
+from constants import *
 
 def projCoord(x,y):
     # returns x,y in the global projected coordinates
-    if y >= -3349350 and y <= -657600:
-        if x >= -638000 and x <= 864550:
+    if y >= proj_y1 and y <= proj_y0:
+        if x >= proj_x0 and x <= proj_x1:
             return x, y
         else:
             print 'ERROR IN PROJCOORD'
             return -1
     else:
-        return ((150*x) - 637925), ((-150*y) - 657675)
+        return ((150*x) + proj_x0), ((-150*y) + proj_y0)
 
 def mapCoord(x,y):
     # returns x,y in map coordinates which is x <- (0,1018) y<- (0,1746) roughly
-    if y >= 0 and y <=17946:
-        if x <= 10018:
+    if y >= map_y0 and y <=map_y1:
+        if x >= map_x0 and x <= map_x1:
             return x,y
         else:
             print 'ERROR IN MAPCOORD'
             return -1
     else:
-        return ((637925 + x)/150.0), (-(657675 + y)/150.0)
+        return ((-proj_x0 + x)/150.0), (-(-proj_y0 + y)/150.0)
 
 
 def findSlopes(lines, vlist):
@@ -119,21 +120,22 @@ def getInterpolators(d1, choice, x0, y0, x1=-99, y1=-99, d2=None):
         x0 = p1[0]
         x1 = p0[0] + 1
     y0, y1, x0, x1 = int(y0), int(y1), int(x0), int(x1)
+    possibleChoices = ['velocity', 'bed', 'surface', 'smb', 'thickness']
     if choice == 'vxvy':
         return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose()), \
                RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d2[y0:y1, x0:x1])).transpose())
-    elif choice is 'velocity':
+    elif choice in possibleChoices:
         return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
-    elif choice is 'bed':
-        return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
-    elif choice is 'surface':
-        return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
-    elif choice is 'smb':
-        #smb and all other RACMO data is 'upside down' compared to the rest of the data
-        return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
-    elif choice is 'v':
-        #just velocity, not vx and vy
-        return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
+    # elif choice is 'bed':
+    #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
+    # elif choice is 'surface':
+    #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
+    # elif choice is 'smb':
+    #     #smb and all other RACMO data is 'upside down' compared to the rest of the data
+    #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
+    # elif choice is 'v':
+    #     #just velocity, not vx and vy
+    #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
     else:
         print "ERROR: No interpolator selected!  ./helper_files/math_functions.getInterpolators()"
 

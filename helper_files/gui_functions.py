@@ -71,6 +71,8 @@ def mouseClick(e):
                 y = int(np.floor(y))
                 txt = 'Point ' + str(len(vpts)-1) + \
                 ':\n=================\n' + \
+                'x: ' + str(x) + '\n' +\
+                'y: ' + str(y) + '\n' +\
                 'v: ' +      "{:.3f}".format(velocity.data[y][x]) + \
                 '\nbed: ' +  "{:.3f}".format(bed.data[y][x]) + \
                 '\nsurf: ' + "{:.3f}".format(surface.data[y][x]) + \
@@ -83,10 +85,11 @@ def mouseClick(e):
                 if len(vpts) > 1:
                     xa = [vpts[-1].getX(), vpts[-2].getX()]
                     ya = [vpts[-1].getY(), vpts[-2].getY()]
-                    vpts[-2].setLine(pg.PlotDataItem(xa,ya,connect='all'))
+                    vpts[-2].setLine(pg.PlotDataItem(xa,ya,connect='all'), 0)
                     iiContainer.currentWidget().addItem(vpts[-2].getLine())#,pen=plotPen)
         else:
             vptSel = False
+
 
 
 def calcProf(e):
@@ -121,29 +124,37 @@ def changeMap(index):
 
     # print iiContainer.currentWidget()
     vr = iiContainer.currentWidget().getPlotItem().getViewBox().viewRange()
+
+    print 'range: ', vr
+    # print '       ', oldthick.plotWidget.getPlotItem().getViewBox().state['limits']['xLimits']
     global currentMap
     if index == 0 and currentMap != 0:
         #velocity
         currentMap = 0
         iiContainer.setCurrentWidget(velocity.plotWidget)
         velocity.imageItem.mouseClickEvent = mouseClick
-        velocity.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1])
+        velocity.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
     elif index == 1 and currentMap != 1:
         #bed
         currentMap = 1
         iiContainer.setCurrentWidget(bed.plotWidget)
         bed.imageItem.mouseClickEvent = mouseClick
-        bed.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1])
+        bed.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
     elif index == 2 and currentMap != 2:
         #surface
         currentMap = 2
         iiContainer.setCurrentWidget(surface.plotWidget)
-        surface.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1])
+        surface.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
     elif index == 3 and currentMap != 3:
         #SMB
         currentMap = 3
         iiContainer.setCurrentWidget(smb.plotWidget)
-        smb.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1])
+        smb.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
+    elif index == 4 and currentMap != 4:
+        #THICKNESS
+        currentMap = 4
+        iiContainer.setCurrentWidget(thickness.plotWidget)
+        thickness.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
 
 
 def calcBP():
@@ -157,6 +168,8 @@ def calcBP():
     surface.pathPlotItem.clear()
     smb.pathPlotItem.clear()
     bed.pathPlotItem.clear()
+    velocityWidth.pathPlotItem.clear()
+    thickness.pathPlotItem.clear()
     if len(vpts) > 0:
         print 'Plotting...'
         # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
@@ -168,9 +181,11 @@ def calcBP():
         if vWidthCheck.checkState() == 2:
             velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
         if surfaceCheck.checkState() == 2:
-            surface.pathPlotItem.setData(surface.distanceData              , surface.pathData)
+            surface.pathPlotItem.setData(surface.distanceData            , surface.pathData)
         if bedCheck.checkState() == 2:
             bed.pathPlotItem.setData(bed.distanceData                    , bed.pathData)
+        thickness.pathPlotItem.setData(thickness.distanceData, thickness.pathData)
+        velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
         pg.QtGui.QApplication.processEvents()
         print 'Done plotting'
 
@@ -190,21 +205,22 @@ def mouseMoved(e):
         x = int(np.floor(e.pos().x()))
         y = int(np.floor(e.pos().y()))
         if np.abs(x) <= 10018 and np.abs(y) <= 17946:
-            if currentMap == 0:
+            mouseCoordinates.setText('x: ' + str(x) + '\ty: ' + str(y) + '\n' + 'th: ' + str(thickness.data[y][x]))# + '\n' + 'oth: ' + str(oldthick.data[y][x]))
+            # if currentMap == 0:
                 # Interpolating every spot is too much, causes lag
                 # vInt = getInterpolators(sqrt(velocity.vx**2 + velocity.vy**2), 'v', x,y)
                 # px, py = projCoord(x,y)
                 # vLocal = vInt([px],[py], grid=False)
-                t = 'v: ' + str(velocity.data[y][x]) + '\tbed: ' + str(bed.data[y][x]) + '\tsurf: ' + str(surface.data[y][x]) + '\tSMB: ' + str(smb.data[y][x])
+                # t = 'v: ' + str(velocity.data[y][x]) + '\tbed: ' + str(bed.data[y][x]) + '\tsurf: ' + str(surface.data[y][x]) + '\tSMB: ' + str(smb.data[y][x])
                 # t = t + '\t bed: ' + str(bed[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))])  + '\t surface: ' + str(surfaceVals[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))])
                 # mouseCoordinates.setText(t)
 
-            elif currentMap == 1:
-                # print 'mm 31'
-                mouseCoordinates.setText('x: ' + str(x) + '\ty: ' + str(y) + '\t bed: ' + str(bed.data[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))]))
-            elif currentMap == 2:
-                # print 'mm 32'
-                mouseCoordinates.setText('x: ' + str(x) + '\ty: ' + str(y) + '\t surface: ' + str(surface.data[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))]))
+            # elif currentMap == 1:
+            #     # print 'mm 31'
+            #     mouseCoordinates.setText('x: ' + str(x) + '\ty: ' + str(y) + '\t bed: ' + str(bed.data[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))]))
+            # elif currentMap == 2:
+            #     # print 'mm 32'
+            #     mouseCoordinates.setText('x: ' + str(x) + '\ty: ' + str(y) + '\t surface: ' + str(surface.data[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))]))
 
 
 def mouseMovedBP(evt):

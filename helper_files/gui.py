@@ -30,12 +30,12 @@ iiContainer = QtGui.QStackedWidget()    # STACKED WIDGET (inside the layout)
 ####      SIDE WIDGET WITH BUTTONS               ####
 #####################################################
 
-bbW = QtGui.QWidget()
+buttonBoxWidget = QtGui.QWidget()
 buttonBox = QtGui.QVBoxLayout()
-bbW.setLayout(buttonBox)
+buttonBoxWidget.setLayout(buttonBox)
 
 mapList = QtGui.QComboBox()
-maps = ['Velocity', 'Bed', 'Surface', 'Smb']
+maps = ['Velocity', 'Bed', 'Surface', 'Smb', 'Thickness']#, 'OldThickness']
 mapList.addItems(maps)
 
 autoCorrectVpt   = QtGui.QCheckBox('Auto-correct vpt pos.')
@@ -48,14 +48,9 @@ cProfButton      = QtGui.QPushButton('Plot Path') #FIXME should automatically ge
 cRegionButton    = QtGui.QPushButton('Region')
 cVelArrowsButton = QtGui.QPushButton('Arrows')
 modelButton      = QtGui.QPushButton('Run Model')
-# mouseCoordinates = QtGui.QLabel('x:\ty:')
-
-
-
-
+mouseCoordinates = QtGui.QLabel('x:\ty:')
 textOut = QtGui.QTextBrowser()
-
-maxWidth = 150 #Maximum width for all the buttons on the right side panel
+maxWidth = 150
 
 mapList.setMaximumWidth(maxWidth)
 autoCorrectVpt.setMaximumWidth(maxWidth)
@@ -76,10 +71,10 @@ buttonBox.addWidget(clearButton)
 buttonBox.addWidget(calcWidthButton)
 buttonBox.addWidget(intButton)
 buttonBox.addWidget(cProfButton)
-buttonBox.addWidget(cRegionButton)
-buttonBox.addWidget(cVelArrowsButton)
+# buttonBox.addWidget(cRegionButton)
+# buttonBox.addWidget(cVelArrowsButton)
 buttonBox.addWidget(modelButton)
-# buttonBox.addWidget(mouseCoordinates)
+buttonBox.addWidget(mouseCoordinates)
 
 
 time_widget    = QtGui.QWidget()
@@ -153,7 +148,7 @@ smbCheck.setCheckState(2)
 surfaceCheck.setCheckState(2)
 bedCheck.setCheckState(2)
 
-
+checkBLayout.addWidget(QtGui.QLabel('Plot Checked Data:'))
 checkBLayout.addWidget(velocityCheck)
 checkBLayout.addWidget(vWidthCheck)
 checkBLayout.addWidget(smbCheck)
@@ -163,11 +158,11 @@ checkBLayout.setSpacing(0)
 
 buttonBox.addWidget(checkBoxW)
 dataCheckContainer.setMaximumWidth(500)
-# leftSide.addWidget(dataCheckContainer)
+
 
 mainLayout.addWidget(lsw)
-mainLayout.addWidget(bbW)
-bbW.setMaximumWidth(maxWidth+12)
+mainLayout.addWidget(buttonBoxWidget)
+buttonBoxWidget.setMaximumWidth(maxWidth + 12)
 
 mw.show()
 
