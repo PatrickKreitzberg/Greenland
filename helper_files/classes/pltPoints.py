@@ -15,12 +15,14 @@ class vpt:
         yV0 = [y - c, y + c]
         yV1 = [y + c, y - c]
         self.cross = [pg.PlotDataItem(xV0, yV0, connect='all', pen=self.pen), pg.PlotDataItem(xV1, yV1, connect='all', pen=self.pen)]
-        self.line = None
+        self.lines = [None]*2
+        self.intLine = None
 
     def __del__(self):
-        self.velW.removeItem(self.line)
+        self.velW.removeItem(self.lines)
         self.velW.removeItem(self.cross[0])
         self.velW.removeItem(self.cross[1])
+        self.velW.removeItem(self.intLine)
 
     def updateCross(self, x, y):
         self.x = x
@@ -42,11 +44,18 @@ class vpt:
             return False
 
 
-    def setLine(self, line):
-        self.line = line
+    def setIntLine(self, ln):
+        self.intLine = ln
 
-    def getLine(self):
-        return self.line
+    def getIntLine(self):
+        return self.intLine
+
+    def setLine(self, line, index):
+        #0 connects to the previous vpt, 1 connects to the second
+        self.lines[index] = line
+
+    def getLine(self, index):
+        return self.lines[index]
 
     def getCross(self):
         return self.cross[0], self.cross[1]

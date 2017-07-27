@@ -5,7 +5,7 @@ import numpy as np
 from ..gui import *
 
 class dataset():
-    def __init__(self, name, bpLegend, pen, map=False, dataFileName='/home/pat/research/Greenland/data/GreenlandInBedCoord.h5', dataCMFileName='./data/dataCMValues.h5', ):
+    def __init__(self, name, bpLegend, pen, map=False, dataFileName='./data/GreenlandInBedCoord.h5', dataCMFileName='./data/dataCMValues.h5', ):
         '''
         names: bed, surface, SMB_rec
         dataFileName is the name of the hdf5 file with all the data in it

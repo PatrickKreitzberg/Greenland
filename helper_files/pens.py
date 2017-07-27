@@ -10,8 +10,8 @@ Creates the pens for plotting.
 #####################################################
 plotPen = QtGui.QPen()
 plotPen.setWidth(2)
-plotPen2       = pg.mkPen(color=(255, 255, 255), width=2)
-plotPen3       = pg.mkPen(color=(0,     0,   0), width=2)
+whitePlotPen       = pg.mkPen(color=(255, 255, 255), width=2)
+blackPlotPen       = pg.mkPen(color=(0, 0, 0), width=2)
 plotPen4       = pg.mkPen(color=(101,   4,   4), width=2)
 greyPlotPen    = pg.mkPen(color=(200, 200, 200), width=2)
 redPlotPen     = pg.mkPen(color=(100,   0,   0), width=2)

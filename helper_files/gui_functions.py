@@ -27,7 +27,7 @@ def centerVelocityStream(x, y):
         xi, yi = mapCoord(np.real(ai[0]), np.real(ai[1]))
         ox.append(xi)
         oy.append(yi)
-    iiContainer.currentWidget().addItem(pg.PlotDataItem(ox, oy, pen=plotPen3))
+    iiContainer.currentWidget().addItem(pg.PlotDataItem(ox, oy, pen=blackPlotPen))
 
     endPoints = [[0, 0], [0, 0]] # either side of the velocity stream
     endPoints[0][0], endPoints[0][1], endPoints[1][0], endPoints[1][1] = calcVelWidth(x, y, ox[-1], oy[-1], False)
@@ -53,18 +53,18 @@ def mouseClick(e):
         if not vptSel:
             for pt in vpts:
                 if pt.checkClicked(e.pos()):
+                    # See if you clicked on an already existing point
                     vptSel = True
                     vptCur = pt
             if not vptSel:
+                # no you did not click on a point
                 if not first:
                     x = e.pos().x()
                     y = e.pos().y()
-                px, py = projCoord(x,y)
+                px, py = projCoord(x, y)
                 vxInterp, vyInterp = getInterpolators(velocity.vx, 'vxvy', x, y, d2=velocity.vy)
-                surfaceInterp = getInterpolators(surface.data, surface.name, x, y)
                 vxd = vxInterp([px], [py], grid=False)
                 vyd = vyInterp([px], [py], grid=False)
-                sur = surfaceInterp([px], [py], grid=False)
                 v0 = sqrt(vxd**2 + vyd**2)
                 vpts.append(vpt(x, y, v0, velocity.plotWidget)) # in map coordinates x<10018, y< 17946
                 x = int(np.floor(x))
@@ -82,11 +82,13 @@ def mouseClick(e):
                 textOut.append(txt)
                 iiContainer.currentWidget().addItem(vpts[-1].getCross()[0])
                 iiContainer.currentWidget().addItem(vpts[-1].getCross()[1])
+                vpts[-1].setIntLine(calcProf(None))
                 if len(vpts) > 1:
                     xa = [vpts[-1].getX(), vpts[-2].getX()]
                     ya = [vpts[-1].getY(), vpts[-2].getY()]
-                    vpts[-2].setLine(pg.PlotDataItem(xa,ya,connect='all'))
-                    iiContainer.currentWidget().addItem(vpts[-2].getLine())#,pen=plotPen)
+                    vpts[-1].setLine(pg.PlotDataItem(xa, ya, connect='all'), 0)
+                    vpts[-2].setLine(pg.PlotDataItem(xa, ya, connect='all'), 1)
+                    iiContainer.currentWidget().addItem(vpts[-1].getLine(0))#,pen=plotPen)
         else:
             vptSel = False
 
@@ -111,7 +113,7 @@ def calcProf(e):
         oy.append(np.real(yi))
 
     # print 'ox, oy: ', ox, oy
-    integrateLine = pg.PlotDataItem(ox,oy,pen=plotPen2)
+    integrateLine = pg.PlotDataItem(ox, oy, pen=blackPlotPen)
     iiContainer.currentWidget().addItem(integrateLine)
 
 
@@ -256,7 +258,7 @@ def arrows():
             vdir = [velocity.vx[j][i], -velocity.vy[j][i]]
             vmag = sqrt(velocity.vx[j][i]**2 +  velocity.vy[j][i]**2)
             # theta = np.arctan2(vdir[1], vdir[0])
-            iiContainer.currentWidget().addItem(pg.PlotDataItem([(i+0.5),(i+0.5 + vdir[0]/(1.5*vmag))], [(j+0.5),(j+0.5 + vdir[1]/(1.5*vmag))], pen=plotPen2))
+            iiContainer.currentWidget().addItem(pg.PlotDataItem([(i+0.5),(i+0.5 + vdir[0]/(1.5*vmag))], [(j+0.5),(j+0.5 + vdir[1]/(1.5*vmag))], pen=whitePlotPen))
             iiContainer.currentWidget().addItem(pg.PlotDataItem([i+0.5], [j+0.5]), pen=(255,255,255), symbolBrush=(255,0,0), symbolPen='w')
     print 'finished arrows'
 
@@ -285,7 +287,7 @@ def calcProf(e):
         oy.append(np.real(yi))
 
     print 'ox, oy: ', ox, oy
-    integrateLine = pg.PlotDataItem(ox,oy,pen=plotPen2)
+    integrateLine = pg.PlotDataItem(ox, oy, pen=whitePlotPen)
     iiContainer.currentWidget().addItem(integrateLine)
 
 

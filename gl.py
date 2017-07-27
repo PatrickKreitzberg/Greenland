@@ -17,7 +17,6 @@ from helper_files.data_functions import *
 from helper_files.gui_functions import *
 
 # from helper_files.gui_functions import calcProf
-sys.path.append("/home/pat/")
 '''
 https://stackoverflow.com/questions/38065570/pyqtgraph-is-it-possible-to-have-a-imageview-without-histogram
 
@@ -41,7 +40,7 @@ inSMB = False
 inSurface = False
 clickedCurve = False
 dataCMFileName = './data/dataCMValues.h5'
-dataFileName   = '/home/pat/research/Greenland/data/GreenlandInBedCoord.h5'
+dataFileName   = './data/GreenlandInBedCoord.h5'
 mapList.currentIndexChanged.connect(changeMap)
 integrateLine = None
 
@@ -110,7 +109,7 @@ def runModelButt():
         surfaceModelData[H <= THICKLIMIT] = bedModelData[H <= THICKLIMIT]
 
         #FIXME the intervalMesh is consistantly 150 between each datapoint this not true for the data being sent
-        hdf_name = '/home/pat/research/latest_profile.h5'
+        hdf_name = '.data/latest_profile.h5'
         hfile = fc.HDF5File(mesh.mpi_comm(), hdf_name, "w")
         V = fc.FunctionSpace(mesh,"CG",1)
 

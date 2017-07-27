@@ -1,8 +1,3 @@
-from math_functions import *
-from pens import *
-from gui import *
-from dataset_objects import *
-import numpy as np
 from data_functions import *
 from scipy.integrate import ode
 from classes.pltPoints import *
@@ -62,6 +57,6 @@ def intLine(x, y):
         # print 'xi, iy: ', xi, yi
         ox.append(np.real(xi))
         oy.append(np.real(yi))
-    return pg.PlotDataItem(ox, oy, pen=plotPen2)
+    return pg.PlotDataItem(ox, oy, pen=whitePlotPen)
     # iiContainer.currentWidget().addItem(pg.PlotDataItem(ox, oy, pen=plotPen2))
     # iiContainer.currentWidget().addItem(pg.PlotDataItem(ox2, oy2, pen=plotPen2))

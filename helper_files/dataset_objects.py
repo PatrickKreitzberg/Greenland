@@ -34,13 +34,6 @@ thickness = dataset('thickness', bpLegend, orangePlotPen, map=True)#, map=True)
 bp.addItem(thickness.pathPlotItem)
 iiContainer.addWidget(thickness.plotWidget)
 
-# oldthick = dataset('oldthick',bpLegend, orangePlotPen, map=True)
-# bp.addItem(oldthick.pathPlotItem)
-# iiContainer.addWidget(oldthick.plotWidget)
-
-# print 'SOME THICK DATA'
-
-
 velocity.pathPlotItem.clear()
 surface.pathPlotItem.clear()
 smb.pathPlotItem.clear()
