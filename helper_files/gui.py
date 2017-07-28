@@ -50,7 +50,8 @@ cVelArrowsButton = QtGui.QPushButton('Arrows')
 modelButton      = QtGui.QPushButton('Run Model')
 mouseCoordinates = QtGui.QLabel('x:\ty:')
 textOut = QtGui.QTextBrowser()
-maxWidth = 150
+
+maxWidth = 300
 
 mapList.setMaximumWidth(maxWidth)
 autoCorrectVpt.setMaximumWidth(maxWidth)
@@ -63,7 +64,6 @@ cRegionButton.setMaximumWidth(maxWidth)
 cVelArrowsButton.setMaximumWidth(maxWidth)
 modelButton.setMaximumWidth(maxWidth)
 textOut.setMaximumWidth(maxWidth)
-
 
 buttonBox.addWidget(mapList)
 buttonBox.addWidget(autoCorrectVpt)
@@ -97,7 +97,7 @@ time_container.addWidget(t_current, 2, 0, 1, 2)
 buttonBox.addWidget(time_widget)
 buttonBox.addWidget(textOut)
 
-print 'Done'
+
 
 
 #####################################################
@@ -173,3 +173,5 @@ mw.show()
 currentMap = 0  # selects which data map to show [velocity, bed, surface]
 vptSel = False
 shift = False
+
+print 'Done building gui'

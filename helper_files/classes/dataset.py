@@ -111,7 +111,6 @@ class dataset():
         if dataDictName in datFile.keys():
             data = datFile[dataDictName][:]
             datFile.close()
-            print 'Found color data'
             return data
         else:
             print 'ERROR: ', str(dataDictName + 'CM'), ' Dataset not found in ', dataCMFileName

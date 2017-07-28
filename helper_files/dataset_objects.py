@@ -7,6 +7,8 @@ from pens import *
 #####################################################
 ####         CREATE INITIAL DATA SET(S)          ####
 #####################################################
+print 'Creating data sets and loading their data/plots'
+
 vpts = [] #holds [x,y,v] values, where x,y are the coordinates and v is the velocity magnitude at those coordinates
 
 velocity = dataset('velocity', bpLegend, greenPlotPen, map=True)
@@ -15,7 +17,6 @@ iiContainer.addWidget(velocity.plotWidget)
 iiContainer.setCurrentWidget(velocity.plotWidget)
 
 smb = dataset('smb', bpLegend, redPlotPen, map=True)
-print 'SMB: ', np.amin(smb.data), np.amax(smb.data) #-11493.3860928 6060.80339304
 bp.addItem(smb.pathPlotItem)
 iiContainer.addWidget(smb.plotWidget)
 
@@ -38,3 +39,5 @@ velocity.pathPlotItem.clear()
 surface.pathPlotItem.clear()
 smb.pathPlotItem.clear()
 bed.pathPlotItem.clear()
+
+print 'Done loading data'

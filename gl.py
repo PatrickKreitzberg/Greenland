@@ -119,8 +119,8 @@ def runModelButt():
         functSMB       = fc.Function(V, name='SMB')
         functVelocity  = fc.Function(V, name='Velocity')
 
-        print 'model data:  ', len(bedModelData)
-        print 'mesh length: ', N
+
+
         surface.pathPlotItem.setData(x, surfaceModelData)
         pg.QtGui.QApplication.processEvents()
 

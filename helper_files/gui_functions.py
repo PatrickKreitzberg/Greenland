@@ -82,13 +82,13 @@ def mouseClick(e):
                 textOut.append(txt)
                 iiContainer.currentWidget().addItem(vpts[-1].getCross()[0])
                 iiContainer.currentWidget().addItem(vpts[-1].getCross()[1])
-                vpts[-1].setIntLine(calcProf(None))
+                # vpts[-1].setIntLine(calcProf(None))
                 if len(vpts) > 1:
                     xa = [vpts[-1].getX(), vpts[-2].getX()]
                     ya = [vpts[-1].getY(), vpts[-2].getY()]
-                    vpts[-1].setLine(pg.PlotDataItem(xa, ya, connect='all'), 0)
-                    vpts[-2].setLine(pg.PlotDataItem(xa, ya, connect='all'), 1)
-                    iiContainer.currentWidget().addItem(vpts[-1].getLine(0))#,pen=plotPen)
+                    # vpts[-1].setLine(pg.PlotDataItem(xa, ya, connect='all'), 0)
+                    vpts[-2].setLine(pg.PlotDataItem(xa, ya, connect='all')) #, 1)
+                    iiContainer.currentWidget().addItem(vpts[-2].getLine())#,pen=plotPen)
         else:
             vptSel = False
 
