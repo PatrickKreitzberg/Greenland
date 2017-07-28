@@ -90,18 +90,19 @@ def runModel(hdf_name):
     H0 = Function(Q) # Thickness at previous time step
     A  = Function(Q) # SMB data
 
-    # in_file.read(H0.vector(), "/thickness", True) #NEW
+    in_file.read(H0.vector(), "/thickness", True) #NEW
     in_file.read(S0.vector(), "/surface",   True)
     in_file.read(B.vector(),  "/bed",       True)
     in_file.read(A.vector(),  "/smb",       True)
-    H0.assign(S0-B)   # Initial thickness  #OLD
+    # H0.assign(S0-B)   # Initial thickness  #OLD
 
     # A generalization of the Crank-Nicolson method, which is theta = .5
     Hmid = theta*H + (1-theta)*H0
 
     # Define surface elevation
-    S = B + Hmid  #OLD
-    # S = Max(Hmid+B, rho/rho_w * Hmid)
+    # S = B + Hmid  #OLD
+    S = Max(Hmid+B, rho/rho_w * Hmid)
+
     # Expressions for now, later move to data from files
     # adot = interpolate(Adot(degree=1),Q)
     # dolfin.fem.interpolation.interpolate: adot is an expression, Q is a functionspace
@@ -143,7 +144,7 @@ def runModel(hdf_name):
     # Directly write the form, with SPUG and area correction,
     R += ((H-H0)/dt*xsi - xsi.dx(0)*U[0]*Hmid + D*xsi.dx(0)*Hmid.dx(0) - (A - U[0]*H/width*width.dx(0))*xsi)*dx\
            + U[0]*area*xsi*ds(1) - U[0]*area*xsi*ds(0)
-    print 'smb: ', A.vector()[:]
+    # print 'smb: ', A.vector()[:]
 
 
     #####################################################################
@@ -239,17 +240,4 @@ def runModel(hdf_name):
         t+=dt_float
         pPlt.refresh_plot()
         pg.QtGui.QApplication.processEvents()
-    print 'done 1'
     in_file.close()
-    # pg.exit()
-    print 'done 2'
-    # mw2.at
-
-
-
-# m = model()
-## Start Qt event loop unless running in interactive mode.
-# if __name__ == '__main__':
-#     import sys
-#     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-#         QtGui.QApplication.instance().exec_()
