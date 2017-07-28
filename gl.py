@@ -16,6 +16,13 @@ from helper_files.dataset_objects import *
 from helper_files.data_functions import *
 from helper_files.gui_functions import *
 
+
+##################################################
+
+#        BRANCHING   BRANCHING   BRANCHING   BRANCHING   BRANCHING
+
+##################################################
+
 # from helper_files.gui_functions import calcProf
 '''
 https://stackoverflow.com/questions/38065570/pyqtgraph-is-it-possible-to-have-a-imageview-without-histogram
