@@ -48,6 +48,7 @@ cProfButton      = QtGui.QPushButton('Plot Path') #FIXME should automatically ge
 cRegionButton    = QtGui.QPushButton('Region')
 cVelArrowsButton = QtGui.QPushButton('Arrows')
 modelButton      = QtGui.QPushButton('Run Model')
+hiResButton      = QtGui.QPushButton('High-res interpolators')
 mouseCoordinates = QtGui.QLabel('x:\ty:')
 textOut = QtGui.QTextBrowser()
 
@@ -63,7 +64,9 @@ cProfButton.setMaximumWidth(maxWidth)
 cRegionButton.setMaximumWidth(maxWidth)
 cVelArrowsButton.setMaximumWidth(maxWidth)
 modelButton.setMaximumWidth(maxWidth)
+hiResButton.setMaximumWidth(maxWidth)
 textOut.setMaximumWidth(maxWidth)
+
 
 buttonBox.addWidget(mapList)
 buttonBox.addWidget(autoCorrectVpt)
@@ -74,18 +77,17 @@ buttonBox.addWidget(cProfButton)
 # buttonBox.addWidget(cRegionButton)
 # buttonBox.addWidget(cVelArrowsButton)
 buttonBox.addWidget(modelButton)
+buttonBox.addWidget(hiResButton)
 buttonBox.addWidget(mouseCoordinates)
 
 
-
+# LABELS AND LINE EDITS
 time_widget    = QtGui.QWidget()
-
-
 
 time_container = QtGui.QGridLayout()
 time_widget.setLayout(time_container)
 
-model_res_label = QtGui.QLabel('Sptl res:')
+model_res_label    = QtGui.QLabel('Sptl res:')
 model_res_lineEdit = QtGui.QLineEdit('150')
 
 t_end_label    = QtGui.QLabel('t_end:')
@@ -124,6 +126,7 @@ leftSide.addWidget(iiContainer,2)
 leftSide.addWidget(bp,1)
 dataCheckContainer = QtGui.QWidget()
 dCClayout = QtGui.QHBoxLayout()
+
 
 dataCheckContainer.setLayout(dCClayout)
 

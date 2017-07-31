@@ -60,7 +60,6 @@ class LogColorBar(pg.GraphicsWidget):
         p.setPen(pg.QtGui.QColor(255, 255, 255, 0))
         p.setBrush(pg.QtGui.QColor(255, 255, 255, 200))
         p.drawRoundedRect(*(self.zone + (9.0, 9.0)))
-
         # paint colorbar
         p.drawPicture(0, 0, self.pic)
 

@@ -98,12 +98,12 @@ def getCM(dataSet):
 
 def getColorBar(dataSet, cm):
     if dataSet == 'velocity':
-        cbItem = LogColorBar(cm, 10, 200,
+        cbItem = LogColorBar(cm, 10, 400,
                              label='Velocity (m/yr)',
                              tick_labels=['0', '10', '100', '1,000', '8,000'],
                              ticks=[0, 10, 100, 1000, 8000])
-        cbItem.scale(50, 50)
-        cbItem.translate(400.0, 90.0)  # may need to be in the regular script
+        # cbItem.scale(50, 50)
+        # cbItem.translate(400.0, 90.0)  # may need to be in the regular script
         return cbItem
 
     elif dataSet == 'bed' or dataSet == 'thickness' or dataSet == 'oldthick':
