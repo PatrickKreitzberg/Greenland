@@ -17,6 +17,7 @@ from helper_files.data_functions import *
 from helper_files.gui_functions import *
 
 
+
 ##################################################
 
 #        BRANCHING   BRANCHING   BRANCHING   BRANCHING   BRANCHING
@@ -78,7 +79,7 @@ def clearPoints():
 
 
 def runModelButt():
-    dr = 150  # spatial resolution for model
+    dr = float(model_res_lineEdit.text()) # dr = 150
     if len(vpts) > 0:
 
         interpolateData(True)

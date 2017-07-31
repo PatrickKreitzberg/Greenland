@@ -46,7 +46,7 @@ def mouseClick(e):
         if autoCorrectVpt.checkState() == 2:
             x, y = centerVelocityStream(x, y)
 
-    print 'shift: ', shift
+    # print 'shift: ', shift
     if shift:
         intLine(e)
     else:
@@ -164,7 +164,7 @@ def calcBP():
     Calculate the data for bottom plot then populate the plot.
     :return:
     '''
-    global dr, bpLegend, dataLen, botPlot
+    t0 = time.time()
     # Empty the graph
     velocity.pathPlotItem.clear()
     surface.pathPlotItem.clear()
@@ -189,7 +189,8 @@ def calcBP():
         thickness.pathPlotItem.setData(thickness.distanceData, thickness.pathData)
         velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
         pg.QtGui.QApplication.processEvents()
-        print 'Done plotting'
+        print 'Done plotting in ', time.time() - t0, ' seconds'
+        print 'Plot points: ', len(velocity.distanceData)
 
 def mouseMoved(e):
     global vptSel, vptCur, integrateLine, currentMap

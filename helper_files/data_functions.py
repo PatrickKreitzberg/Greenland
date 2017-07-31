@@ -2,6 +2,12 @@ from gui import *
 from dataset_objects import *
 from math_functions import *
 import time
+import pickle
+import os
+# os.chdir('..')
+print 'path d: ', os.getcwd()
+
+
 
 
 dr = 150
@@ -50,7 +56,7 @@ def calcVelWidth(x0, y0, x1, y1, draw):
     #
     theta = np.arctan2(float(y1 - y0), float(x1-x0))
     #Rotation matrix:
-    # rotMatrix = np.matrix([[np.cos(theta), -1*np.sin(theta)],[np.sin(theta), np.cos(theta)]])
+    # rotMatrix =  np.matrix([[np.cos(theta), -1*np.sin(theta)],[np.sin(theta), np.cos(theta)]])
     # cos    -sin    x    =    x*cos + y*-sin    = y*-sin
     # sin     cos    y    =    x*sin + y*cos    = y*cos
 
@@ -98,14 +104,120 @@ def calcVelWidth(x0, y0, x1, y1, draw):
         iiContainer.currentWidget().addItem(pg.PlotDataItem([cax], [cay], pen=blackPlotPen))
     return endPoints[0][0], endPoints[0][1], endPoints[1][0], endPoints[1][1]
 
+
+def getInterpolators(d1, choice, x0, y0, x1=-99, y1=-99, d2=None):
+    '''
+    Determines the local interpolator and returns it.
+    Interpolates data d1 (and d2 if necessary)
+    If x1,y1 not specified then creates a local interpolator of size 10x10 with
+    the point x0,y0 in the middle.
+
+    :param d1:
+    :param choice:  Which dataset to process
+    :param x0:  IN MAP COORDINATES
+    :param y0:  IN MAP COORDINATES
+    :param x1:
+    :param y1:
+    :param d2:
+    :return:
+    '''
+    # vel_x0 = -638000  # first x coordinate
+    # vel_x1 = 864550  # last x coordinate
+    # vel_y0 = -657600  # first y coordinate
+    # vel_y1 = -3349350  # last y coordinate
+    # vel_xarray = linspace(vel_x0, vel_x1, 10018, endpoint=True)
+    # vel_yarray = linspace(vel_y1, vel_y0, 17946, endpoint=True)
+
+    # Make sure points are in bounds
+    p0 = [x0, y0]
+    p1 = [x1, y1]
+    p0[0], p0[1] = np.floor(p0[0]), np.floor(p0[1])
+
+    if p0[0] < 0:
+        p0[0] = 0
+    if p0[0] > 10018:
+        p0[0] = 10018
+    if p0[1] < 0:
+        p0[1] = 0
+    if p0[1] > 17946:
+        p0[1] = 17946
+    if p1[0] == -99:
+        # if the function is sent a single point then create interpolator around the point
+        # in this case a 10x10 interpolator
+        p1[0] = p0[0] - 5
+        p1[1] = p0[1] - 5
+        p0[0] = p0[0] + 5
+        p0[1] = p0[1] + 5
+    else:
+        p1[0], p1[1] = np.floor(p1[0]), np.floor(p1[1])
+        if p1[0] < 0:
+            p1[0] = 0
+        if p1[0] > 10018:
+            p1[0] = 10018
+        if p1[1] < 0:
+            p1[1] = 0
+        if p1[1] > 17946:
+            p1[1] = 17946
+
+
+    minSpacing = 10
+    # p1, p2 in map coordinates
+    projx0, projy0 = projCoord(p0[0], p0[1])
+    projx1, projy1 = projCoord(p1[0], p1[1])
+    #FIXME Should there be a minimum dx, dy?
+    dx = 1 + math.fabs(p1[0] - p0[0])
+    dy = 1 + math.fabs(p1[1] - p0[1])
+
+    if p0[1] < p1[1]:
+        vel_yarray = linspace(projy1, projy0, int(dy), endpoint=True)
+        y0 = p0[1]
+        y1 = p1[1] + 1
+    else:
+        vel_yarray = linspace(projy0, projy1, int(dy), endpoint=True)
+        y0 = p1[1]
+        y1 = p0[1] + 1
+    if p0[0] < p1[0]:
+        vel_xarray = linspace(projx0, projx1, int(dx), endpoint=True)
+        x0 = p0[0]
+        x1 = p1[0] + 1
+    else:
+        vel_xarray = linspace(projx1, projx0, int(dx), endpoint=True)
+        x0 = p1[0]
+        x1 = p0[0] + 1
+    y0, y1, x0, x1 = int(y0), int(y1), int(x0), int(x1)
+    possibleChoices = ['velocity', 'bed', 'surface', 'smb', 'thickness']
+    if choice == 'vxvy':
+        return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose()), \
+               RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d2[y0:y1, x0:x1])).transpose())
+    elif choice in possibleChoices:
+        return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
+    # elif choice is 'bed':
+    #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
+    # elif choice is 'surface':
+    #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
+    # elif choice is 'smb':
+    #     #smb and all other RACMO data is 'upside down' compared to the rest of the data
+    #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
+    # elif choice is 'v':
+    #     #just velocity, not vx and vy
+    #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
+    else:
+        print "ERROR: No interpolator selected!  ./helper_files/data_functions.getInterpolators()"
+
+
+
+    # RectBivariateSpline(vel_xarray, vel_yarray, (npk.flipud(vy)).transpose()) #FIXME SHOULD IT BE FLIPPED!?!?!?
+    #FIXME Make sure flipping the transpose works!!!
+    #FIXME changed the interpolator
+
+
 def interpolateData(runModel):
     '''
     Calculate the data for bottom plot or to run the model.
     If botPlotBool, calculate all the data.  Else, calculate just bed/surface.
     :return:
     '''
-    global dr, bpLegend, dataLen, botPlot
-    botPlot = True
+    dr = float(model_res_lineEdit.text()) # dr = 150
     velValues = []
     xValues = []
     smbValues = []
@@ -115,16 +227,16 @@ def interpolateData(runModel):
     linePoints = [0]
     vwValues = []
     graphX = []
-
     ########################################
     ##    GATHER LOCAL INTERPOLATORS      ##
     ########################################
+    '''
     mxx = max(pt.x for pt in vpts)
     mxy = max(pt.y for pt in vpts)
     mix = min(pt.x for pt in vpts)
     miy = min(pt.y for pt in vpts)
 
-    t0 = time.time()
+    
     if velocityCheck.checkState() == 2 or runModel:
         # vxInterp, vyInterp = getInterpolators(velocity.vx, velocity.name, mix, miy, x1=mxx, y1=mxy, d2=velocity.vy)
         velInterp = getInterpolators(velocity.data, 'velocity', mix, miy, x1=mxx, y1=mxy)
@@ -135,14 +247,21 @@ def interpolateData(runModel):
     if smbCheck.checkState() == 2 or runModel:
         smbInterp = getInterpolators(smb.data, smb.name, mix, miy, x1=mxx, y1=mxy)
     thickInterp   = getInterpolators(thickness.data, thickness.name, mix, miy, x1=mxx, y1=mxy)
-    print 'all interp in seconds: ', time.time() - t0
+    '''
+
+    # thickInterp = getInterpolators(thickness.data, thickness.name, mix, miy, x1=mxx, y1=mxy)
 
     # Find a distance ~150m which gets close to dividing the distance between first 2 spots
+    d = 0
+    for i in range(1, len(vpts)):
+        d += sqrt((vpts[i - 1].x - vpts[i].x) ** 2 + (vpts[i - 1].y - vpts[i].y) ** 2)
+    print 'distance is: ', d*150, 'divide', int(d*(150/dr))
 
     for i in range(1, len(vpts)):
         '''
         This part compares neighbor points to each other. 
         '''
+
         theta = np.arctan2(float(vpts[i].getY() - vpts[i - 1].getY()), float(vpts[i].getX() - vpts[i - 1].getX()))
         # pvx0, pvy0 = projCoord(vpts[i-1].x, vpts[i-1].y)
         # pvx1, pvy1 = projCoord(vpts[i].x, vpts[i].y)
@@ -150,17 +269,17 @@ def interpolateData(runModel):
         distance = sqrt((vpts[i - 1].x - vpts[i].x) ** 2 + (vpts[i - 1].y - vpts[i].y) ** 2)
         # remainder = distance % dr
         # Xline needs to be in map coordinates because tx,ty are in map coordinates
-        xline = linspace(0, distance, distance, endpoint=True)  # * const makes it every 150/const meters
+        xline = linspace(0, distance, int(distance*(150/dr)), endpoint=True)  # * 1/dr*150 makes the resolution dr
         '''
         #FIXME NEED TO CHANGE SO IT LINES UP WITH FENICS MESH
         '''
-
-        linePoints.append(distance * (1 / dr) + linePoints[-1])
 
         # Rotation matrix:
         rotMatrix = np.matrix([[np.cos(theta), -1 * np.sin(theta)], [np.sin(theta), np.cos(theta)]])
         px = []  # px, py are projected coordinates used to get values from the interpolator.  Projected meaning IRL values
         py = []
+
+
 
         for j in range(len(xline)):
             # rotate coordinates
@@ -183,14 +302,16 @@ def interpolateData(runModel):
         ##    CALCULATE SURFACE ELEVATION     ##
         ########################################
         if surfaceCheck.checkState() == 2 or runModel:
-            localSurface = surfaceInterp(px, py, grid=False)
+            # surfaceInterp = getInterpolators(surface.data, surface.name, mix, miy, x1=mxx, y1=mxy)
+            localSurface = surface.interp(px, py, grid=False)
             surfValues.append(localSurface)
 
         ########################################
         ##         CALCULATE BED              ##
         ########################################
         if bedCheck.checkState() == 2 or runModel:
-            localBed = bedInterp(px, py, grid=False)
+            # bedInterp = getInterpolators(bed.data, bed.name, mix, miy, x1=mxx, y1=mxy)
+            localBed = bed.interp(px, py, grid=False)
             bedValues.append(localBed)
 
         ########################################
@@ -198,7 +319,8 @@ def interpolateData(runModel):
         ########################################
 
         if velocityCheck.checkState() == 2 or runModel:
-            vi = velInterp(px, py, grid=False)
+            # velInterp = getInterpolators(velocity.data, 'velocity', mix, miy, x1=mxx, y1=mxy)
+            vi = velocity.interp(px, py, grid=False)
             xValues.append(xline)
             velValues.append(vi)
 
@@ -218,14 +340,16 @@ def interpolateData(runModel):
         ##   CALCULATE SURFACE MASS-BALANCE   ##
         ########################################
         if smbCheck == 2 or runModel:
-            localSMB = smbInterp(px, py, grid=False)
+            # smbInterp = getInterpolators(smb.data, smb.name, mix, miy, x1=mxx, y1=mxy)
+            localSMB = smb.interp(px, py, grid=False)
             smbValues.append(localSMB)
 
         ########################################
         ##   CALCULATE THICKNESS              ##
         ########################################
         # if smbCheck == 2 or runModel:
-        localThick = thickInterp(px, py, grid=False)
+        # thickInterp   = getInterpolators(thickness.data, thickness.name, mix, miy, x1=mxx, y1=mxy)
+        localThick = thickness.interp(px, py, grid=False)
         thickValues.append(localThick)
 
         ########################################
@@ -288,3 +412,114 @@ def interpolateData(runModel):
     print 'SHAPES'
     print len(thickness.distanceData)
     print len(bed.distanceData)
+
+
+
+# def interpolateData_eh(runModel):
+#     print 'Starting interpolateData: '
+#     if velocityCheck.checkState() == 2 or runModel:
+#         # vxInterp, vyInterp = getInterpolators(velocity.vx, velocity.name, mix, miy, x1=mxx, y1=mxy, d2=velocity.vy)
+#         _interpolateData(velocity, './data/velInterp.pkl')
+#     if surfaceCheck.checkState() == 2 or runModel:
+#         _interpolateData(surface, './data/surfaceInterp.pkl')
+#     if bedCheck.checkState() == 2 or runModel:
+#         _interpolateData(bed, './data/bedInterp.pkl')
+#     if smbCheck.checkState() == 2 or runModel:
+#         _interpolateData(smb, './data/smbInterp.pkl')
+#     _interpolateData(thickness, './data/thicknessInterp.pkl')
+#
+# def _interpolateData(ds, interpName):
+#     '''
+#     Calculate the data for bottom plot or to run the model.
+#     If botPlotBool, calculate all the data.  Else, calculate just bed/surface.
+#     :return:
+#     '''
+#     start_time = time.time()
+#     global dr, bpLegend, dataLen, botPlot
+#     botPlot = True
+#     arrayValues = []
+#     # xValues = []
+#     # smbValues = []
+#     # surfValues = []
+#     # bedValues = []
+#     # thickValues = []
+#     linePoints = [0]
+#     # vwValues = []
+#     graphX = []
+#
+#     interpPickle = open(interpName, 'r')
+#     interp = pickle.load(interpPickle)
+#     interpPickle.close()
+#     print 'Loaded interp: ', time.time() - start_time
+#
+#     # thickInterp = getInterpolators(thickness.data, thickness.name, mix, miy, x1=mxx, y1=mxy)
+#
+#
+#     # Find a distance ~150m which gets close to dividing the distance between first 2 spots
+#
+#     for i in range(1, len(vpts)):
+#         '''
+#         This part compares neighbor points to each other.
+#         '''
+#
+#         theta = np.arctan2(float(vpts[i].getY() - vpts[i - 1].getY()), float(vpts[i].getX() - vpts[i - 1].getX()))
+#         distance = sqrt((vpts[i - 1].x - vpts[i].x) ** 2 + (vpts[i - 1].y - vpts[i].y) ** 2)
+#         # remainder = distance % dr
+#         # Xline needs to be in map coordinates because tx,ty are in map coordinates
+#         xline = linspace(0, distance, distance, endpoint=True)  # * const makes it every 150/const meters
+#         '''
+#         #FIXME NEED TO CHANGE SO IT LINES UP WITH FENICS MESH
+#         '''
+#
+#         linePoints.append(distance * (1 / dr) + linePoints[-1])
+#
+#         # Rotation matrix:
+#         rotMatrix = np.matrix([[np.cos(theta), -1 * np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+#         px = []  # px, py are projected coordinates used to get values from the interpolator.  Projected meaning IRL values
+#         py = []
+#
+#         for j in range(len(xline)):
+#             # rotate coordinates
+#             t = rotMatrix * np.matrix([[xline[j]], [0.0]])
+#             # FIXME probably more elegant way to do this
+#             # transform coordinates into projected coordinates
+#             tx, ty = projCoord(vpts[i - 1].getX() + t[0, 0], vpts[i - 1].getY() + t[1, 0])
+#             px.append(tx)
+#             py.append(ty)
+#             if len(px) > 1:
+#                 graphX.append(graphX[len(graphX) - 1] + sqrt((px[-1] - px[-2]) ** 2 + (py[-1] - py[-2]) ** 2))
+#                 # print 'dist: ', graphX[-1] + sqrt((px[-1]-px[-2])**2 + (py[-1]-py[-2])**2)
+#             elif len(graphX) == 0:
+#                 graphX.append(0)
+#             else:
+#                 graphX.append(graphX[len(graphX) - 1])  # + sqrt((px[-1]) ** 2 + (py[-1]) ** 2))
+#                 #     print 'dis3: ', graphX[-1] + sqrt((px[-1]) ** 2 + (py[-1]) ** 2)
+#
+#         ########################################
+#         ##    CALCULATE VALUES                ##
+#         ########################################
+#         localValues = interp(px, py, grid=False)
+#         arrayValues.append(localValues)
+#
+#         ########################################
+#         ##   COMPILE DATA                     ##
+#         ########################################
+#         ds.pathData = np.array(arrayValues)
+#
+#         for i in range(1, len(arrayValues)):
+#             ds.pathData = np.append(ds.pathData, arrayValues[i])
+#
+#     if ds.name == 'smb':
+#         smb.pathData = smb.pathData * (1.0 / 1000.0) * (916.7 / 1000.0)  # millimeters -> meters then water-equivalent to ice-equivalent
+#     # print 'graphx[-1]: ', graphX[len(graphX) - 1]
+#     dist = 0
+#     for i in range(len(vpts) - 1):
+#         # print 'calc distance...'
+#         xd0, yd0 = projCoord(vpts[i].x, vpts[i].y)
+#         xd1, yd1 = projCoord(vpts[i + 1].x, vpts[i + 1].y)
+#         # print xd0, yd0, xd1, yd1
+#         dist += sqrt(((xd1 - xd0) ** 2 + (yd1 - yd0) ** 2))
+#     # print 'dist: ', dist
+#     ds.distanceData = graphX
+#     print 'Finished one dataset: ', time.time() - start_time
+#

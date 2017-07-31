@@ -77,9 +77,16 @@ buttonBox.addWidget(modelButton)
 buttonBox.addWidget(mouseCoordinates)
 
 
+
 time_widget    = QtGui.QWidget()
+
+
+
 time_container = QtGui.QGridLayout()
 time_widget.setLayout(time_container)
+
+model_res_label = QtGui.QLabel('Sptl res:')
+model_res_lineEdit = QtGui.QLineEdit('150')
 
 t_end_label    = QtGui.QLabel('t_end:')
 t_end_lineEdit = QtGui.QLineEdit('20000')
@@ -88,11 +95,13 @@ t_step_label    = QtGui.QLabel('t_step:')
 t_step_lineEdit = QtGui.QLineEdit('10')
 t_current = QtGui.QLabel('Current year: ')
 
-time_container.addWidget(t_end_label, 0, 0)
-time_container.addWidget(t_end_lineEdit, 0, 1)
-time_container.addWidget(t_step_label, 1, 0)
-time_container.addWidget(t_step_lineEdit, 1, 1)
-time_container.addWidget(t_current, 2, 0, 1, 2)
+time_container.addWidget(model_res_label,    0, 0)
+time_container.addWidget(model_res_lineEdit, 0, 1)
+time_container.addWidget(t_end_label,        1, 0)
+time_container.addWidget(t_end_lineEdit,     1, 1)
+time_container.addWidget(t_step_label,       2, 0)
+time_container.addWidget(t_step_lineEdit,    2, 1)
+time_container.addWidget(t_current,          3, 0, 1, 2)
 
 buttonBox.addWidget(time_widget)
 buttonBox.addWidget(textOut)

@@ -1,11 +1,14 @@
+import time
 import h5py
 from helper_files.math_functions import *
 from helper_files.cm import *
+from pylab import sqrt, linspace
+from scipy.interpolate import RectBivariateSpline
 import numpy as np
 from ..gui import *
 
 class dataset():
-    def __init__(self, name, bpLegend, pen, map=False, dataFileName='./data/GreenlandInBedCoord.h5', dataCMFileName='./data/dataCMValues.h5', ):
+    def __init__(self, name, bpLegend, pen, map=False, dataFileName='./data/GreenlandInBedCoord.h5', dataCMFileName='./data/dataCMValues.h5', subSample=5):
         '''
         names: bed, surface, SMB_rec
         dataFileName is the name of the hdf5 file with all the data in it
@@ -14,19 +17,34 @@ class dataset():
         pen is the pen for the bottom plot legend
         '''
 
+        bed_x0 = -637925  # first x
+        bed_x1 = 864625  # last x
+
+        bed_y0 = -657675
+        bed_y1 = -3349425
+
+        bed_xarray = linspace(bed_x0, bed_x1, 10018,
+                              endpoint=True)  # FIXME should maybe be one less point?? Prob not because +150 on one side, -150 on the other
+        bed_yarray = linspace(bed_y1, bed_y0, 17946, endpoint=True)
+
         self.name = name
         if self.name == 'velocity':
             self.data, self.vx, self.vy = self.setData(dataFileName, name)
             # self.vxInterp, self.vyInterp = getInterpolators(self.vx, dataDictName, self.vy)
+            t0 = time.time()
+            self.interp = RectBivariateSpline(bed_xarray[::subSample], bed_yarray[::subSample], np.flipud(self.data[::subSample, ::subSample].transpose()))
+            print "interp took ", time.time() - t0
         elif self.name == 'velocitywidth':
             self.data = None
         else:
             self.data = self.setData(dataFileName, name)
-            # self.interp = getInterpolators(self.data, dataDictName)  # bedInterp
+            t0 = time.time()
+            self.interp = RectBivariateSpline(bed_xarray[::subSample], bed_yarray[::subSample], np.flipud(self.data[::subSample, ::subSample].transpose()))
+            print "interp took ", time.time() - t0
         if map:
-            self.colorData    = self.setColorData(dataCMFileName, name)
-            self.colorMap     = getCM(name)
-            self.colorBar     = getColorBar(name, self.colorMap)
+            self.colorData = self.setColorData(dataCMFileName, name)
+            self.colorMap  = getCM(name)
+            self.colorBar  = getColorBar(name, self.colorMap)
 
             # Setup imageitem
             self.imageItem    = pg.ImageItem(self.colorData)
