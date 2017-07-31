@@ -4,7 +4,7 @@ from pylab import *
 import numpy as np
 import h5py
 
-'''
+''''beep boop
     NOTES:
     RACMO DATA
     lon = x            range:   (-639456 , 855544)
