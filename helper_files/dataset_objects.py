@@ -18,7 +18,7 @@ velocity = Dataset('velocity', bpLegend, greenPlotPen, map=True)
 bp.addItem(velocity.pathPlotItem)
 iiContainer.addWidget(velocity.plotWidget)
 iiContainer.setCurrentWidget(velocity.plotWidget)
-velocity.plotWidget.getPlotItem().getViewBox().setRange(xRange=[0,10018], yRange=[0,17946])
+velocity.plotWidget.getPlotItem().getViewBox().setRange(xRange=[0,10018], yRange=[0,17946], padding=0.0)
 
 smb = Dataset('smb', bpLegend, redPlotPen, map=True)
 bp.addItem(smb.pathPlotItem)

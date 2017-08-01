@@ -3,7 +3,7 @@ from time import *
 from dolfin import *
 
 from gui import *
-from helper_files.pyQtPlotter import *
+from helper_files.classes.ModelPlotter import *
 from support.expressions import *
 from support.fenics_optimizations import *
 from support.momentum import *

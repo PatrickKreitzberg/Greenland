@@ -7,6 +7,7 @@ from data_functions import *
 from scipy.integrate import ode
 from classes.PlotPoint import *
 from velocity_functions import *
+from classes.StaticPlotter import *
 
 def centerVelocityStream(x, y):
     x0p, y0p = projCoord(x, y)
@@ -86,9 +87,9 @@ def mouseClick(e):
                 if len(vpts) > 1:
                     xa = [vpts[-1].getX(), vpts[-2].getX()]
                     ya = [vpts[-1].getY(), vpts[-2].getY()]
-                    # vpts[-1].setLine(pg.PlotDataItem(xa, ya, connect='all'), 0)
-                    vpts[-2].setLine(pg.PlotDataItem(xa, ya, connect='all')) #, 1)
-                    iiContainer.currentWidget().addItem(vpts[-2].getLine())#,pen=plotPen)
+                    vpts[-1].setLine(pg.PlotDataItem(xa, ya, connect='all', pen=skinnyBlackPlotPen), 0)
+                    vpts[-2].setLine(pg.PlotDataItem(xa, ya, connect='all', pen=skinnyBlackPlotPen), 1)
+                    iiContainer.currentWidget().addItem(vpts[-1].lines[0])#,pen=plotPen)
         else:
             vptSel = False
 
@@ -123,40 +124,28 @@ def changeMap(index):
     :param index:
     :return:
     '''
-
-    # print iiContainer.currentWidget()
     vr = iiContainer.currentWidget().getPlotItem().getViewBox().viewRange()
-
-    print 'range: ', vr
-    # print '       ', oldthick.plotWidget.getPlotItem().getViewBox().state['limits']['xLimits']
+    maps = [velocity, bed, surface, smb, thickness]
     global currentMap
-    if index == 0 and currentMap != 0:
-        #velocity
-        currentMap = 0
-        iiContainer.setCurrentWidget(velocity.plotWidget)
-        velocity.imageItem.mouseClickEvent = mouseClick
-        velocity.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
-    elif index == 1 and currentMap != 1:
-        #bed
-        currentMap = 1
-        iiContainer.setCurrentWidget(bed.plotWidget)
-        bed.imageItem.mouseClickEvent = mouseClick
-        bed.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
-    elif index == 2 and currentMap != 2:
-        #surface
-        currentMap = 2
-        iiContainer.setCurrentWidget(surface.plotWidget)
-        surface.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
-    elif index == 3 and currentMap != 3:
-        #SMB
-        currentMap = 3
-        iiContainer.setCurrentWidget(smb.plotWidget)
-        smb.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
-    elif index == 4 and currentMap != 4:
-        #THICKNESS
-        currentMap = 4
-        iiContainer.setCurrentWidget(thickness.plotWidget)
-        thickness.plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
+    if index != currentMap:
+        currentMap = index
+        iiContainer.setCurrentWidget(maps[index].plotWidget)
+        maps[index].imageItem.mouseClickEvent = mouseClick
+        maps[index].plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
+        for i in range(1, len(vpts)):
+            vpts[i].plotWidget.removeItem(vpts[i].lines[0])
+            maps[index].plotWidget.addItem(vpts[i].lines[0])
+        for pt in vpts:
+            pt.plotWidget.removeItem(pt)
+            pt.plotWidget = maps[index].plotWidget
+            maps[index].plotWidget.addItem(pt.getCross()[0])
+            maps[index].plotWidget.addItem(pt.getCross()[1])
+
+
+
+
+
+
 
 
 def calcBP():
@@ -191,6 +180,10 @@ def calcBP():
         pg.QtGui.QApplication.processEvents()
         print 'Done plotting in ', time.time() - t0, ' seconds'
         print 'Plot points: ', len(velocity.distanceData)
+        print 'surface: ', surface.pathData
+        print 'bed: ', bed.pathData
+        print 'thickness: ', thickness.pathData
+        runStaticPlot()
 
 def mouseMoved(e):
     global vptSel, vptCur, integrateLine, currentMap
@@ -280,10 +273,8 @@ def calcProf(e):
     ox = [vpts[-1].getX()]
     oy = [vpts[-1].getY()]
     while r.successful() and r.t < t1:
-        # print(r.t+dt, r.integrate(r.t+dt))
         ai = r.integrate(r.t+dt)
         xi, yi = mapCoord(ai[0], ai[1])
-        # print 'xi, iy: ', xi, yi
         ox.append(np.real(xi))
         oy.append(np.real(yi))
 

@@ -1,13 +1,13 @@
 import pyqtgraph as pg
+from ..pens import *
 
 class vpt:
-
-    def __init__(self,x, y, velocity, velW):
-        self.velW = velW
+    def __init__(self, x, y, velocity, plotWidget):
+        self.plotWidget = plotWidget
         self.x = x
         self.y = y
         self.v = velocity
-        self.pen = pg.mkPen(color=(255, 255, 255))
+        self.pen = blackPlotPen
         self.pen.setWidth(2)
         c = 3
         xV0 = [x - c, x + c]
@@ -15,14 +15,14 @@ class vpt:
         yV0 = [y - c, y + c]
         yV1 = [y + c, y - c]
         self.cross = [pg.PlotDataItem(xV0, yV0, connect='all', pen=self.pen), pg.PlotDataItem(xV1, yV1, connect='all', pen=self.pen)]
-        self.line = None #[None]*2
+        self.lines = [None] * 2
         self.intLine = None
 
     def __del__(self):
-        self.velW.removeItem(self.line)
-        self.velW.removeItem(self.cross[0])
-        self.velW.removeItem(self.cross[1])
-        self.velW.removeItem(self.intLine)
+        self.plotWidget.removeItem(self.lines)
+        self.plotWidget.removeItem(self.cross[0])
+        self.plotWidget.removeItem(self.cross[1])
+        self.plotWidget.removeItem(self.intLine)
 
     def updateCross(self, x, y):
         self.x = x
@@ -37,6 +37,9 @@ class vpt:
         self.cross[0].updateItems()
         self.cross[1].updateItems()
 
+    def setPlotWidget(self, pw):
+        self.plotWidget = pw
+
     def checkClicked(self, pos):
         if self.cross[0].curve.mouseShape().contains(pos) or self.cross[1].curve.mouseShape().contains(pos):
             return True
@@ -50,13 +53,12 @@ class vpt:
     def getIntLine(self):
         return self.intLine
 
-    def setLine(self, line):#, index):
-        self.line = line
-        #0 connects to the previous vpt, 1 connects to the second
-        #self.lines[index] = line
+    def setLine(self, line, i):#, index):
+        # 0 connects to the previous vpt, 1 connects to the second
+        self.lines[i] = line
 
     def getLine(self): #, index):
-        return self.line # s[index]
+        return self.lines # s[index]
 
     def getCross(self):
         return self.cross[0], self.cross[1]
@@ -79,9 +81,3 @@ class vpt:
 
     def getY(self):
         return self.y
-
-
-class bs():
-    def __init__(self,x,y):
-        self.x = x
-        self.y = y

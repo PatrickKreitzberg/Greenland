@@ -4,21 +4,12 @@ from pyqtgraph import LegendItem
 import PyQt4
 from pylab import plot,show,ion,subplots
 from dolfin import project
-from myLegend import myLegend
+from MyLegend import *
+from ..pens import *
+
 
 class pyqtplotter(object):
     def __init__(self, strs, mesh, plt1, plt2, plt3):
-        #####################################################
-        ####         CREATE PENS                         ####
-        #####################################################
-        whitePen = pg.mkPen(color=(255, 255, 255), width=2)
-        redPen   = pg.mkPen(color=(100,   0,   0), width=2)
-        bluePen  = pg.mkPen(color=(  0,   0, 255), width=2)
-        greenPen = pg.mkPen(color=( 76, 153,   0), width=2)
-        tealPen  = pg.mkPen(color=(  0, 204, 204), width=2)
-        pinkPen  = pg.mkPen(color=(153, 0,  153), width=2)
-
-
         self.strs = strs # stresses
         self.mesh = mesh # mesh (2-d)
         self.x = mesh.coordinates().flatten()
@@ -37,9 +28,9 @@ class pyqtplotter(object):
         self.plt1.showGrid(x=True, y=True)
 
         self.plt1.getPlotItem().getViewBox().setRange(xRange=(mesh_min, mesh_max), yRange=(Bmin * 1.05, Smax * 1.2))
-        self.ph0   =  self.plt1.plot(self.x,self.strs.B.compute_vertex_values(), pen=bluePen)
-        self.ph100 =  self.plt1.plot(self.x,S.compute_vertex_values(), pen=redPen)
-        self.ph1   =  self.plt1.plot(self.x,S.compute_vertex_values(), pen=whitePen)
+        self.ph0   =  self.plt1.plot(self.x,self.strs.B.compute_vertex_values(), pen=bluePlotPen)
+        self.ph100 =  self.plt1.plot(self.x,S.compute_vertex_values(), pen=redPlotPen)
+        self.ph1   =  self.plt1.plot(self.x,S.compute_vertex_values(), pen=whitePlotPen)
         # self.ax[0].legend([r"$B$",r"$S_o$",r"$S$"])
 
         # self.legend1 = self.plt1.getPlotItem().addLegend(offset=(-100,50))
@@ -55,11 +46,11 @@ class pyqtplotter(object):
         self.plt2.showGrid(x=True, y=True)
         self.plt2.getPlotItem().getViewBox().setRange(xRange=(mesh_min, mesh_max), yRange=(TD.vector().array().min(), TD.vector().array().max()))
         # self.ax[1].legend([r"$\tau_d$",r"$\tau_b$",r"$\tau_{xx}$",r"$\tau_{xy}$",r"$\tau_{xz}$"])
-        self.ph2 = self.plt2.plot(self.x,TD.compute_vertex_values(), pen=bluePen)
-        self.ph3 = self.plt2.plot(self.x,TB.compute_vertex_values(), pen=greenPen)
-        self.ph4 = self.plt2.plot(self.x,TX.compute_vertex_values(), pen=redPen)
-        self.ph5 = self.plt2.plot(self.x,TY.compute_vertex_values(), pen=tealPen)
-        self.ph6 = self.plt2.plot(self.x,TZ.compute_vertex_values(), pen=pinkPen)
+        self.ph2 = self.plt2.plot(self.x,TD.compute_vertex_values(), pen=bluePlotPen)
+        self.ph3 = self.plt2.plot(self.x,TB.compute_vertex_values(), pen=greenPlotPen)
+        self.ph4 = self.plt2.plot(self.x,TX.compute_vertex_values(), pen=redPlotPen)
+        self.ph5 = self.plt2.plot(self.x, TY.compute_vertex_values(), pen=tealPlotPen)
+        self.ph6 = self.plt2.plot(self.x, TZ.compute_vertex_values(), pen=pinkPlotPen)
 
         self.legend2 = myLegend(offset=(-50,50))
         self.legend2.setParentItem(self.plt2.graphicsItem())
@@ -80,8 +71,8 @@ class pyqtplotter(object):
         us = project(self.strs.u(0))
         ub = project(self.strs.u(1))
 
-        self.ph7 = self.plt3.plot(self.x, us.compute_vertex_values(), pen=bluePen)
-        self.ph8 = self.plt3.plot(self.x, ub.compute_vertex_values(), pen=greenPen)
+        self.ph7 = self.plt3.plot(self.x, us.compute_vertex_values(), pen=bluePlotPen)
+        self.ph8 = self.plt3.plot(self.x, ub.compute_vertex_values(), pen=greenPlotPen)
         self.legend3.addItem(self.ph7, '&mu;<sub>s</sub>')
         self.legend3.addItem(self.ph8, '&mu;<sub>b</sub>')
 

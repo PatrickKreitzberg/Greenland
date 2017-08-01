@@ -287,6 +287,7 @@ def interpolateData(runModel):
             # FIXME probably more elegant way to do this
             # transform coordinates into projected coordinates
             tx, ty = projCoord(vpts[i - 1].getX() + t[0, 0], vpts[i - 1].getY() + t[1, 0])
+            print 'pt: ', vpts[i - 1].getX() + t[0, 0], vpts[i - 1].getY() + t[1, 0]
             px.append(tx)
             py.append(ty)
             if len(px) > 1:
@@ -301,6 +302,8 @@ def interpolateData(runModel):
         ########################################
         ##    CALCULATE SURFACE ELEVATION     ##
         ########################################
+        print 'px: ', px
+        print 'py: ', py
         if surfaceCheck.checkState() == 2 or runModel:
             # surfaceInterp = getInterpolators(surface.data, surface.name, mix, miy, x1=mxx, y1=mxy)
             localSurface = surface.interp(px, py, grid=False)
