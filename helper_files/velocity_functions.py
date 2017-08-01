@@ -1,6 +1,6 @@
 from data_functions import *
 from scipy.integrate import ode
-from classes.pltPoints import *
+from classes.PlotPoint import *
 
 def _intMesh0(t,y):
     vxInterp, vyInterp = getInterpolators(velocity.vx, 'velocity', [math.floor(y[0]) - 1, math.floor(y[1]) - 1],

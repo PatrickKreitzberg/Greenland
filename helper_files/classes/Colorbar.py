@@ -31,7 +31,7 @@ class LogColorBar(pg.GraphicsWidget):
         p.setBrush(pg.QtGui.QBrush(grad))
         p.drawRect(pg.QtCore.QRectF(0, 0, w, h))
 
-        # draw ticks & tick labels
+#        draw ticks & tick labels
         mintx = 0.0
         for tick, tick_label in zip(ticks, tick_labels):
             if tick == 0:
@@ -43,7 +43,6 @@ class LogColorBar(pg.GraphicsWidget):
             if br.x() < mintx:
                 mintx = br.x()
             p.drawText(br.x() - 10.0, y_ + br.height() / 4.0, tick_label)
-
         # draw label
         br = p.boundingRect(0, 0, 0, 0, pg.QtCore.Qt.AlignRight, label)
         p.drawText(-br.width() / 2.0, h + br.height() + 5.0, label)
@@ -53,6 +52,7 @@ class LogColorBar(pg.GraphicsWidget):
 
         # compute rect bounds for underlying mask
         self.zone = mintx - 12.0, -15.0, br.width() - mintx, h + br.height() + 30.0
+
 
 
     def paint(self, p, *args):
@@ -113,7 +113,6 @@ class ColorBar(pg.GraphicsWidget):
                 if br.x() < mintx:
                     mintx = br.x()
                 p.drawText(br.x() - 10.0, y_ + br.height() / 4.0, tick_label)
-
         # draw label
         br = p.boundingRect(0, 0, 0, 0, pg.QtCore.Qt.AlignRight, label)
         p.drawText(-br.width() / 2.0, h + br.height() + 5.0, label)

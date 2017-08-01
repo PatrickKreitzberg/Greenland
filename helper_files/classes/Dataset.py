@@ -1,13 +1,14 @@
 import time
 import h5py
 from helper_files.math_functions import *
-from helper_files.cm import *
+from helper_files.colorMaps import *
+from helper_files.classes.ColorBarAnchorWidget import ColorBarAnchorWidget
 from pylab import sqrt, linspace
 from scipy.interpolate import RectBivariateSpline
 import numpy as np
 from ..gui import *
 
-class dataset():
+class Dataset():
     def __init__(self, name, bpLegend, pen, map=False, dataFileName='./data/GreenlandInBedCoord.h5', dataCMFileName='./data/dataCMValues.h5', subSample=5):
         '''
         names: bed, surface, SMB_rec
@@ -53,9 +54,23 @@ class dataset():
             self.plotWidget.addItem(self.imageItem)
             self.plotWidget.setAspectLocked(True)
             self.plotWidget.invertY(True)
-            # self.colorMap  = getCM(name)
-            # self.colorBar  = getColorBar(name, self.colorMap)
-            # self.plotWidget.addItem(self.colorBar)
+            self.colorMap  = getCM(name)
+            self.colorBar  = getColorBar(name, self.colorMap)
+
+            self.colorBarAnchorWidget = ColorBarAnchorWidget()
+            self.colorBarAnchorWidget.hideAxis('left')
+            self.colorBarAnchorWidget.hideAxis('bottom')
+            self.colorBarAnchorWidget.addItem(self.colorBar)
+            self.plotWidget.addItem(self.colorBarAnchorWidget)
+            self.colorBarAnchorWidget.setFixedWidth(158)
+            self.colorBarAnchorWidget.setFixedHeight(292)
+            self.colorBarAnchorWidget.setAspectLocked(True)
+            self.colorBarAnchorWidget.getViewBox().setRange(xRange=[-44.0,114], yRange=[-15,247], padding=0.0)
+            self.colorBarAnchorWidget.invertY(True)
+            self.colorBarAnchorWidget.setParentItem(self.plotWidget.getPlotItem())
+            self.colorBarAnchorWidget.getViewBox().setMouseEnabled(x=False, y=False)
+            self.colorBarAnchorWidget.anchor(itemPos=(1,0), parentPos=(1,0), offset=(-10,-10))
+
         self.pathPlotItem = pg.PlotDataItem([0,0], pen=pen)  # bpSurf
         self.legendItem   = bpLegend.addItem(self.pathPlotItem, name)      # bplSMB
         self.pathData     = None        # nsmb nv etc.

@@ -1,6 +1,8 @@
-from helper_files.classes.colorbar import *
+import numpy as np
+import pyqtgraph as pg
+from helper_files.classes.Colorbar import *
 from b import geta
-
+from constants import *
 
 def getCM(dataSet):
     if dataSet == 'velocity':
@@ -37,8 +39,9 @@ def getCM(dataSet):
                   [6,6,94],
                   [0, 213, 253],
                   [255,253,3],
-                  [138,0,0]]
-        pos = [-0.00001, 0.0, 0.00001, 1000.0, 2000.0, 3000.0]
+                  [138,0,0],
+                  [110, 0, 0]]
+        pos = [-0.00001, 0.0, 0.00001, 1000.0, 2000.0, 3000.0, 3500.0]
         return pg.ColorMap(pos, colors, mode='byte')
 
     elif dataSet == 'bed':
@@ -52,7 +55,6 @@ def getCM(dataSet):
         ######### ELEVATION COLORMAP
         lcArr1 = [
             [0, 153, 0],
-
             [102, 255, 102],
             [255, 255, 0],
             [255, 0, 0],
@@ -97,38 +99,40 @@ def getCM(dataSet):
 
 
 def getColorBar(dataSet, cm):
+    colorbarHeight = 200
+    colorbarWidth = 20
     if dataSet == 'velocity':
-        cbItem = LogColorBar(cm, 10, 400,
-                             label='Velocity (m/yr)',
+        cbItem = LogColorBar(cm, colorbarWidth, colorbarHeight,
+                             label='Velocity(m/yr)',
                              tick_labels=['0', '10', '100', '1,000', '8,000'],
                              ticks=[0, 10, 100, 1000, 8000])
-        # cbItem.scale(50, 50)
-        # cbItem.translate(400.0, 90.0)  # may need to be in the regular script
         return cbItem
 
-    elif dataSet == 'bed' or dataSet == 'thickness' or dataSet == 'oldthick':
-        cbItem = ColorBar(cm, 10, 200,
-                          label='Bed Ele. (m)',
+    elif dataSet == 'bed':
+        cbItem = ColorBar(cm, colorbarWidth, colorbarHeight,
+                          label='Bed Ele.(m)',
                           tick_labels=['-1000', '-500', '0', '500', '1,000', '1,500', '2,000', '2700'],
                           ticks=[-1000, -500, 0, 500, 1000, 1500, 2000, 2700])
-        cbItem.scale(50, 50)
-        cbItem.translate(400.0, 90.0)
         return cbItem
     elif dataSet == 'surface':
-        cbItem = ColorBar(cm, 10, 200,
-                          label='Surface Ele. (m)',
+        cbItem = ColorBar(cm, colorbarWidth, colorbarHeight,
+                          label='Surface Ele.(m)',
                           tick_labels=['-323', '0', '460', '920', '1,839', '2,758', '3,677'],
                           ticks=[-323, 0, 460, 920, 1839, 2758, 3677])
-        cbItem.scale(50, 50)
-        cbItem.translate(400.0, 90.0)
         return cbItem
 
     elif dataSet == 'smb':
-        cbItem = ColorBar(cm, 10, 200,
-                          label='Surface-Mass',
+        cbItem = ColorBar(cm, colorbarWidth, colorbarHeight,
+                          label='SMB(m)',
                           tick_labels=['-11', '0',  '6'],
                           ticks=[-11000, 0, 6000],
                           name='smb')
-        cbItem.scale(50, 50)
-        cbItem.translate(400.0, 90.0)
+        return cbItem
+
+    elif dataSet == 'thickness' or dataSet == 'oldthick':
+        #thickness range:  0 3428
+        cbItem = ColorBar(cm, colorbarWidth, colorbarHeight,
+                          label='Thickness(m)',
+                          tick_labels=['0', '500', '1000', '1500', '2000', '2500', '3000', '3500'],
+                          ticks=[0, 500, 1000, 1500, 2000, 2500, 3000, 3500])
         return cbItem

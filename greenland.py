@@ -5,9 +5,9 @@ import sys
 from scipy.interpolate import interp1d
 from pyqtgraph.Qt import QtCore  # , QtWidgets
 from scipy.integrate import ode
-from helper_files.classes.dataset import dataset
-from helper_files.classes.pltPoints import *
-from helper_files.cm import *
+from helper_files.classes.Dataset import Dataset
+from helper_files.classes.PlotPoint import *
+from helper_files.colorMaps import *
 from helper_files.gui import *
 from helper_files.math_functions import *
 from helper_files.pens import *

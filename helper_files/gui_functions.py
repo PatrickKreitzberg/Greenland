@@ -5,7 +5,7 @@ from dataset_objects import *
 import numpy as np
 from data_functions import *
 from scipy.integrate import ode
-from classes.pltPoints import *
+from classes.PlotPoint import *
 from velocity_functions import *
 
 def centerVelocityStream(x, y):
