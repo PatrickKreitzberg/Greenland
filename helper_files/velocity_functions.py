@@ -21,11 +21,8 @@ def intLine(x, y):
     #
 
     x0p, y0p = projCoord(x, y)
-    print 'x,y ', x0p, '  ----  ', y0p
     y0 = np.array([x0p, y0p])
-    print y0
     t0, t1, dt = 0, 80, .1
-
     r = ode(getProfile).set_integrator('zvode', method='bdf')
     r.set_initial_value(y0, t0)
     print "Printing integration points"

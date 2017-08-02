@@ -255,7 +255,7 @@ def interpolateData(runModel):
     d = 0
     for i in range(1, len(vpts)):
         d += sqrt((vpts[i - 1].x - vpts[i].x) ** 2 + (vpts[i - 1].y - vpts[i].y) ** 2)
-    print 'distance is: ', d*150, 'divide', int(d*(150/dr))
+    # print 'distance is: ', d*150, 'divide', int(d*(150/dr))
 
     for i in range(1, len(vpts)):
         '''
@@ -287,7 +287,6 @@ def interpolateData(runModel):
             # FIXME probably more elegant way to do this
             # transform coordinates into projected coordinates
             tx, ty = projCoord(vpts[i - 1].getX() + t[0, 0], vpts[i - 1].getY() + t[1, 0])
-            print 'pt: ', vpts[i - 1].getX() + t[0, 0], vpts[i - 1].getY() + t[1, 0]
             px.append(tx)
             py.append(ty)
             if len(px) > 1:
@@ -302,8 +301,6 @@ def interpolateData(runModel):
         ########################################
         ##    CALCULATE SURFACE ELEVATION     ##
         ########################################
-        print 'px: ', px
-        print 'py: ', py
         if surfaceCheck.checkState() == 2 or runModel:
             # surfaceInterp = getInterpolators(surface.data, surface.name, mix, miy, x1=mxx, y1=mxy)
             localSurface = surface.interp(px, py, grid=False)
@@ -412,9 +409,6 @@ def interpolateData(runModel):
         # return linePoints, np.array(graphX)
         # else:
         #     return nbed, nsurf  # , linePoints
-    print 'SHAPES'
-    print len(thickness.distanceData)
-    print len(bed.distanceData)
 
 
 

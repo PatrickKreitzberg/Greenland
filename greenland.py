@@ -68,9 +68,20 @@ integrateLine = None
 '''
 
 
+def hiResInterpolators():
+    velocity.setInterpolator(1)
+    surface.setInterpolator(1)
+    smb.setInterpolator(1)
+    bed.setInterpolator(1)
+    thickness.setInterpolator(1)
+    model_res_lineEdit.setText('150')
+    hiResButton.setEnabled(False)
 
 def clearPoints():
     del vpts[:]
+    modelButton.setEnabled(False)
+    cProfButton.setEnabled(False)
+    intButton.setEnabled(False)
     velocity.pathPlotItem.clear()
     surface.pathPlotItem.clear()
     smb.pathPlotItem.clear()
@@ -127,8 +138,6 @@ def runModelButt():
         functSMB       = fc.Function(V, name='SMB')
         functVelocity  = fc.Function(V, name='Velocity')
 
-
-
         surface.pathPlotItem.setData(x, surfaceModelData)
         pg.QtGui.QApplication.processEvents()
 
@@ -165,6 +174,7 @@ cProfButton.clicked.connect(calcBP) #FIXME should change names so calcProf isn't
 cRegionButton.clicked.connect(intLine)
 cVelArrowsButton.clicked.connect(arrows)
 modelButton.clicked.connect(runModelButt)
+hiResButton.clicked.connect(hiResInterpolators)
 
 velocity.imageItem.hoverEvent = mouseMoved
 bed.imageItem.hoverEvent = mouseMoved

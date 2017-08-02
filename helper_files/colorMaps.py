@@ -61,7 +61,7 @@ def getCM(dataSet):
             [153, 0, 0],
             [255, 255, 255]
         ]
-        linPos1 = [0, 500, 1000, 1500, 2000, 2700]
+        linPos1 = [0, 3678/5, (2*3678)/5, (3*3678)/5,(4*3678)/5,(5*3678)/5]
         bedColor = lcArr + lcArr1
         bedPos = linPos + linPos1
         return pg.ColorMap(bedPos, bedColor, mode='byte')
@@ -111,14 +111,14 @@ def getColorBar(dataSet, cm):
     elif dataSet == 'bed':
         cbItem = ColorBar(cm, colorbarWidth, colorbarHeight,
                           label='Bed Ele.(m)',
-                          tick_labels=['-1000', '-500', '0', '500', '1,000', '1,500', '2,000', '2700'],
-                          ticks=[-1000, -500, 0, 500, 1000, 1500, 2000, 2700])
+                          tick_labels=['-5,000','-4,000','-3,000','-2,000','-1,000','0', '1,000', '2,000', '3,000', '3,500'],
+                          ticks=[-5000,-4000,-3000,-2000,-1000,0, 1000, 2000, 3000, 3500])
         return cbItem
     elif dataSet == 'surface':
         cbItem = ColorBar(cm, colorbarWidth, colorbarHeight,
                           label='Surface Ele.(m)',
-                          tick_labels=['-323', '0', '460', '920', '1,839', '2,758', '3,677'],
-                          ticks=[-323, 0, 460, 920, 1839, 2758, 3677])
+                          tick_labels=['0', '500', '1,000', '1,500', '2,000', '2,500', '3,000', '3,500'],
+                          ticks=[0, 500, 1000, 1500, 2000, 2500, 3000, 3500])
         return cbItem
 
     elif dataSet == 'smb':

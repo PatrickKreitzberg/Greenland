@@ -19,14 +19,13 @@ class vpt:
         self.intLine = None
 
     def __del__(self):
-        self.plotWidget.removeItem(self.lines)
+        self.plotWidget.removeItem(self.lines[0])
+        self.plotWidget.removeItem(self.lines[1])
         self.plotWidget.removeItem(self.cross[0])
         self.plotWidget.removeItem(self.cross[1])
         self.plotWidget.removeItem(self.intLine)
 
-    def updateCross(self, x, y):
-        self.x = x
-        self.y = y
+    def updateCross(self):
         c = 3
         xV0 = [self.x - c, self.x + c]
         xV1 = [self.x - c, self.x + c]

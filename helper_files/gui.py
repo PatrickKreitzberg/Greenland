@@ -1,5 +1,6 @@
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
+from  constants import *
 
 '''
 This is to build all of the gui components for the program.  This means the application and
@@ -43,12 +44,18 @@ autoCorrectVpt.setTristate(False)
 autoCorrectVpt.setCheckState(2)
 clearButton      = QtGui.QPushButton('Clear Points')
 calcWidthButton  = QtGui.QPushButton('Calculate Velocity Width')
+calcWidthButton.setEnabled(False)
 intButton        = QtGui.QPushButton('Integrate')
+intButton.setEnabled(False)
 cProfButton      = QtGui.QPushButton('Plot Path') #FIXME should automatically get profile
+cProfButton.setEnabled(False)
 cRegionButton    = QtGui.QPushButton('Region')
+cRegionButton.setEnabled(False)
 cVelArrowsButton = QtGui.QPushButton('Arrows')
+cVelArrowsButton.setEnabled(False)
 modelButton      = QtGui.QPushButton('Run Model')
-hiResButton      = QtGui.QPushButton('High-res interpolators')
+modelButton.setEnabled(False)
+hiResButton      = QtGui.QPushButton('High-res interpolators (may take 2 minutes')
 mouseCoordinates = QtGui.QLabel('x:\ty:')
 textOut = QtGui.QTextBrowser()
 
@@ -71,7 +78,7 @@ textOut.setMaximumWidth(maxWidth)
 buttonBox.addWidget(mapList)
 buttonBox.addWidget(autoCorrectVpt)
 buttonBox.addWidget(clearButton)
-buttonBox.addWidget(calcWidthButton)
+# buttonBox.addWidget(calcWidthButton)
 buttonBox.addWidget(intButton)
 buttonBox.addWidget(cProfButton)
 # buttonBox.addWidget(cRegionButton)
@@ -87,13 +94,13 @@ time_widget    = QtGui.QWidget()
 time_container = QtGui.QGridLayout()
 time_widget.setLayout(time_container)
 
-model_res_label    = QtGui.QLabel('Sptl res:')
-model_res_lineEdit = QtGui.QLineEdit('150')
+model_res_label    = QtGui.QLabel('Sptl res(m):')
+model_res_lineEdit = QtGui.QLineEdit(str(spatialRes*150))
 
-t_end_label    = QtGui.QLabel('t_end:')
+t_end_label    = QtGui.QLabel('t_end(yr):')
 t_end_lineEdit = QtGui.QLineEdit('20000')
 
-t_step_label    = QtGui.QLabel('t_step:')
+t_step_label    = QtGui.QLabel('t_step(yr):')
 t_step_lineEdit = QtGui.QLineEdit('10')
 t_current = QtGui.QLabel('Current year: ')
 
@@ -114,16 +121,16 @@ buttonBox.addWidget(textOut)
 #####################################################
 ####         CREATE BOTTOM PLOT                  ####
 #####################################################
-bp = pg.PlotWidget()
-bpLegend = bp.getPlotItem().addLegend()
+# bp = pg.PlotWidget()
+# bpLegend = bp.getPlotItem().addLegend()
 
-iiContainer.setMinimumHeight(mw.height()*(2/3))
+# iiContainer.setMinimumHeight(mw.height()*(2/3))
 
 lsw = QtGui.QWidget()
 leftSide = QtGui.QVBoxLayout()
 lsw.setLayout(leftSide)
-leftSide.addWidget(iiContainer,2)
-leftSide.addWidget(bp,1)
+leftSide.addWidget(iiContainer)
+# leftSide.addWidget(bp,1)
 dataCheckContainer = QtGui.QWidget()
 dCClayout = QtGui.QHBoxLayout()
 

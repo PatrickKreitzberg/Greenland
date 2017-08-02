@@ -2,6 +2,7 @@ from math_functions import *
 from pens import *
 from gui import *
 from dataset_objects import *
+from constants import *
 import numpy as np
 from data_functions import *
 from scipy.integrate import ode
@@ -46,12 +47,12 @@ def mouseClick(e):
         y = e.pos().y()
         if autoCorrectVpt.checkState() == 2:
             x, y = centerVelocityStream(x, y)
-
-    # print 'shift: ', shift
     if shift:
         intLine(e)
     else:
         if not vptSel:
+            if not intButton.isEnabled():
+                intButton.setEnabled(True)
             for pt in vpts:
                 if pt.checkClicked(e.pos()):
                     # See if you clicked on an already existing point
@@ -77,22 +78,25 @@ def mouseClick(e):
                 'v: ' +      "{:.3f}".format(velocity.data[y][x]) + \
                 '\nbed: ' +  "{:.3f}".format(bed.data[y][x]) + \
                 '\nsurf: ' + "{:.3f}".format(surface.data[y][x]) + \
+                '\nthick: ' + "{:.3f}".format(thickness.data[y][x]) + \
                 '\nSMB: ' +  "{:.3f}".format(smb.data[y][x]*(1.0/1000.0)*(916.7/1000.0)) + \
                 '\nSMB: ' +  "{:.3f}".format(smb.data[y][x]) + '\n\n'
-
                 textOut.append(txt)
                 iiContainer.currentWidget().addItem(vpts[-1].getCross()[0])
                 iiContainer.currentWidget().addItem(vpts[-1].getCross()[1])
                 # vpts[-1].setIntLine(calcProf(None))
                 if len(vpts) > 1:
-                    xa = [vpts[-1].getX(), vpts[-2].getX()]
-                    ya = [vpts[-1].getY(), vpts[-2].getY()]
+                    if not modelButton.isEnabled():
+                        modelButton.setEnabled(True)
+                        cProfButton.setEnabled(True)
+                    xa = [vpts[-1].x, vpts[-2].x]
+                    ya = [vpts[-1].y, vpts[-2].y]
                     vpts[-1].setLine(pg.PlotDataItem(xa, ya, connect='all', pen=skinnyBlackPlotPen), 0)
-                    vpts[-2].setLine(pg.PlotDataItem(xa, ya, connect='all', pen=skinnyBlackPlotPen), 1)
+                    vpts[-2].setLine(vpts[-1].lines[0], 1)
                     iiContainer.currentWidget().addItem(vpts[-1].lines[0])#,pen=plotPen)
         else:
             vptSel = False
-
+            del vptCur
 
 
 def calcProf(e):
@@ -178,25 +182,37 @@ def calcBP():
         thickness.pathPlotItem.setData(thickness.distanceData, thickness.pathData)
         velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
         pg.QtGui.QApplication.processEvents()
-        print 'Done plotting in ', time.time() - t0, ' seconds'
-        print 'Plot points: ', len(velocity.distanceData)
-        print 'surface: ', surface.pathData
-        print 'bed: ', bed.pathData
-        print 'thickness: ', thickness.pathData
         runStaticPlot()
 
 def mouseMoved(e):
     global vptSel, vptCur, integrateLine, currentMap
     if e.isExit() is False:
-        if vptSel and integrateLine is not None:
+        if vptSel and integrateLine is not None:# and integrateLine is not None:
             cData = integrateLine.curve.getData()
             imin = curveDistance(e.pos().x(), e.pos().y(), cData)
             if imin != -1:
-                x = cData[0][imin]
-                y = cData[1][imin]
-                vptCur.updateCross(x,y)
+                vptCur.x = cData[0][imin]
+                vptCur.y = cData[1][imin]
+                vptCur.updateCross()
             else:
-                vptCur.updateCross(e.pos().x(), e.pos().y())
+                vptCur.x = e.pos().x()
+                vptCur.y = e.pos().y()
+                vptCur.updateCross()
+            vptCur.lines[0].setData([vptCur.x, vptCur.lines[0].getData()[0][1]],
+                                    [vptCur.y, vptCur.lines[0].getData()[1][1]])  # previous line
+            if vptCur.lines[1] is not None:
+                vptCur.lines[1].setData([vptCur.lines[1].getData()[0][0], vptCur.x],
+                                        [vptCur.lines[1].getData()[1][0], vptCur.y])  # next line
+        elif vptSel:
+            vptCur.x = e.pos().x()
+            vptCur.y = e.pos().y()
+            vptCur.updateCross()
+            vptCur.lines[0].setData([vptCur.x, vptCur.lines[0].getData()[0][1]],
+                                    [vptCur.y, vptCur.lines[0].getData()[1][1]])  # previous line
+            if vptCur.lines[1] is not None:
+                vptCur.lines[1].setData([vptCur.lines[1].getData()[0][0], vptCur.x],
+                                        [vptCur.lines[1].getData()[1][0], vptCur.y])  # next line
+
         # else:
         x = int(np.floor(e.pos().x()))
         y = int(np.floor(e.pos().y()))
