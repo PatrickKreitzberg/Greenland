@@ -45,7 +45,7 @@ print vel_xarray[0], vel_xarray[1]
 print vel_yarray[0], vel_yarray[1]
 
 # bmx, bmy = meshgrid(bed_xarray, bed_yarray)
-vmx, vmy = meshgrid(vel_xarray, vel_yarray)
+# vmx, vmy = meshgrid(vel_xarray, vel_yarray)
 
 
 
@@ -59,16 +59,18 @@ vmx, vmy = meshgrid(vel_xarray, vel_yarray)
 ##     INTERPOLATE DATA     ##
 ##############################
 
-def id(data, name):
-    velocityGrid = RectBivariateSpline(vel_xarray, vel_yarray, np.flipud(data.transpose()))
-    velIVals = np.array(velocityGrid(bed_xarray, bed_yarray))
+
+
+def id(data, name, subSample):
+    velocityGrid = RectBivariateSpline(vel_xarray[::subSample], vel_yarray[::subSample], np.flipud(data.transpose()))
+    velIVals = np.array(velocityGrid(bed_xarray[::subSample], bed_yarray[::subSample]))
     velIVals = np.flipud(velIVals)
     velIVals = velIVals.transpose()
     outF = h5py.File('/home/pat/research/Greenland/data/GreenlandInBedCoord.h5','a')
     outF.create_dataset(name, data=velIVals)
     outF.close()
 
-velocityData = ncdf.Dataset('/home/pat/research/Data/Greenland_ice_speed_v26May2017.nc')
-id(velocityData.variables['VX'][:], 'VX')
-id(velocityData.variables['VY'][:], 'VY')
-velocityData.close()
+# velocityData = ncdf.Dataset('/home/pat/research0/Data/Greenland_ice_speed_v26May2017.nc')
+# id(velocityData.variables['VX'][:][::subSample, ::subSample], 'VX')
+# id(velocityData.variables['VY'][:][::subSample, ::subSample], 'VY')
+# velocityData.close()

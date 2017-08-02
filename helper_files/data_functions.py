@@ -21,8 +21,7 @@ def getProfile(t,y):
     '''
     # print 'getPro ', np.real(y[0]), ' ', np.real(y[1])
     mx, my = mapCoord(np.real(y[0]), np.real(y[1]))
-    vxInterp, vyInterp = getInterpolators(velocity.vx, "vxvy", np.floor(mx), np.floor(my), d2=velocity.vy)
-    return np.array([t * (-vxInterp([y[0]], [y[1]], grid=False)), t * (-vyInterp([y[0]], [y[1]], grid=False))])
+    return np.array([t * (-velocity.vxInterp([y[0]], [y[1]], grid=False)), t * (-velocity.vyInterp([y[0]], [y[1]], grid=False))])
 
 
 def cwLoop(e):
@@ -60,9 +59,9 @@ def calcVelWidth(x0, y0, x1, y1, draw):
     # cos    -sin    x    =    x*cos + y*-sin    = y*-sin
     # sin     cos    y    =    x*sin + y*cos    = y*cos
 
-    velInterp = getInterpolators(velocity.data, 'velocity', x1, y1)
+
     tx1, ty1 = projCoord(x1,y1)
-    v0 = velInterp(tx1,ty1, grid=False)
+    v0 = velocity.interp(tx1,ty1, grid=False)
 
     dv = [[0, 0, 0], [0, 0, 0]]  # x, y, dv for left and right
     endPoints = [[0, 0], [0, 0]]  # end points [left[x,y], right[x,y]]
@@ -79,9 +78,9 @@ def calcVelWidth(x0, y0, x1, y1, draw):
         # print 'min([int(v0%100),8]) ', min([int(v0%100),8])
         while currentVelocity > 5 and startEndRatio <= min([int(v0%100),8]):
             dr += 1
-            velInterp = getInterpolators(velocity.data, 'velocity', (x1 + (dr*dis * -np.sin(theta))), (y1 + (dr*dis * np.cos(theta))))
+
             tx, ty = projCoord(x1 + (dr*dis * -np.sin(theta)), y1 + (dr*dis * np.cos(theta)))  # Line perpindicular to flow
-            currentVelocity = velInterp(tx, ty, grid=False)
+            currentVelocity = velocity.interp(tx, ty, grid=False)
             if np.abs(currentVelocity - vOld) > dv[i][2]:
                 dv[i][0], dv[i][1] = x1 + (dr*dis * -np.sin(theta)), y1 + (dr*dis * np.cos(theta))
                 dv[i][2] = np.abs(currentVelocity - vOld)
@@ -135,12 +134,12 @@ def getInterpolators(d1, choice, x0, y0, x1=-99, y1=-99, d2=None):
 
     if p0[0] < 0:
         p0[0] = 0
-    if p0[0] > 10018:
-        p0[0] = 10018
+    if p0[0] > map['x1']:
+        p0[0] = map['x1']
     if p0[1] < 0:
         p0[1] = 0
-    if p0[1] > 17946:
-        p0[1] = 17946
+    if p0[1] > map['y1']:
+        p0[1] = map['y1']
     if p1[0] == -99:
         # if the function is sent a single point then create interpolator around the point
         # in this case a 10x10 interpolator
@@ -152,12 +151,12 @@ def getInterpolators(d1, choice, x0, y0, x1=-99, y1=-99, d2=None):
         p1[0], p1[1] = np.floor(p1[0]), np.floor(p1[1])
         if p1[0] < 0:
             p1[0] = 0
-        if p1[0] > 10018:
-            p1[0] = 10018
+        if p1[0] > map['x1']:
+            p1[0] = map['x1']
         if p1[1] < 0:
             p1[1] = 0
-        if p1[1] > 17946:
-            p1[1] = 17946
+        if p1[1] > map['y1']:
+            p1[1] = map['y1']
 
 
     minSpacing = 10

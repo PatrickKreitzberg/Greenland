@@ -44,7 +44,7 @@ def createCMData():
     outF.create_dataset('thickness', data=thicknessVals)
     outF.close()
 
-createCMData()
+
 
 
 def createSMB():

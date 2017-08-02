@@ -64,11 +64,12 @@ def mouseClick(e):
                     x = e.pos().x()
                     y = e.pos().y()
                 px, py = projCoord(x, y)
-                vxInterp, vyInterp = getInterpolators(velocity.vx, 'vxvy', x, y, d2=velocity.vy)
-                vxd = vxInterp([px], [py], grid=False)
-                vyd = vyInterp([px], [py], grid=False)
-                v0 = sqrt(vxd**2 + vyd**2)
-                vpts.append(vpt(x, y, v0, velocity.plotWidget)) # in map coordinates x<10018, y< 17946
+                # vxInterp, vyInterp = getInterpolators(velocity.vx, 'vxvy', x, y, d2=velocity.vy)
+                # vxd = vxInterp([px], [py], grid=False)
+                # vyd = vyInterp([px], [py], grid=False)
+                v0 = velocity.interp([px], [py], grid=False)
+                x, y = colorToData(x, y)
+                vpts.append(vpt(x, y, v0, velocity.plotWidget)) # in map coordinates
                 x = int(np.floor(x))
                 y = int(np.floor(y))
                 txt = 'Point ' + str(len(vpts)-1) + \
@@ -216,7 +217,7 @@ def mouseMoved(e):
         # else:
         x = int(np.floor(e.pos().x()))
         y = int(np.floor(e.pos().y()))
-        if np.abs(x) <= 10018 and np.abs(y) <= 17946:
+        if np.abs(x) <= map['x1'] and np.abs(y) <= map['y1']:
             mouseCoordinates.setText('x: ' + str(x) + '\ty: ' + str(y) + '\n' + 'th: ' + str(thickness.data[y][x]))# + '\n' + 'oth: ' + str(oldthick.data[y][x]))
             # if currentMap == 0:
                 # Interpolating every spot is too much, causes lag

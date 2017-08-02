@@ -15,9 +15,10 @@ from helper_files.profile_driver import runModel
 from helper_files.dataset_objects import *
 from helper_files.data_functions import *
 from helper_files.gui_functions import *
+from helper_files.constants import *
 
 
-
+print 'post map', map
 ##################################################
 
 #        BRANCHING   BRANCHING   BRANCHING   BRANCHING   BRANCHING

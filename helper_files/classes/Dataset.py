@@ -7,10 +7,10 @@ from pylab import sqrt, linspace
 from scipy.interpolate import RectBivariateSpline
 import numpy as np
 from ..gui import *
-from ..constants import *
+from ..constants import map
 
 class Dataset():
-    def __init__(self, name, pen, map=False, dataFileName='./data/GreenlandInBedCoord.h5', dataCMFileName='./data/dataCMValues.h5', subSample=spatialRes):
+    def __init__(self, name, pen, draw=False, dataFileName='./data/GreenlandInBedCoord.h5', dataCMFileName='./data/dataCMValues.h5', subSample=spatialRes):
         '''
         names: bed, surface, SMB_rec
         dataFileName is the name of the hdf5 file with all the data in it
@@ -19,23 +19,30 @@ class Dataset():
         pen is the pen for the bottom plot legend
         '''
         spatialRes = subSample
-
+        subSample = 1
+        interpSS = 6
         bed_x0 = -637925  # first x
         bed_x1 = 864625  # last x
 
         bed_y0 = -657675
         bed_y1 = -3349425
 
-        bed_xarray = linspace(bed_x0, bed_x1, 10018, endpoint=True)
-        bed_yarray = linspace(bed_y1, bed_y0, 17946, endpoint=True)
+
 
         self.name = name
         self.pen = pen
         if self.name == 'velocity':
             self.data, self.vx, self.vy = self.setData(dataFileName, name)
-            # self.vxInterp, self.vyInterp = getInterpolators(self.vx, dataDictName, self.vy)
+            map['x1'] = len(self.data[0])
+            map['y1'] = len(self.data)
+
+            print 'map x,y ', map['x1'], map['y1']
+            bed_xarray = linspace(bed_x0, bed_x1, map['x1'], endpoint=True)
+            bed_yarray = linspace(bed_y1, bed_y0, map['y1'], endpoint=True)
             t0 = time.time()
-            self.interp = RectBivariateSpline(bed_xarray[::subSample], bed_yarray[::subSample], np.flipud(self.data[::subSample, ::subSample]).transpose())
+            self.interp = RectBivariateSpline(bed_xarray[::interpSS], bed_yarray[::interpSS], np.flipud(self.data[::interpSS, ::interpSS]).transpose())
+            self.vxInterp = RectBivariateSpline(bed_xarray[::interpSS], bed_yarray[::interpSS], np.flipud(self.vx[::interpSS, ::interpSS]).transpose())
+            self.vyInterp = RectBivariateSpline(bed_xarray[::interpSS], bed_yarray[::interpSS], np.flipud(self.vy[::interpSS, ::interpSS]).transpose())
             print "interp took ", time.time() - t0
         elif self.name == 'velocitywidth':
             self.data = None
@@ -43,9 +50,14 @@ class Dataset():
             # subSample=10
             self.data = self.setData(dataFileName, name)
             t0 = time.time()
-            self.interp = RectBivariateSpline(bed_xarray[::subSample], bed_yarray[::subSample], np.flipud(self.data[::subSample, ::subSample]).transpose())
+            map['x1'] = len(self.data[0])
+            map['y1'] = len(self.data)
+            print 'map x,y ', map['x1'], map['y1']
+            bed_xarray = linspace(bed_x0, bed_x1, map['x1'], endpoint=True)
+            bed_yarray = linspace(bed_y1, bed_y0, map['y1'], endpoint=True)
+            self.interp = RectBivariateSpline(bed_xarray[::interpSS], bed_yarray[::interpSS], np.flipud(self.data[::interpSS, ::interpSS]).transpose())
             print "interp took ", time.time() - t0
-        if map:
+        if draw:
             self.colorData = self.setColorData(dataCMFileName, name)
 
             # Setup imageitem
@@ -85,15 +97,14 @@ class Dataset():
         bed_x1 = 864625  # last x
         bed_y0 = -657675
         bed_y1 = -3349425
-        bed_xarray = linspace(bed_x0, bed_x1, 10018, endpoint=True)
-        bed_yarray = linspace(bed_y1, bed_y0, 17946, endpoint=True)
+        bed_xarray = linspace(bed_x0, bed_x1, map['x1'], endpoint=True)
+        bed_yarray = linspace(bed_y1, bed_y0, map['y1'], endpoint=True)
         if self.name == 'velocity':
-            self.interp = RectBivariateSpline(bed_xarray[::subSample], bed_yarray[::subSample],
-                                              np.flipud(self.data[::subSample, ::subSample]).transpose())
+            self.interp = RectBivariateSpline(bed_xarray, bed_yarray,
+                                              np.flipud(self.data).transpose())
         else:
-            self.interp = RectBivariateSpline(bed_xarray[::subSample], bed_yarray[::subSample],
-                                              np.flipud(self.data[::subSample, ::subSample]).transpose())
-
+            self.interp = RectBivariateSpline(bed_xarray, bed_yarray,
+                                              np.flipud(self.data).transpose())
 
     def setData(self, dataFileName, dataDictName):
         if dataDictName == 'velocity':

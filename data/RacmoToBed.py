@@ -63,6 +63,8 @@ r_yarray = linspace(r_y0, r_y1, int(ry_num), endpoint=True)
 
 '''
 
+# subSample = 10
+
 def maskConv():
     maskData = ncdf.Dataset('/home/pat/research/Data/Icemask_Topo_Iceclasses_lon_lat_average_1km.nc')
     mask = maskData.variables['Icemask'][:]
@@ -70,19 +72,20 @@ def maskConv():
     maskData.close()
 
 
-def smbConv():
+def smbConv(subSample):
     '''
     ONLY DOES THE LATEST YEAR!
     :return:
     '''
     outF = h5py.File('/home/pat/research/Greenland/data/GreenlandInBedCoord.h5','a')
-    outF.__delitem__('smb')
-    smbData = ncdf.Dataset('/home/pat/research/Data/SMB_rec_corr_v1.0.1958-2015.BN_1958_2013_1km.YY.nc')
-    smb = smbData.variables['SMB_rec'][:][57]
+    if 'smb' in outF.keys():
+        outF.__delitem__('smb')
+    smbData = ncdf.Dataset('/home/pat/research0/Data/SMB_rec_corr_v1.0.1958-2015.BN_1958_2013_1km.YY.nc')
+    smb = smbData.variables['SMB_rec'][:][57][::subSample, ::subSample]
     smbData.close()
 
-    smbIGrid = RectBivariateSpline(r_xarray, r_yarray, smb.transpose())
-    smbIVals = np.array(smbIGrid(bed_xarray, bed_yarray))  #memoryError
+    smbIGrid = RectBivariateSpline(r_xarray[::subSample], r_yarray[::subSample], smb.transpose())
+    smbIVals = np.array(smbIGrid(bed_xarray[::subSample], bed_yarray[::subSample]))  #memoryError
 
     smbIVals = smbIVals.transpose()
     smbIVals = np.flipud(smbIVals)
@@ -91,7 +94,7 @@ def smbConv():
     outF.create_dataset("smb", data=smbIVals)
     outF.close()
 
-smbConv()
+
 
 
 def t2mConv():
