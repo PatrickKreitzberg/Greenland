@@ -1,19 +1,21 @@
 import pyqtgraph as pg
 from ..pens import *
+from ..math_functions import *
 
 class vpt:
-    def __init__(self, x, y, velocity, plotWidget):
+    def __init__(self, cx, cy, dx, dy, velocity, plotWidget):
         self.plotWidget = plotWidget
-        self.x = x
-        self.y = y
+        self.cx, self.cy = cx, cy  # color coordinates
+        self.dx, self.dy = dx, dy  # data coordinates
+
         self.v = velocity
         self.pen = blackPlotPen
         self.pen.setWidth(2)
         c = 3
-        xV0 = [x - c, x + c]
-        xV1 = [x - c, x + c]
-        yV0 = [y - c, y + c]
-        yV1 = [y + c, y - c]
+        xV0 = [self.cx - c, self.cx + c]
+        xV1 = [self.cx - c, self.cx + c]
+        yV0 = [self.cy - c, self.cy + c]
+        yV1 = [self.cy + c, self.cy - c]
         self.cross = [pg.PlotDataItem(xV0, yV0, connect='all', pen=self.pen), pg.PlotDataItem(xV1, yV1, connect='all', pen=self.pen)]
         self.lines = [None] * 2
         self.intLine = None
@@ -27,10 +29,11 @@ class vpt:
 
     def updateCross(self):
         c = 3
-        xV0 = [self.x - c, self.x + c]
-        xV1 = [self.x - c, self.x + c]
-        yV0 = [self.y - c, self.y + c]
-        yV1 = [self.y + c, self.y - c]
+        xV0 = [self.cx - c, self.cx + c]
+        xV1 = [self.cx - c, self.cx + c]
+        yV0 = [self.cy - c, self.cy + c]
+        yV1 = [self.cy + c, self.cy - c]
+        self.dx, self.dy = colorToData(self.cx, self.cy)
         self.cross[0].setData(xV0, yV0, connect='all', pen=self.pen)
         self.cross[1].setData(xV1, yV1, connect='all', pen=self.pen)
         self.cross[0].updateItems()
@@ -40,7 +43,9 @@ class vpt:
         self.plotWidget = pw
 
     def checkClicked(self, pos):
-        if self.cross[0].curve.mouseShape().contains(pos) or self.cross[1].curve.mouseShape().contains(pos):
+        # if self.cross[0].curve.mouseShape().contains(pos) or self.cross[1].curve.mouseShape().contains(pos):
+        c = 3
+        if self.cx - c <= pos.x() <= self.cx + c and self.cy - c <= pos.y() <= self.cy + c:
             return True
         else:
             return False
@@ -67,16 +72,3 @@ class vpt:
 
     def getV(self):
         return self.v
-
-    def setPos(self,x,y):
-        self.x = x
-        self.y = y
-
-    def getPos(self):
-        return self.x, self.y
-
-    def getX(self):
-        return self.x
-
-    def getY(self):
-        return self.y

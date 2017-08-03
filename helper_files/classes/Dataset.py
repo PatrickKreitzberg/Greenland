@@ -21,29 +21,17 @@ class Dataset():
         spatialRes = subSample
         subSample = 1
         interpSS = 6
-        bed_x0 = -637925  # first x
-        bed_x1 = 864625  # last x
-
-        bed_y0 = -657675
-        bed_y1 = -3349425
-
-
-
         self.name = name
         self.pen = pen
         if self.name == 'velocity':
             self.data, self.vx, self.vy = self.setData(dataFileName, name)
-            map['x1'] = len(self.data[0])
-            map['y1'] = len(self.data)
-
-            print 'map x,y ', map['x1'], map['y1']
-            bed_xarray = linspace(bed_x0, bed_x1, map['x1'], endpoint=True)
-            bed_yarray = linspace(bed_y1, bed_y0, map['y1'], endpoint=True)
+            bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
+            bed_yarray = linspace(map['proj_y1'], map['proj_y0'], map['y1'], endpoint=True)
             t0 = time.time()
-            self.interp = RectBivariateSpline(bed_xarray[::interpSS], bed_yarray[::interpSS], np.flipud(self.data[::interpSS, ::interpSS]).transpose())
-            self.vxInterp = RectBivariateSpline(bed_xarray[::interpSS], bed_yarray[::interpSS], np.flipud(self.vx[::interpSS, ::interpSS]).transpose())
-            self.vyInterp = RectBivariateSpline(bed_xarray[::interpSS], bed_yarray[::interpSS], np.flipud(self.vy[::interpSS, ::interpSS]).transpose())
-            print "interp took ", time.time() - t0
+            self.interp   = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
+            self.vxInterp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vx).transpose())
+            self.vyInterp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vy).transpose())
+            # print "interp took ", time.time() - t0
         elif self.name == 'velocitywidth':
             self.data = None
         else:
@@ -52,11 +40,10 @@ class Dataset():
             t0 = time.time()
             map['x1'] = len(self.data[0])
             map['y1'] = len(self.data)
-            print 'map x,y ', map['x1'], map['y1']
-            bed_xarray = linspace(bed_x0, bed_x1, map['x1'], endpoint=True)
-            bed_yarray = linspace(bed_y1, bed_y0, map['y1'], endpoint=True)
-            self.interp = RectBivariateSpline(bed_xarray[::interpSS], bed_yarray[::interpSS], np.flipud(self.data[::interpSS, ::interpSS]).transpose())
-            print "interp took ", time.time() - t0
+            bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
+            bed_yarray = linspace(map['proj_y1'], map['proj_y0'], map['y1'], endpoint=True)
+            self.interp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
+            # print "interp took ", time.time() - t0
         if draw:
             self.colorData = self.setColorData(dataCMFileName, name)
 
@@ -93,12 +80,8 @@ class Dataset():
         self.distanceData = None    # x data for plots.  Which is distance in proj coordinates
 
     def setInterpolator(self, subSample):
-        bed_x0 = -637925  # first x
-        bed_x1 = 864625  # last x
-        bed_y0 = -657675
-        bed_y1 = -3349425
-        bed_xarray = linspace(bed_x0, bed_x1, map['x1'], endpoint=True)
-        bed_yarray = linspace(bed_y1, bed_y0, map['y1'], endpoint=True)
+        bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
+        bed_yarray = linspace(map['proj_y1'], map['proj_y0'], map['y1'], endpoint=True)
         if self.name == 'velocity':
             self.interp = RectBivariateSpline(bed_xarray, bed_yarray,
                                               np.flipud(self.data).transpose())
@@ -115,7 +98,7 @@ class Dataset():
             datFile.close()
             return data, vx, vy
         else:
-            datFile   = h5py.File(dataFileName, 'r')
+            datFile = h5py.File(dataFileName, 'r')
 
             if dataDictName in datFile.keys():
                 data = datFile[dataDictName][:]

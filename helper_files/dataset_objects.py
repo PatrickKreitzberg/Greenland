@@ -12,42 +12,48 @@ from constants import *
 #####################################################
 print 'Creating data sets and loading their data/plots'
 
+dataSet = h5py.File('./data/GreenlandInBedCoord.h5', 'r')
+map['x1'] = len(dataSet['bed'][:][0])
+map['y1'] = len(dataSet['bed'][:])
+map['proj_x1'] = dataSet['x'][:][-1]
+map['proj_y1'] = dataSet['y'][:][-1]
+print ''
+print dataSet.keys()
+print dataSet['VX'][:].shape, np.amin(dataSet['VX'][:]), np.amax(dataSet['VX'][:])
+print dataSet['VY'][:].shape
+print dataSet['bed'][:].shape
+print dataSet['smb'][:].shape
+print dataSet['surface'][:].shape
+print dataSet['thickness'][:].shape
+print ''
+dataSet.close()
+
+
 vpts = [] #holds [x,y,v] values, where x,y are the coordinates and v is the velocity magnitude at those coordinates
 
 velocity = Dataset('velocity', greenPlotPen, draw=True)
-# bp.addItem(velocity.pathPlotItem)
+print np.amin(velocity.data), np.amax(velocity.data)
 iiContainer.addWidget(velocity.plotWidget)
 iiContainer.setCurrentWidget(velocity.plotWidget)
-print 'set up ', map['x0'], map['x1'], map['y0'], map['y1']
 velocity.plotWidget.getPlotItem().getViewBox().setRange(xRange=[0, 10018], yRange=[0, 17964], padding=0.1)
 
 smb = Dataset('smb', redPlotPen, draw=True)
-# bp.addItem(smb.pathPlotItem)
 iiContainer.addWidget(smb.plotWidget)
 
 bed = Dataset('bed', bluePlotPen, draw=True)
-# bp.addItem(bed.pathPlotItem)
 iiContainer.addWidget(bed.plotWidget)
 
 surface = Dataset('surface', greyPlotPen, draw=True)
-# bp.addItem(surface.pathPlotItem)
 iiContainer.addWidget(surface.plotWidget)
 
 velocityWidth = Dataset('velocitywidth', purplePlotPen)
-# bp.addItem(velocityWidth.pathPlotItem)
 
 thickness = Dataset('thickness', orangePlotPen, draw=True)
-print 'thickness range: ', np.amin(thickness.data), np.amax(thickness.data)
-# bp.addItem(thickness.pathPlotItem)
 iiContainer.addWidget(thickness.plotWidget)
 
 velocity.pathPlotItem.clear()
 surface.pathPlotItem.clear()
 smb.pathPlotItem.clear()
 bed.pathPlotItem.clear()
-
-
-
-
 
 print 'Done loading data'

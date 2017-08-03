@@ -56,6 +56,7 @@ cVelArrowsButton.setEnabled(False)
 modelButton      = QtGui.QPushButton('Run Model')
 modelButton.setEnabled(False)
 hiResButton      = QtGui.QPushButton('High-res interpolators (may take 2 minutes')
+hiResButton.setEnabled(False)
 mouseCoordinates = QtGui.QLabel('x:\ty:')
 textOut = QtGui.QTextBrowser()
 
@@ -95,7 +96,7 @@ time_container = QtGui.QGridLayout()
 time_widget.setLayout(time_container)
 
 model_res_label    = QtGui.QLabel('Sptl res(m):')
-model_res_lineEdit = QtGui.QLineEdit(str(spatialRes*150))
+model_res_lineEdit = QtGui.QLineEdit('900')
 
 t_end_label    = QtGui.QLabel('t_end(yr):')
 t_end_lineEdit = QtGui.QLineEdit('20000')

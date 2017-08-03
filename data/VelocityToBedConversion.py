@@ -25,7 +25,6 @@ velx_num = 1 + (vel_x1 - vel_x0) / spacing
 vel_y0 =  -657600  # first y coordinate
 vel_y1 = -3349350  # last y coordinate
 vely_num = 1 + (math.fabs(vel_y1 - vel_y0)) / spacing
-print velx_num, vely_num
 
 #bed machine
 bed_x0 = -637925  # first x
@@ -41,8 +40,7 @@ bed_yarray = linspace(bed_y1, bed_y0,  17946, endpoint=True)
 vel_xarray = linspace(vel_x0, vel_x1, 10018, endpoint=True)
 vel_yarray = linspace(vel_y1, vel_y0,  17946, endpoint=True)
 
-print vel_xarray[0], vel_xarray[1]
-print vel_yarray[0], vel_yarray[1]
+
 
 # bmx, bmy = meshgrid(bed_xarray, bed_yarray)
 # vmx, vmy = meshgrid(vel_xarray, vel_yarray)

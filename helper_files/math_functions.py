@@ -4,31 +4,62 @@ from scipy.interpolate import RegularGridInterpolator, RectBivariateSpline
 import math
 from constants import *
 
-def projCoord(x,y):
+'''
+colorToProj:  color -> projected
+dataToProj:   data -> projected
+colorCoord:   data, projected -> color
+dataToColor:  data -> color
+colorToData:  color -> data
+dataCoord:    color, projected -> data
+'''
+
+def colorToProj(x,y):
     # returns x,y in the global projected coordinates
-    if y >= proj_y1 and y <= proj_y0:
-        if x >= proj_x0 and x <= proj_x1:
+    # no way to check if in color or map coord
+    if y >= map['cmap_proj_y1'] and y <= map['cmap_proj_y0']:
+        if x >= map['cmap_proj_x0'] and x <= map['cmap_proj_x1']:
             return x, y
         else:
             print 'ERROR IN PROJCOORD'
             return -1
     else:
-        return ((150*x) + proj_x0), ((-150*y) + proj_y0)
+        return ((150*x) + float(map['cmap_proj_x0'])), ((-150*y) + float(map['cmap_proj_y0']))
 
-def mapCoord(x,y):
-    # returns x,y in map coordinates which is x <- (0,1018) y<- (0,1746) roughly
+def dataToProj(x,y):
+    return dataToColor(colorToProj(x,y))
+
+def colorCoord(x,y):
+    # must assume data in data coord or proj coord
+    # first return data to color
+    # else return proj to map
     if y >= map['y0'] and y <=map['y1']:
         if x >= map['x0'] and x <= map['x1']:
-            return x,y
+            return dataToColor(x,y)
         else:
             print 'ERROR IN MAPCOORD'
             return -1
     else:
-        return ((-proj_x0 + x)/150.0), (-(-proj_y0 + y)/150.0)
+        return ((-float(map['cmap_proj_x0']) + x)/150.0), (-(-float(map['cmap_proj_y0']) + y)/150.0)
+
+def dataToColor(x,y):
+    # turns colormap data point into data point
+    return x*(float(map['cmap_x1'])/float(map['x1'])), y*(float(map['cmap_y1'])/float(map['y1']))
 
 def colorToData(x,y):
     # turns colormap data point into data point
-    return x*(map['x1']/map['cmap_x1']), x*(map['x1']/10018)
+    return x*(float(map['x1'])/float(map['cmap_x1'])), y*(float(map['y1'])/float(map['cmap_y1']))
+
+def dataCoord(x,y):
+    #m ust assume data is in colormap or projected coord
+    if y >= map['cmap_y0'] and y <=map['cmap_y1']:
+        if x >= map['cmap_x0'] and x <= map['cmap_x1']:
+           return colorToData(x,y)
+    elif y >= map['cmap_proj_y0'] and y <=map['cmap_proj_y1']:
+        if x >= map['cmap_proj_x0'] and x <= map['cmap_proj_x1']:
+            return colorToData(colorCoord(x,y))
+    else:
+        print 'ERROR: dataCoord(x, y) error'
+        return -1
 
 def findSlopes(lines, vlist):
 

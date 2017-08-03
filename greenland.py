@@ -65,7 +65,6 @@ integrateLine = None
         LEFTSIDE OF GUI
     lsw: Generic QWidget which holds the two plots
     leftSide: QLayout widget which controls the plots/their placement
-    
 '''
 
 
@@ -80,6 +79,7 @@ def hiResInterpolators():
 
 def clearPoints():
     del vpts[:]
+    textOut.setText('')
     modelButton.setEnabled(False)
     cProfButton.setEnabled(False)
     intButton.setEnabled(False)
@@ -181,7 +181,7 @@ velocity.imageItem.hoverEvent = mouseMoved
 bed.imageItem.hoverEvent = mouseMoved
 surface.imageItem.hoverEvent = mouseMoved
 thickness.imageItem.hoverEvent = mouseMoved
-# oldthick.imageItem.hoverEvent = mouseMoved
+
 
 velocity.imageItem.mouseClickEvent = mouseClick
 
