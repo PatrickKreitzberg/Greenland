@@ -1,12 +1,21 @@
 import fenics as fc
 from time import *
 from dolfin import *
+from dolfin.cpp.mesh import *
+from dolfin.cpp.common import *
+from dolfin.cpp.function import *
+from dolfin.cpp.io import *
+from dolfin.cpp.fem import *
+from dolfin.cpp.la import *
+
 
 from gui import *
 from helper_files.classes.ModelPlotter import *
 from support.expressions import *
 from support.fenics_optimizations import *
 from support.momentum import *
+
+
 
 run = True
 
@@ -27,6 +36,7 @@ def runModel(hdf_name):
     in_file  = HDF5File(mesh.mpi_comm(), hdf_name, "r")  #mesh.mpi_comm() is ussed to read in parallel?
 
 
+
     # out_file = HDF5File(mesh.mpi_comm(),"./output_data/peterman.h5","w")
 
     # cell_indices: self-explanatory
@@ -39,11 +49,12 @@ def runModel(hdf_name):
 
 
 
-
     ##########################################################
     ################           MESH          #################
     ##########################################################
     in_file.read(mesh,"/mesh", False)
+    print 'mesh'
+    print in_file.keys()
 
     # H5FILE Data:
     # bed and surface are datasets shape (378,)
@@ -143,7 +154,6 @@ def runModel(hdf_name):
     # Directly write the form, with SPUG and area correction,
     R += ((H-H0)/dt*xsi - xsi.dx(0)*U[0]*Hmid + D*xsi.dx(0)*Hmid.dx(0) - (A - U[0]*H/width*width.dx(0))*xsi)*dx\
            + U[0]*area*xsi*ds(1) - U[0]*area*xsi*ds(0)
-    print 'smb: ', A.vector()[:]
 
 
     #####################################################################
@@ -239,10 +249,8 @@ def runModel(hdf_name):
         t+=dt_float
         pPlt.refresh_plot()
         pg.QtGui.QApplication.processEvents()
-    print 'done 1'
     in_file.close()
     # pg.exit()
-    print 'done 2'
     # mw2.at
 
 

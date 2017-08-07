@@ -26,6 +26,6 @@ def createAll():
 
     datF.close()
 
-datF = h5py.File('dataCMValues.h5', 'r')
-print datF.keys()
-datF.close()
+# createAll()
+
+

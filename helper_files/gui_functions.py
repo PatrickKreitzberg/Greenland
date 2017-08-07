@@ -39,9 +39,8 @@ def centerVelocityStream(x, y):
     return x, y
 
 def mouseClick(e):
-    global vptSel, vptCur, integrateLine, shift
+    global vptSel, vptCur#, integrateLine
     first = False
-    integrating = False
     if len(vpts) == 0:
         first = True
         intButton.setEnabled(True)
@@ -50,33 +49,75 @@ def mouseClick(e):
         if autoCorrectVpt.checkState() == 2:
             cx, cy = centerVelocityStream(cx, cy)
     if not vptSel:
-        for pt in vpts:
-            if pt.checkClicked(e.pos()):
+
+        for i in range(len(vpts)):
+            if vpts[i].checkClicked(e.pos()):
                 # See if you clicked on an already existing point
-                if shift:
-                    integrating = True
-                    x0p, y0p = colorToProj(pt.cx, pt.cy)
+                if keysPress['shift']:
+                    x0p, y0p = colorToProj(vpts[i].cx, vpts[i].cy)
                     y0 = np.array([x0p, y0p])
                     t0, t1, dt = 0, 80, .1
                     r = ode(getProfile).set_integrator('zvode', method='bdf')
                     r.set_initial_value(y0, t0)
-                    ox = [pt.cx]
-                    oy = [pt.cy]
+                    ox = [vpts[i].cx]
+                    oy = [vpts[i].cy]
                     while r.successful() and r.t < t1:
                         ai = r.integrate(r.t + dt)
                         xi, yi = colorCoord(ai[0], ai[1])
                         ox.append(np.real(xi))
                         oy.append(np.real(yi))
-                    integrateLine = pg.PlotDataItem(ox, oy, pen=whitePlotPen)
-                    iiContainer.currentWidget().addItem(integrateLine)
+                    intLines.append(pg.PlotDataItem(ox, oy, pen=whitePlotPen))
+                    iiContainer.currentWidget().addItem(intLines[-1])
+                elif keysPress['ctrl']:
+                    if i > 0:
+                        if i + 1 < len(vpts):
+                            # connect line from previous node to next point
+                            vpts[i - 1].lines[1] = pg.PlotDataItem([vpts[i - 1].cx, vpts[i + 1].cx], [vpts[i - 1].cy, vpts[i + 1].cy], connect='all', pen=skinnyBlackPlotPen)
+                            vpts[i + 1].lines[0] = vpts[i - 1].lines[1]
+                            iiContainer.currentWidget().addItem(vpts[i - 1].lines[1])
+                            pg.QtGui.QApplication.processEvents()
+                        else:  # delete line because there is no next point
+                            iiContainer.currentWidget().removeItem(vpts[i - 1].lines[1])
+                            vpts[i - 1].lines[1] = None
+                    elif i == 0 and len(vpts) > 1:  # point is the first so delete line from first to second
+                        iiContainer.currentWidget().removeItem(vpts[1].lines[0])
+                        vpts[1].lines[0] = None
+                    for k in range(i, len(vpts) - 1):
+                        vpts[k] = vpts[k + 1]
+                    del vpts[-1]
+                    if len(vpts) < 2:
+                        modelButton.setEnabled(False)
+                        cProfButton.setEnabled(False)
+                        meshButton.setEnabled(False)
+                    if len(vpts) < 1:
+                        intButton.setEnabled(False)
                 else:
                     vptSel = True
-                    vptCur = pt
-        if not vptSel and not integrating:
+                    vptCur = vpts[i]
+                break
+
+            elif keysPress['ctrl']:
+                for m in range(len(intLines)):
+                    cData = intLines[m].curve.getData()
+                    imin = curveDistance(e.pos().x(), e.pos().y(), cData)
+                    found = False
+                    if imin != -1:
+                        # snap the cross to the line
+                        iiContainer.currentWidget().removeItem(intLines[m])
+                        del (intLines[m])
+                        found = True
+                    if found:
+                        break
+                    print 'm is ', m
+
+
+        if not vptSel and not keysPress['ctrl'] and not keysPress['shift']:
             # no you did not click on a point
             if not first:
                 cx = e.pos().x() # in color coordinates
                 cy = e.pos().y()
+                if autoCorrectVpt.checkState() == 2:
+                    cx, cy = centerVelocityStream(cx, cy)
 
             px, py = colorToProj(cx, cy) # color map to projected
             v0 = velocity.interp([px], [py], grid=False)
@@ -85,7 +126,6 @@ def mouseClick(e):
 
             x = int(np.floor(dx))
             y = int(np.floor(dy))
-            print 'x,y: ', dx, dy
             txt = 'Point ' + str(len(vpts)-1) + \
             ':\n=================\n' + \
             'x: ' + str(cx) + '\n' +\
@@ -105,37 +145,38 @@ def mouseClick(e):
                     modelButton.setEnabled(True)
                     cProfButton.setEnabled(True)
                     meshButton.setEnabled(True)
-                xa = [vpts[-1].cx, vpts[-2].cx]
-                ya = [vpts[-1].cy, vpts[-2].cy]
+                xa = [vpts[-2].cx, vpts[-1].cx]
+                ya = [vpts[-2].cy, vpts[-1].cy]
                 vpts[-1].setLine(pg.PlotDataItem(xa, ya, connect='all', pen=skinnyBlackPlotPen), 0)
                 vpts[-2].setLine(vpts[-1].lines[0], 1)
                 iiContainer.currentWidget().addItem(vpts[-1].lines[0])  # ,pen=plotPen)
     else:
+        del vptCur
         vptSel = False
 
 
-
-def calcProf(e):
-    global integrateLine
-    x0p, y0p = colorToProj(vpts[-1].cx, vpts[-1].cy)
-    y0 = np.array([x0p, y0p])
-    t0, t1, dt = 0, 80, .1
-    r = ode(getProfile).set_integrator('zvode', method='bdf')
-    r.set_initial_value(y0, t0)
-    print "Printing integration points"
-    ox = [vpts[-1].cx]
-    oy = [vpts[-1].cy]
-    while r.successful() and r.t < t1:
-        # print(r.t+dt, r.integrate(r.t+dt))
-        ai = r.integrate(r.t+dt)
-        xi, yi = colorCoord(ai[0], ai[1])
-        # print 'xi, iy: ', xi, yi
-        ox.append(np.real(xi))
-        oy.append(np.real(yi))
-
-    # print 'ox, oy: ', ox, oy
-    integrateLine = pg.PlotDataItem(ox, oy, pen=whitePlotPen)
-    iiContainer.currentWidget().addItem(integrateLine)
+#
+# def calcProf(e):
+#     global integrateLine
+#     x0p, y0p = colorToProj(vpts[-1].cx, vpts[-1].cy)
+#     y0 = np.array([x0p, y0p])
+#     t0, t1, dt = 0, 80, .1
+#     r = ode(getProfile).set_integrator('zvode', method='bdf')
+#     r.set_initial_value(y0, t0)
+#     print "Printing integration points"
+#     ox = [vpts[-1].cx]
+#     oy = [vpts[-1].cy]
+#     while r.successful() and r.t < t1:
+#         # print(r.t+dt, r.integrate(r.t+dt))
+#         ai = r.integrate(r.t+dt)
+#         xi, yi = colorCoord(ai[0], ai[1])
+#         # print 'xi, iy: ', xi, yi
+#         ox.append(np.real(xi))
+#         oy.append(np.real(yi))
+#
+#     # print 'ox, oy: ', ox, oy
+#     integrateLine = pg.PlotDataItem(ox, oy, pen=whitePlotPen)
+#     iiContainer.currentWidget().addItem(integrateLine)
 
 
 def changeMap(index):
@@ -177,7 +218,7 @@ def calcBP():
     if len(vpts) > 0:
         print 'Plotting...'
         # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
-        interpolateData(True)
+        interpolateData(False)
         if velocityCheck.checkState() == 2:
             velocity.pathPlotItem.setData(velocity.distanceData          , velocity.pathData)
         if smbCheck.checkState() == 2:
@@ -188,79 +229,76 @@ def calcBP():
             surface.pathPlotItem.setData(surface.distanceData            , surface.pathData)
         if bedCheck.checkState() == 2:
             bed.pathPlotItem.setData(bed.distanceData                    , bed.pathData)
-        thickness.pathPlotItem.setData(thickness.distanceData, thickness.pathData)
-        velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
+        if thicknessCheck.checkState() == 2:
+            thickness.pathPlotItem.setData(thickness.distanceData, thickness.pathData)
+        if vWidthCheck.checkState() == 2:
+            velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
         pg.QtGui.QApplication.processEvents()
-        print 'Done plotting in ', time.time() - t0, ' seconds'
-        print 'Plot points: ', len(velocity.distanceData)
         runStaticPlot()
 
 def mouseMoved(e):
     global vptSel, vptCur, integrateLine, currentMap
     if e.isExit() is False:
-        if vptSel and integrateLine is not None:  # and integrateLine is not None:
-            cData = integrateLine.curve.getData()
-            imin = curveDistance(e.pos().x(), e.pos().y(), cData)
-            if imin != -1:
-                vptCur.cx = cData[0][imin]
-                vptCur.cy = cData[1][imin]
-                vptCur.updateCross()
-            else:
-                vptCur.cx = e.pos().x()
-                vptCur.cy = e.pos().y()
-                vptCur.updateCross()
-            vptCur.lines[0].setData([vptCur.cx, vptCur.lines[0].getData()[0][1]],
-                                    [vptCur.cy, vptCur.lines[0].getData()[1][1]])  # previous line
-            if vptCur.lines[1] is not None:
-                vptCur.lines[1].setData([vptCur.lines[1].getData()[0][0], vptCur.cx],
-                                        [vptCur.lines[1].getData()[1][0], vptCur.cy])  # next line
+        if vptSel and len(intLines) != 0 : #integrateLine is not None:  # and integrateLine is not None:
+            #
+            # Checks to see if you are moving around a point and if it is near a curve
+            # which it can be snapped to
+            #
+            i = 0
+            while i < len(intLines):
+                cData = intLines[i].curve.getData()
+                imin = curveDistance(e.pos().x(), e.pos().y(), cData)
+                if imin != -1:
+                    # snap the cross to the line
+                    vptCur.cx = cData[0][imin]
+                    vptCur.cy = cData[1][imin]
+                    vptCur.updateCross()
+                    i = len(intLines) + 5
+                else:
+                    # just move the cross
+                    vptCur.cx = e.pos().x()
+                    vptCur.cy = e.pos().y()
+                    vptCur.updateCross()
+                if vptCur.lines[0] is not None:
+                    vptCur.lines[0].setData([vptCur.lines[0].getData()[0][0], vptCur.cx],
+                                            [vptCur.lines[0].getData()[1][0], vptCur.cy])  # previous line
+                if vptCur.lines[1] is not None:
+                    vptCur.lines[1].setData([vptCur.cx, vptCur.lines[1].getData()[0][1]],
+                                            [vptCur.cy, vptCur.lines[1].getData()[1][1]])  # next line
+                i += 1
         elif vptSel:
             vptCur.cx = e.pos().x()
             vptCur.cy = e.pos().y()
             vptCur.updateCross()
-            vptCur.lines[0].setData([vptCur.cx, vptCur.lines[0].getData()[0][1]],
-                                    [vptCur.cy, vptCur.lines[0].getData()[1][1]])  # previous line
+            if vptCur.lines[0] is not None:
+                vptCur.lines[0].setData([vptCur.lines[0].getData()[0][0], vptCur.cx],
+                                        [vptCur.lines[0].getData()[1][0], vptCur.cy])  # previous line
             if vptCur.lines[1] is not None:
-                vptCur.lines[1].setData([vptCur.lines[1].getData()[0][0], vptCur.cx],
-                                        [vptCur.lines[1].getData()[1][0], vptCur.cy])  # next
+                vptCur.lines[1].setData([vptCur.cx, vptCur.lines[1].getData()[0][1]],
+                                        [vptCur.cy, vptCur.lines[1].getData()[1][1]])  # next
         x = int(np.floor(e.pos().x()))
         y = int(np.floor(e.pos().y()))
         if np.abs(x) <= map['cmap_x1'] and np.abs(y) <= map['cmap_y1']:
-
             mouseCoordinates.setText('x: ' + str(x) + '\ty: ' + str(y))# + '\n' + 'th: ' + str(thickness.data[y][x]))# + '\n' + 'oth: ' + str(oldthick.data[y][x]))
-            # if currentMap == 0:
-                # Interpolating every spot is too much, causes lag
-                # vInt = getInterpolators(sqrt(velocity.vx**2 + velocity.vy**2), 'v', x,y)
-                # px, py = projCoord(x,y)
-                # vLocal = vInt([px],[py], grid=False)
-                # t = 'v: ' + str(velocity.data[y][x]) + '\tbed: ' + str(bed.data[y][x]) + '\tsurf: ' + str(surface.data[y][x]) + '\tSMB: ' + str(smb.data[y][x])
-                # t = t + '\t bed: ' + str(bed[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))])  + '\t surface: ' + str(surfaceVals[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))])
-                # mouseCoordinates.setText(t)
-
-            # elif currentMap == 1:
-            #     # print 'mm 31'
-            #     mouseCoordinates.setText('x: ' + str(x) + '\ty: ' + str(y) + '\t bed: ' + str(bed.data[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))]))
-            # elif currentMap == 2:
-            #     # print 'mm 32'
-            #     mouseCoordinates.setText('x: ' + str(x) + '\ty: ' + str(y) + '\t surface: ' + str(surface.data[int(np.ceil(np.abs(y)))][int(np.floor(np.abs(x)))]))
 
 
-def mouseMovedBP(evt):
-    global bpLegend, dataLen
-    print 'mouse moved bottom plot'
-    if botPlot:
-        print 'is not not not none'
-        pos = evt[0]  ## using signal proxy turns original arguments into a tuple
-        if bp.getPlotItem().sceneBoundingRect().contains(pos):
-            mousePoint = bp.getPlotItem().vb.mapSceneToView(pos)
-            index = int(mousePoint.x())
-            if index > 0 and index < len(velocity.pathData):
-                velocity.legendItem.setText('Velocity' + str(velocity.pathData[index]))
-                smb.legendItem.setText('SMB ' + str(smb.pathData[index]))
-                velocityWidth.legendItem.setText('Velocity Width ' + str(velocityWidth.pathData[index]))
-                surface.legendItem.setTxt('Surface ele ' + str(surface.pathData[index]))
-    # else:
-        # print 'It is NONE'
+
+# def mouseMovedBP(evt):
+#     global bpLegend, dataLen
+#     print 'mouse moved bottom plot'
+#     if botPlot:
+#         print 'is not not not none'
+#         pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+#         if bp.getPlotItem().sceneBoundingRect().contains(pos):
+#             mousePoint = bp.getPlotItem().vb.mapSceneToView(pos)
+#             index = int(mousePoint.x())
+#             if index > 0 and index < len(velocity.pathData):
+#                 velocity.legendItem.setText('Velocity' + str(velocity.pathData[index]))
+#                 smb.legendItem.setText('SMB ' + str(smb.pathData[index]))
+#                 velocityWidth.legendItem.setText('Velocity Width ' + str(velocityWidth.pathData[index]))
+#                 surface.legendItem.setTxt('Surface ele ' + str(surface.pathData[index]))
+#     # else:
+#         # print 'It is NONE'
 
 
 def arrows():
@@ -295,7 +333,6 @@ def calcProf(e):
     t0, t1, dt = 0, 80, .1
     r = ode(getProfile).set_integrator('zvode', method='bdf')
     r.set_initial_value(y0, t0)
-    print "Printing integration points"
     ox = [vpts[-1].cx]
     oy = [vpts[-1].cy]
     while r.successful() and r.t < t1:
@@ -305,8 +342,6 @@ def calcProf(e):
         # print 'xi, iy: ', xi, yi
         ox.append(np.real(xi))
         oy.append(np.real(yi))
-
-    print 'ox, oy: ', ox, oy
     integrateLine = pg.PlotDataItem(ox, oy, pen=whitePlotPen)
     iiContainer.currentWidget().addItem(integrateLine)
 
@@ -338,7 +373,6 @@ def regionIntLine(e):
             Moves along velocity width line. 
             Good spot for parallel programming.
         '''
-        print l[i]
         trot = rotMatrix * np.matrix([[l[i]], [0.0]])
         x0p, y0p = projCoord((xp1 + trot[0, 0]), (yp1 + trot[1, 0]))
         lines.append(intLine(x0p, y0p))
@@ -348,15 +382,17 @@ def regionIntLine(e):
 
 
 def ky(e):
-    global shift
-    print 'key pressed ', e.key()
-    print 'type: -' + str(e.type()) + '-'
+    # 16777248 is shift
+    # 16777249 is left ctrl
     #6 is press, 7 is release
     if e.type() == 6:
-        print 'shift true'
-        shift = True
+        if e.key() == 16777248:
+            keysPress['shift'] = True
+        elif e.key() == 16777249:
+            keysPress['ctrl'] = True
     else:
-        shift = False
-        print 'shift false'
-    # 16777249 is shift
+        keysPress['ctrl'] = False
+        keysPress['shift'] = False
+
+
 

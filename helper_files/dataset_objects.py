@@ -17,22 +17,12 @@ map['x1'] = len(dataSet['bed'][:][0])
 map['y1'] = len(dataSet['bed'][:])
 map['proj_x1'] = dataSet['x'][:][-1]
 map['proj_y1'] = dataSet['y'][:][-1]
-print ''
-print dataSet.keys()
-print dataSet['VX'][:].shape, np.amin(dataSet['VX'][:]), np.amax(dataSet['VX'][:])
-print dataSet['VY'][:].shape
-print dataSet['bed'][:].shape
-print dataSet['smb'][:].shape
-print dataSet['surface'][:].shape
-print dataSet['thickness'][:].shape
-print ''
 dataSet.close()
 
-
-vpts = [] #holds [x,y,v] values, where x,y are the coordinates and v is the velocity magnitude at those coordinates
+vpts = []     # holds [x,y,v] values, where x,y are the coordinates and v is the velocity magnitude at those coordinates
+intLines = [] # holds integration lines
 
 velocity = Dataset('velocity', greenPlotPen, draw=True)
-print np.amin(velocity.data), np.amax(velocity.data)
 iiContainer.addWidget(velocity.plotWidget)
 iiContainer.setCurrentWidget(velocity.plotWidget)
 velocity.plotWidget.getPlotItem().getViewBox().setRange(xRange=[0, 10018], yRange=[0, 17964], padding=0.1)

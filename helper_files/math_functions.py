@@ -86,9 +86,10 @@ def circArr(x,y):
 def curveDistance(x0, y0, cData):
     imin = -1
     found = False
-    snapDistance = 30
+    snapDistance = 2
     minD = 31
-    for i in range(len(cData[0])):
+    i = 0
+    while i < len(cData[0]): # and not found:
         d = sqrt((x0-cData[0][i])**2 + (y0-cData[1][i])**2)
         if not found and d < snapDistance:
             found = True
@@ -97,6 +98,7 @@ def curveDistance(x0, y0, cData):
         elif found and d < minD:
             minD = d
             imin = i
+        i += 1
     return imin
 
 

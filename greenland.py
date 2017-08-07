@@ -17,6 +17,7 @@ from helper_files.data_functions import *
 from helper_files.gui_functions import *
 from helper_files.constants import *
 from helper_files.mesh_functions import *
+from helper_files.classes.Instructions import *
 
 print 'post map', map
 ##################################################
@@ -156,6 +157,8 @@ def runModelButt():
         hfile.close()
         runModel(hdf_name)
 
+def showInstructions():
+    Instructions(mw)
 
 
 # proxy = pg.SignalProxy(bp.getPlotItem().scene().sigMouseMoved, rateLimit=60, slot=mouseMovedBP)
@@ -175,7 +178,8 @@ cRegionButton.clicked.connect(intLine)
 cVelArrowsButton.clicked.connect(arrows)
 modelButton.clicked.connect(runModelButt)
 hiResButton.clicked.connect(hiResInterpolators)
-meshButton.clicked.connect(runPoly)
+meshButton.clicked.connect(meshGui)
+instructionButton.clicked.connect(showInstructions)
 
 velocity.imageItem.hoverEvent = mouseMoved
 # bed.imageItem.hoverEvent = mouseMoved

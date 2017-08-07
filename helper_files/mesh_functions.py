@@ -12,6 +12,8 @@ from classes.StaticPlotter import *
 import numpy as np
 import matplotlib.pyplot as plt
 from constants import *
+from pyqtgraph.Qt import QtGui
+import pyqtgraph as pg
 
 # Local imports.
 import distmesh as dm
@@ -21,15 +23,16 @@ import distmesh as dm
 # @dpoly gives the distance function
 # @huniform Implements the trivial uniform mesh size function h=1.
 
-def polygon(pv,d):# minx,miny, maxx,maxy):  # GOES COUNTER_CLOCKWISE
+def polygon(pv,d, minx,miny, maxx,maxy):  # GOES COUNTER_CLOCKWISE
     """Polygon"""
-    pv0 = np.array([(-0.4,-0.5),(0.4,-0.2),(0.4,-0.7),(1.5,-0.4),(0.9,0.1),
-                   (1.6,0.8),(0.5,0.5),(0.2,1.0),(0.1,0.4),(-0.7,0.7),
-                   (-0.4,-0.5)])
-    print type(pv0)
-    print type(pv0[0])
+    # pv0 = np.array([(-0.4,-0.5),(0.4,-0.2),(0.4,-0.7),(1.5,-0.4),(0.9,0.1),
+    #                (1.6,0.8),(0.5,0.5),(0.2,1.0),(0.1,0.4),(-0.7,0.7),
+    #                (-0.4,-0.5)])
+    # print type(pv0)
+    # print type(pv0[0])
     fd = lambda p: dm.dpoly(p, pv)
-    return dm.distmesh2d(fd, dm.huniform, d/5, (-1,-1, 1, 1), pv)
+    print 'bleh'
+    return dm.distmesh2d(fd, dm.huniform, d/5, (minx,miny, maxx, maxy), pv)
 
 def fstats(p, t):
     print('%d nodes, %d elements, min quality %.2f'
@@ -37,7 +40,8 @@ def fstats(p, t):
 
 
 def runPoly():
-    pv = [[vpts[0].cx/map['cmap_x1'], vpts[0].cy/map['cmap_y1']]]
+    cx, cy = 1,1 #map['cmap_x1'], map['cmap_y1']
+    pv = [[vpts[0].cx/cx, vpts[0].cy/cy]]
     dmin = 99999
     minx = 99999
     miny = 99999
@@ -45,7 +49,7 @@ def runPoly():
     maxy = -1
 
     for i in range(1,len(vpts)):
-        d = sqrt((vpts[i].cx/map['cmap_x1'] - vpts[i-1].cx/map['cmap_x1'])**2 + (vpts[i].cy/map['cmap_y1'] - vpts[i-1].cy/map['cmap_y1'])**2)
+        d = sqrt((vpts[i].cx/cx - vpts[i-1].cx/cx)**2 + (vpts[i].cy/cy - vpts[i-1].cy/cy)**2)
         if d < dmin:
             dmin = d
         if vpts[i].cx < minx:
@@ -59,23 +63,51 @@ def runPoly():
 
         if vpts[i].cy > maxy:
             maxy = vpts[i].cy
-        # bleh = np.array([vpts[i].cx/map['cmap_x1']])
-        # bleh = np.append(bleh, np.array([vpts[i].cy/map['cmap_y1'])
 
-        pv.append([vpts[i].cx/map['cmap_x1'], vpts[i].cy/map['cmap_y1']])
+        pv.append([vpts[i].cx/cx, vpts[i].cy/cy])
     print dmin
     print pv
     pause = lambda : None
-    plt.ion()
+    # plt.ion()
     np.random.seed(1) # Always the same results
-    p, t = polygon(np.array(pv),dmin )#minx/map['cmap_x1'],miny/map['cmap_y1'], maxx/map['cmap_x1'],maxy/map['cmap_y1'])
+    p, t = polygon(np.array(pv),dmin, minx/cx, miny/cy, maxx/cx, maxy/cy)
     fstats(p, t)
-    pause()
+    # pause()
     print('meshout')
+    print 'p: The node positions len: ', len(p)
     print p
+    print 't: The triangle indices len: ', len(t)
     print t
+    return p, t
 
+def meshGui():
+    meshWindow = QtGui.QMainWindow(mw)
+    cw = QtGui.QWidget()
+    meshWindow.setCentralWidget(cw)
+    cwLayout = QtGui.QHBoxLayout()
+    cw.setLayout(cwLayout)
+    meshPW = pg.PlotWidget()
+    meshPW.invertY(True)
+    meshPW.setAspectLocked(True)
+    cwLayout.addWidget(meshPW)
+    meshWindow.show()
+    p, t = runPoly()
+    x, y, c = [], [], []
+    for row in t:
+        x.append(p[row[0]][0])
+        y.append(p[row[0]][1])
+        c.append(1)
+        x.append(p[row[1]][0])
+        y.append(p[row[1]][1])
+        c.append(1)
+        x.append(p[row[2]][0])
+        y.append(p[row[2]][1])
+        c.append(1)
+        x.append(p[row[0]][0])
+        y.append(p[row[0]][1])
+        c.append(0)
 
+    meshPW.getPlotItem().plot(x, y, pen=(255, 0, 0), connect=np.array(c))
 
 
 '''

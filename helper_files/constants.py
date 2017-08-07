@@ -13,6 +13,10 @@ colormaps = {'velocity': True,
              'thickness': False
              }
 
+keysPress = {'shift': False,
+             'ctrl': False
+             }
+
 spatialRes = 1 # multiplied by 150 meters
 integrateLine = None
 

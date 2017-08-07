@@ -34,8 +34,8 @@ class vpt:
         yV0 = [self.cy - c, self.cy + c]
         yV1 = [self.cy + c, self.cy - c]
         self.dx, self.dy = colorToData(self.cx, self.cy)
-        self.cross[0].setData(xV0, yV0, connect='all', pen=self.pen)
-        self.cross[1].setData(xV1, yV1, connect='all', pen=self.pen)
+        self.cross[0].setData([self.cx - c, self.cx + c], [self.cy - c, self.cy + c], connect='all', pen=self.pen)
+        self.cross[1].setData([self.cx - c, self.cx + c], [self.cy + c, self.cy - c], connect='all', pen=self.pen)
         self.cross[0].updateItems()
         self.cross[1].updateItems()
 
@@ -49,7 +49,6 @@ class vpt:
             return True
         else:
             return False
-
 
     def setIntLine(self, ln):
         self.intLine = ln

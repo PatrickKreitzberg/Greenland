@@ -82,9 +82,7 @@ class Dataset():
 
     def createColorMap(self):
         fn = './data/' + self.name + 'CM.h5'
-        print 'fname: ', fn
         self.colorMapFile = h5py.File(fn, 'r')
-        print 'keys', self.colorMapFile.keys()
         self.colorData = self.colorMapFile['colormap'][:]
 
         # Setup imageitem
@@ -139,7 +137,6 @@ class Dataset():
             if dataDictName in datFile.keys():
                 data = datFile[dataDictName][:]
                 datFile.close()
-                print dataDictName, np.amin(data), np.amax(data)
                 return data
             else:
                 print 'ERROR Dataset not found in ', dataFileName
