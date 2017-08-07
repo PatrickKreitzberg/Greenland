@@ -57,6 +57,11 @@ modelButton      = QtGui.QPushButton('Run Model')
 modelButton.setEnabled(False)
 hiResButton      = QtGui.QPushButton('High-res interpolators (may take 2 minutes')
 hiResButton.setEnabled(False)
+meshButton       = QtGui.QPushButton('generate Mesh')
+meshButton.setEnabled(False)
+meshCheckBox    = QtGui.QCheckBox('Mesh')
+autoCorrectVpt.setTristate(False)
+autoCorrectVpt.setCheckState(2)
 mouseCoordinates = QtGui.QLabel('x:\ty:')
 textOut = QtGui.QTextBrowser()
 
@@ -73,6 +78,7 @@ cRegionButton.setMaximumWidth(maxWidth)
 cVelArrowsButton.setMaximumWidth(maxWidth)
 modelButton.setMaximumWidth(maxWidth)
 hiResButton.setMaximumWidth(maxWidth)
+meshButton.setMaximumWidth(maxWidth)
 textOut.setMaximumWidth(maxWidth)
 
 
@@ -86,6 +92,8 @@ buttonBox.addWidget(cProfButton)
 # buttonBox.addWidget(cVelArrowsButton)
 buttonBox.addWidget(modelButton)
 buttonBox.addWidget(hiResButton)
+buttonBox.addWidget(meshButton)
+buttonBox.addWidget(meshCheckBox)
 buttonBox.addWidget(mouseCoordinates)
 
 
@@ -115,8 +123,6 @@ time_container.addWidget(t_current,          3, 0, 1, 2)
 
 buttonBox.addWidget(time_widget)
 buttonBox.addWidget(textOut)
-
-
 
 
 #####################################################

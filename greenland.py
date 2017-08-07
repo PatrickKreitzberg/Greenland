@@ -16,7 +16,7 @@ from helper_files.dataset_objects import *
 from helper_files.data_functions import *
 from helper_files.gui_functions import *
 from helper_files.constants import *
-
+from helper_files.mesh_functions import *
 
 print 'post map', map
 ##################################################
@@ -25,7 +25,7 @@ print 'post map', map
 
 ##################################################
 
-# from helper_files.gui_functions import calcProf
+
 '''
 https://stackoverflow.com/questions/38065570/pyqtgraph-is-it-possible-to-have-a-imageview-without-histogram
 
@@ -88,7 +88,6 @@ def clearPoints():
     smb.pathPlotItem.clear()
     bed.pathPlotItem.clear()
     thickness.pathPlotItem.clear()
-
 
 def runModelButt():
     dr = float(model_res_lineEdit.text()) # dr = 150
@@ -176,11 +175,12 @@ cRegionButton.clicked.connect(intLine)
 cVelArrowsButton.clicked.connect(arrows)
 modelButton.clicked.connect(runModelButt)
 hiResButton.clicked.connect(hiResInterpolators)
+meshButton.clicked.connect(runPoly)
 
 velocity.imageItem.hoverEvent = mouseMoved
-bed.imageItem.hoverEvent = mouseMoved
-surface.imageItem.hoverEvent = mouseMoved
-thickness.imageItem.hoverEvent = mouseMoved
+# bed.imageItem.hoverEvent = mouseMoved
+# surface.imageItem.hoverEvent = mouseMoved
+# thickness.imageItem.hoverEvent = mouseMoved
 
 
 velocity.imageItem.mouseClickEvent = mouseClick
@@ -213,4 +213,13 @@ TO DO
     MODEL
 - Align extrapolated points with fenics mesh
 - Allow modeling down integrated line
+
+
+NEW
+    Model screwed up when set to 150 resolution when it worked at 300
+    
+    Could change so where the glacier ends is always on right side of plot for the model
+    
+
+
 '''
