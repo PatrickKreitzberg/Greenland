@@ -38,18 +38,18 @@ iiContainer.setCurrentWidget(velocity.plotWidget)
 velocity.plotWidget.getPlotItem().getViewBox().setRange(xRange=[0, 10018], yRange=[0, 17964], padding=0.1)
 
 smb = Dataset('smb', redPlotPen, draw=True)
-iiContainer.addWidget(smb.plotWidget)
+# iiContainer.addWidget(smb.plotWidget)
 
 bed = Dataset('bed', bluePlotPen, draw=True)
-iiContainer.addWidget(bed.plotWidget)
+# iiContainer.addWidget(bed.plotWidget)
 
 surface = Dataset('surface', greyPlotPen, draw=True)
-iiContainer.addWidget(surface.plotWidget)
+# iiContainer.addWidget(surface.plotWidget)
 
 velocityWidth = Dataset('velocitywidth', purplePlotPen)
 
 thickness = Dataset('thickness', orangePlotPen, draw=True)
-iiContainer.addWidget(thickness.plotWidget)
+# iiContainer.addWidget(thickness.plotWidget)
 
 velocity.pathPlotItem.clear()
 surface.pathPlotItem.clear()

@@ -49,7 +49,6 @@ def mouseClick(e):
         cy = e.pos().y()
         if autoCorrectVpt.checkState() == 2:
             cx, cy = centerVelocityStream(cx, cy)
-
     if not vptSel:
         for pt in vpts:
             if pt.checkClicked(e.pos()):
@@ -105,6 +104,7 @@ def mouseClick(e):
                 if not modelButton.isEnabled():
                     modelButton.setEnabled(True)
                     cProfButton.setEnabled(True)
+                    meshButton.setEnabled(True)
                 xa = [vpts[-1].cx, vpts[-2].cx]
                 ya = [vpts[-1].cy, vpts[-2].cy]
                 vpts[-1].setLine(pg.PlotDataItem(xa, ya, connect='all', pen=skinnyBlackPlotPen), 0)
@@ -150,7 +150,11 @@ def changeMap(index):
     maps = [velocity, bed, surface, smb, thickness]
     global currentMap
     if index != currentMap:
-        currentMap = 0
+        currentMap = index
+        if not colormaps[maps[index].name]:
+            maps[index].createColorMap()
+            iiContainer.addWidget(maps[index].plotWidget)
+            maps[index].imageItem.hoverEvent = mouseMoved
         iiContainer.setCurrentWidget(maps[index].plotWidget)
         maps[index].imageItem.mouseClickEvent = mouseClick
         maps[index].plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
