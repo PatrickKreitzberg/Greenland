@@ -122,8 +122,6 @@ def runModelButt():
         smbModelData       = smb1dInterp(x)
         velocityModelData  = velocity1dInterp(x)
 
-
-
         THICKLIMIT = 10.  # Ice is never less than this thick
         H = surfaceModelData - bedModelData
         surfaceModelData[H <= THICKLIMIT] = bedModelData[H <= THICKLIMIT]

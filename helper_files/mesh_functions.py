@@ -5,7 +5,6 @@ from gui import *
 from dataset_objects import *
 import numpy as np
 from data_functions import *
-from scipy.integrate import ode
 from classes.PlotPoint import *
 from velocity_functions import *
 from classes.StaticPlotter import *
@@ -14,12 +13,16 @@ import matplotlib.pyplot as plt
 from constants import *
 from pyqtgraph.Qt import QtGui
 import pyqtgraph as pg
-
+from dolfin.cpp.mesh import *
+import fenics as fc
 # Local imports.
 import distmesh as dm
 
 # Polygon example:
 # pv are the vertices
+# OUT:
+# p is the node positions   (nx2)
+# t is the triangle indices (nx3)
 # @dpoly gives the distance function
 # @huniform Implements the trivial uniform mesh size function h=1.
 
@@ -65,20 +68,65 @@ def runPoly():
             maxy = vpts[i].cy
 
         pv.append([vpts[i].cx/cx, vpts[i].cy/cy])
-    print dmin
-    print pv
     pause = lambda : None
-    # plt.ion()
+    plt.ion()
     np.random.seed(1) # Always the same results
     p, t = polygon(np.array(pv),dmin, minx/cx, miny/cy, maxx/cx, maxy/cy)
     fstats(p, t)
     # pause()
-    print('meshout')
-    print 'p: The node positions len: ', len(p)
-    print p
-    print 't: The triangle indices len: ', len(t)
-    print t
     return p, t
+
+def saveMeshAsXML(p, t, fname):
+    print 'Writing mesh to ' + str(fname)
+    f = open(fname, 'w')
+    f.write('<dolfin>\n')
+    f.write('\t<mesh celltype=\"triangle\" dim=\"2\">\n')
+    f.write('\t\t<vertices size=\"\t'+ str(len(p)) +'\">\n')
+    for i in range(len(p)):
+        f.write('\t\t\t<vertex index=\"\t' + str(i) +'\" x=\"\t' + str(p[i][0]) +'\t\" y=\"\t' + str(p[i][1]) +'\t\" z=\"0\"/>\n')
+    f.write('\t\t</vertices>\n')
+    f.write('\t\t<cells size=\"\t' + str(len(t)) + '\">\n')
+    for i in range(len(t)):
+        f.write('\t\t\t<triangle index=\"\t' + str(i) +'\" v0=\"\t' + str(t[i][0]) +'\" v1=\"\t' + str(t[i][1]) +'\" v2=\"\t' + str(t[i][2]) +'\"/>\n')
+    f.write('\t\t</cells>\n')
+    f.write('\t</mesh>\n')
+    f.write('</dolfin>\n')
+    f.close()
+    print 'Mesh file done.'
+
+def writeToHDF5(p, t, fname, meshname):
+    mesh = Mesh(meshname)
+    hfile = fc.HDF5File(mesh.mpi_comm(), fname, "w")
+    V = fc.FunctionSpace(mesh, 'CG', 1)
+
+    thicknessModelData = thickness.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+    bedModelData       = bed.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+    surfaceModelData   = surface.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+    smbModelData       = smb.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+    velocityModelData  = velocity.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+
+    functThickness = fc.Function(V, name="Thickness")
+    functBed       = fc.Function(V, name="Bed")
+    functSurface   = fc.Function(V, name="Surface")
+    functSMB       = fc.Function(V, name='SMB')
+    functVelocity  = fc.Function(V, name='Velocity')
+    print 'len: ', len(functThickness.vector()[:])
+    print 'len: ', len(thicknessModelData)
+    functThickness.vector()[:] = thicknessModelData
+    functBed.vector()[:]       = bedModelData
+    functSurface.vector()[:]   = surfaceModelData
+    functSMB.vector()[:]       = smbModelData
+    functVelocity.vector()[:]  = velocityModelData
+
+    hfile.write(functThickness, "thickness")
+    hfile.write(functBed,       "bed")
+    hfile.write(functSurface,   "surface")
+    hfile.write(functSMB,       "smb")
+    hfile.write(functVelocity,  "velocity")
+    hfile.write(mesh, "/mesh")
+    hfile.close()
+
+
 
 def meshGui():
     meshWindow = QtGui.QMainWindow(mw)
@@ -92,6 +140,8 @@ def meshGui():
     cwLayout.addWidget(meshPW)
     meshWindow.show()
     p, t = runPoly()
+    saveMeshAsXML(p,t,'./data/mesh2d.xml')
+    writeToHDF5(p, t, './data/mesh2d.h5', './data/mesh2d.xml')
     x, y, c = [], [], []
     for row in t:
         x.append(p[row[0]][0])

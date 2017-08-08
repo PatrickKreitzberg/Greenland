@@ -32,7 +32,7 @@ def centerVelocityStream(x, y):
     # iiContainer.currentWidget().addItem(pg.PlotDataItem(ox, oy, pen=blackPlotPen))
 
     endPoints = [[0, 0], [0, 0]] # either side of the velocity stream
-    endPoints[0][0], endPoints[0][1], endPoints[1][0], endPoints[1][1] = calcVelWidth(x, y, ox[-1], oy[-1], False)
+    endPoints[0][0], endPoints[0][1], endPoints[1][0], endPoints[1][1] = calcVelWidth(x, y, ox[-1], oy[-1], True)
     d = (0.5) * sqrt((endPoints[0][0] - endPoints[1][0]) ** 2 + (endPoints[0][1] - endPoints[1][1]) ** 2)
     theta = np.arctan2(float(y - oy[-1]), float(x - ox[-1]))
     x, y = endPoints[0][0] + (d * -np.sin(theta)), endPoints[0][1] + (d * np.cos(theta))

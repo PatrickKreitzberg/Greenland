@@ -173,7 +173,7 @@ surfaceCheck.setTristate(False)
 bedCheck.setTristate(False)
 thicknessCheck.setTristate(False)
 
-velocityCheck.setCheckState(0)
+velocityCheck.setCheckState(2)
 vWidthCheck.setCheckState(0)
 smbCheck.setCheckState(0)
 surfaceCheck.setCheckState(0)

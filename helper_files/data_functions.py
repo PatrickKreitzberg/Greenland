@@ -34,6 +34,61 @@ def cwLoop(e):
         # if not vpts[i][2]:
         calcVelWidth(vpts[i - 1].getX(), vpts[i - 1].getY(), vpts[i].getX(), vpts[i].getY(), True)
 
+def gaussian(x, A, x0, sig):
+    return A*math.exp(-(x-x0)**2/(2.0*sig**2))
+
+def fit(p,x):
+    return np.sum([gaussian(x, p[i*3],p[i*3+1],p[i*3+2])
+                   for i in xrange(len(p)/3)],axis=0)
+
+# def calcVelWidth(x0, y0, x1, y1, draw):
+#     '''
+#     Calculates the width of the ice stream at one point, (x1, y1).  (x0, y0) is there
+#     to give an idea of where the velocity width begins and ends which should be on a
+#     line which is perpindicular to the line from (x1, y1) to (x0, y0).
+#     :param x0: color coord
+#     :param y0: color coord
+#     :param x1: color coord
+#     :param y1: color coord
+#     :param draw:
+#     :return:
+#     '''
+#
+#     # input is in map coordinates
+#     #
+#     # This is with interpolation
+#     #
+#     theta = np.arctan2(float(y1 - y0), float(x1-x0))
+#     tx1, ty1 = colorToProj(x1,y1)
+#     v0 = velocity.interp(tx1,ty1, grid=False)
+#     dv = [[0, 0, 0], [0, 0, 0]]   # x, y, dv for left and right
+#     endPoints = [[0, 0], [0, 0]]  # end points [left[x,y], right[x,y]]
+#     # print 'v0 ', vx0, vy0, v0
+#
+#     txn, tyn = colorToProj(x1 + (-1 * -np.sin(theta)), y1 + (dr * -1 * np.cos(theta)))  # dis either + or negative
+#     txp, typ = colorToProj(x1 + (1 * -np.sin(theta)) , y1 + (dr * 1 * np.cos(theta)))
+#     vn = velocity.interp(txn, tyn, grid=False)
+#     vp = velocity.interp(txp, typ, grid=False)
+#     if vn > v0: #head in positive direction
+#         pathx = linspace(0,-10*-np.sin(theta), 10)
+#
+#         while vn > v0:
+#             px, py = colorToProj(x1, y1)
+#             # pathx = linspace(px, )
+#             tx1, ty1, = txn + (dr * -1 * -np.sin(theta)), tyn + (dr * -1 * np.cos(theta))
+#     else:
+#         pass
+#
+#     if draw:
+#         iiContainer.currentWidget().addItem(pg.PlotDataItem([endPoints[0][0], endPoints[1][0]], [endPoints[0][1], endPoints[1][1]], connect='all', pen=whitePlotPen))
+#         # circle plotting
+#         d = (0.5)*sqrt((endPoints[0][0]-endPoints[1][0])**2 + (endPoints[0][1]-endPoints[1][1])**2)
+#         cax, cay = endPoints[1][0] + (d * -np.sin(theta)), endPoints[1][1] + (d * np.cos(theta))
+#         xc, yc = circArr(cax, cay)
+#         iiContainer.currentWidget().addItem(pg.PlotDataItem(xc, yc, connect='all', pen=blackPlotPen))
+#         iiContainer.currentWidget().addItem(pg.PlotDataItem([cax], [cay], pen=blackPlotPen))
+#     return endPoints[0][0], endPoints[0][1], endPoints[1][0], endPoints[1][1]
+
 def calcVelWidth(x0, y0, x1, y1, draw):
     '''
     Calculates the width of the ice stream at one point, (x1, y1).  (x0, y0) is there
@@ -57,6 +112,8 @@ def calcVelWidth(x0, y0, x1, y1, draw):
     dv = [[0, 0, 0], [0, 0, 0]]   # x, y, dv for left and right
     endPoints = [[0, 0], [0, 0]]  # end points [left[x,y], right[x,y]]
     # print 'v0 ', vx0, vy0, v0
+    err = lambda p, x, y: fit(p,x)-y
+
     for i in range(2):
         # one loop for each boundary
         dr = 0
@@ -84,6 +141,7 @@ def calcVelWidth(x0, y0, x1, y1, draw):
             endPoints[i][0], endPoints[i][1] = dv[i][0], dv[i][1]#mapCoord(tx, ty)#mapCoord(xa[ir], ya[ir])
         else:
             endPoints[i][0], endPoints[i][1] = colorCoord(tx, ty)#mapCoord(xa[ir], ya[ir])
+
     if draw:
         iiContainer.currentWidget().addItem(pg.PlotDataItem([endPoints[0][0], endPoints[1][0]], [endPoints[0][1], endPoints[1][1]], connect='all', pen=whitePlotPen))
 
@@ -323,7 +381,7 @@ def interpolateData(runModel):
             for i in range(len(px)):
                 xp0, yp0 = colorCoord(px[i - 1], py[i - 1])
                 xp1, yp1 = colorCoord(px[i], py[i])
-                xril, yril, xrir, yrir = calcVelWidth(xp0, yp0, xp1, yp1, False)
+                xril, yril, xrir, yrir = calcVelWidth(xp0, yp0, xp1, yp1, True)
                 vwd.append(sqrt((xril - xrir) ** 2 + (yril - yrir) ** 2))
             vwValues.append(vwd)
 
