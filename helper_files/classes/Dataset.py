@@ -45,6 +45,7 @@ class Dataset():
             bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
             bed_yarray = linspace(map['proj_y1'], map['proj_y0'], map['y1'], endpoint=True)
             self.interp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
+            self.createColorMap()
             # print "interp took ", time.time() - t0
         # if draw:
         #     self.colorData = self.setColorData(dataCMFileName, name)

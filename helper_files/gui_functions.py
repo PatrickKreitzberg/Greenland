@@ -108,7 +108,6 @@ def mouseClick(e):
                         found = True
                     if found:
                         break
-                    print 'm is ', m
 
 
         if not vptSel and not keysPress['ctrl'] and not keysPress['shift']:
@@ -122,7 +121,7 @@ def mouseClick(e):
             px, py = colorToProj(cx, cy) # color map to projected
             v0 = velocity.interp([px], [py], grid=False)
             dx, dy = colorToData(cx, cy)
-            vpts.append(vpt(cx, cy, dx, dy, v0, velocity.plotWidget)) # in map coordinates x<10018, y< 17946
+            vpts.append(vpt(cx, cy, dx, dy, v0, iiContainer.currentWidget())) # in map coordinates x<10018, y< 17946
 
             x = int(np.floor(dx))
             y = int(np.floor(dy))
@@ -191,14 +190,31 @@ def changeMap(index):
     maps = [velocity, bed, surface, smb, thickness]
     global currentMap
     if index != currentMap:
+        oldMap = currentMap
         currentMap = index
         if not colormaps[maps[index].name]:
             maps[index].createColorMap()
             iiContainer.addWidget(maps[index].plotWidget)
             maps[index].imageItem.hoverEvent = mouseMoved
+
         iiContainer.setCurrentWidget(maps[index].plotWidget)
         maps[index].imageItem.mouseClickEvent = mouseClick
         maps[index].plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
+        for ln in intLines:
+            maps[oldMap].plotWidget.removeItem(ln)
+            maps[currentMap].plotWidget.addItem(ln)
+        for pt in vpts:
+            pt.plotWidget = maps[currentMap]
+            maps[oldMap].plotWidget.removeItem(pt.cross[0])
+            maps[oldMap].plotWidget.removeItem(pt.cross[1])
+            maps[currentMap].plotWidget.addItem(pt.cross[0])
+            maps[currentMap].plotWidget.addItem(pt.cross[1])
+            if pt.lines[0]:
+                maps[oldMap].plotWidget.removeItem(pt.lines[0])
+                maps[currentMap].plotWidget.addItem(pt.lines[0])
+            if pt.intLine:
+                maps[oldMap].plotWidget.removeItem(pt.intLine)
+                maps[currentMap].plotWidget.addItem(pt.intLine)
 
 
 

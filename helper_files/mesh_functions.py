@@ -17,6 +17,8 @@ import fenics as fc
 # Local imports.
 import distmesh as dm
 from dolfin.cpp.io import File
+from classes.InterpolateData import interpolateData
+
 
 # Polygon example:
 # pv are the vertices
@@ -99,49 +101,75 @@ def writeToHDF5(p, t, fname, meshname):
     hfile = fc.HDF5File(mesh.mpi_comm(), fname, "w")
     V = fc.FunctionSpace(mesh, 'CG', 1)
 
-    thicknessModelData = thickness.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
-    bedModelData       = bed.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
-    surfaceModelData   = surface.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
-    smbModelData       = smb.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
-    velocityModelData  = velocity.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+    # thicknessModelData = thickness.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+    # bedModelData       = bed.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+    # surfaceModelData   = surface.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+    # smbModelData       = smb.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+    # velocityModelData  = velocity.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
+    #
+    # functThickness = fc.Function(V, name="Thickness")
+    # functBed       = fc.Function(V, name="Bed")
+    # functSurface   = fc.Function(V, name="Surface")
+    # functSMB       = fc.Function(V, name='SMB')
+    # functVelocity  = fc.Function(V, name='Velocity')
+    #
+    # print 'len: ', len(functThickness.vector()[:])
+    # print 'len: ', len(thicknessModelData)
+    #
+    # functThickness.vector()[:] = thicknessModelData
+    # functBed.vector()[:]       = bedModelData
+    # functSurface.vector()[:]   = surfaceModelData
+    # functSMB.vector()[:]       = smbModelData
+    # functVelocity.vector()[:]  = velocityModelData
+    #
+    # hfile.write(functThickness, "thickness")
+    # hfile.write(functBed,       "bed")
+    # hfile.write(functSurface,   "surface")
+    # hfile.write(functSMB,       "smb")
+    # hfile.write(functVelocity,  "velocity")
 
-    functThickness = fc.Function(V, name="Thickness")
-    functBed       = fc.Function(V, name="Bed")
-    functSurface   = fc.Function(V, name="Surface")
-    functSMB       = fc.Function(V, name='SMB')
-    functVelocity  = fc.Function(V, name='Velocity')
 
-    print 'len: ', len(functThickness.vector()[:])
-    print 'len: ', len(thicknessModelData)
+    thicknessiD = interpolateData(thickness.interp)
+    bediD       = interpolateData(bed.interp)
+    surfaceiD   = interpolateData(surface.interp)
+    smbiD       = interpolateData(smb.interp)
+    velocityiD  = interpolateData(velocity.interp)
 
-    functThickness.vector()[:] = thicknessModelData
-    functBed.vector()[:]       = bedModelData
-    functSurface.vector()[:]   = surfaceModelData
-    functSMB.vector()[:]       = smbModelData
-    functVelocity.vector()[:]  = velocityModelData
+    th = project(thicknessiD, V)
+    be = project(bediD, V)
+    su = project(surfaceiD, V)
+    sm = project(smbiD, V)
+    ve = project(velocityiD, V)
 
-    hfile.write(functThickness, "thickness")
-    hfile.write(functBed,       "bed")
-    hfile.write(functSurface,   "surface")
-    hfile.write(functSMB,       "smb")
-    hfile.write(functVelocity,  "velocity")
+
+    hfile.write(th, 'thickness')
+    hfile.write(be, 'bed')
+    hfile.write(su, 'surface')
+    hfile.write(smbiD, 'smb')
+    hfile.write(ve, 'velocity')
     hfile.write(mesh,           "mesh")
     hfile.close()
     print 'mesh ', mesh.coordinates()[::, 0], mesh.coordinates()[::, 1]
-    print 'velocity', velocityModelData
-    print 'thick', thicknessModelData
-    print 'bed', bedModelData
-    print 'surfae', surfaceModelData
-    print 'smb', smbModelData
+    # print 'velocity', velocityModelData
+    # print 'thick', thicknessModelData
+    # print 'bed', bedModelData
+    # print 'surfae', surfaceModelData
+    # print 'smb', smbModelData
 
 
     paraF = File('paraf.pvd')
+    paraF << thicknessiD
+    paraF << bediD
+    paraF << surfaceiD
+    paraF << smbiD
+    paraF << velocityiD
+    print 'Done with mesh'
     # paraF << mesh
-    paraF << functBed
-    paraF << functSurface
-    paraF << functSMB
-    paraF << functVelocity
-    paraF << functThickness
+    # paraF << functBed
+    # paraF << functSurface
+    # paraF << functSMB
+    # paraF << functVelocity
+    # paraF << functThickness
 
 
 def meshGui():
