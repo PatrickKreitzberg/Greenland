@@ -159,7 +159,7 @@ def calcVelWidth(x0, y0, x1, y1, draw):
     # print 'v0 ', vx0, vy0, v0
     vOverTTot = []
     distance = []
-    staticPlotWindow = QtGui.QMainWindow(mw)
+    # staticPlotWindow = QtGui.QMainWindow(mw)
     # staticPlotWindow.setWindowTitle('Static Plotter')
     # dummyWidget = QtGui.QWidget()
     # staticPlotWindow.setCentralWidget(dummyWidget)
@@ -232,7 +232,7 @@ def calcVelWidth(x0, y0, x1, y1, draw):
     # print len(distance)
     # print 'distance', math.fabs(distance[0]-distance[-1])
     # print 'vou', vOverTTot
-    peaks = peakdetect(vOverTTot, distance, lookahead=lah, delta=np.amax(vOverTTot)/5)
+    # peaks = peakdetect(vOverTTot, distance, lookahead=lah, delta=np.amax(vOverTTot)/5)
     # print 'peaks', peaks
     # plt1.getPlotItem().plot(distance, vOverTTot)
     # if len(peaks[0]) > 0:
