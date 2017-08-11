@@ -53,8 +53,6 @@ def runModel(hdf_name):
     ################           MESH          #################
     ##########################################################
     in_file.read(mesh,"/mesh", False)
-    print 'mesh'
-    print in_file.keys()
 
     # H5FILE Data:
     # bed and surface are datasets shape (378,)
