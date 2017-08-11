@@ -8,10 +8,10 @@ from MyLegend import *
 from scipy.optimize import curve_fit
 import numpy as np
 from ..dataset_objects import *
-from scipy.stats import kde
+from ..peakdetect import *
+
 from ..gui import *
 import scipy.signal as signal
-from scipy.fftpack import fft,fftfreq
 
 def gauss(x, *p):
     A, mu, sigma = p
@@ -45,6 +45,10 @@ def runStaticPlot():
         surfPlt  = plt1.getPlotItem().plot(surface.distanceData, surface.pathData, pen=surface.pen)
         legend1.addItem(surfPlt, 'Surface(m)')
 
+    if vWidthCheck.checkState() == 2:
+        vWidthPlt = plt1.getPlotItem().plot(velocityWidth.distanceData, velocityWidth.pathData, pen=velocityWidth.pen)
+        legend1.addItem(vWidthPlt, 'Vel. Width(m)')
+
     if bedCheck.checkState() == 2:
         bedPlt   = plt1.getPlotItem().plot(bed.distanceData, bed.pathData, pen=bed.pen)
         legend1.addItem(bedPlt, 'Bed(m)')
@@ -54,41 +58,78 @@ def runStaticPlot():
         legend1.addItem(thickPlt, 'Thickness(m)')
 
     if velocityCheck.checkState() == 2:
-        velocityPlt = plt1.getPlotItem().plot(velocity.distanceData, velocity.pathData, pen=velocity.pen)
-        dv = velocity.pathData[1:] - velocity.pathData[:-1]
-        dv2 = dv[1:] - dv[:-1]
+        velocityPlt = plt2.getPlotItem().plot(velocity.distanceData, velocity.pathData, pen=velocity.pen)
+        # dv = velocity.pathData[1:] - velocity.pathData[:-1]
+        # dv2 = dv[1:] - dv[:-1]
+        #
+        # vx = []
+        # for i in range(len(dv)):
+        #     if math.fabs(dv[i-1]) < 0.01:
+        #         vx.append(velocity.distanceData[i])
+        # for px in vx:
+        #     # vLine = pg.InfiniteLine(angle=90, movable=False, pos=px)
+        #     plt1.getPlotItem().addItem(pg.InfiniteLine(angle=90, movable=False, pos=px))
 
-        vx = []
-        for i in range(len(dv)):
-            if math.fabs(dv[i-1]) < 0.01:
-                vx.append(velocity.distanceData[i])
-        for px in vx:
-            # vLine = pg.InfiniteLine(angle=90, movable=False, pos=px)
-            plt1.getPlotItem().addItem(pg.InfiniteLine(angle=90, movable=False, pos=px))
-        FFT = abs(fft(velocity.pathData))
-        print 'fft', len(FFT), len(velocity.pathData)
-        if len(velocity.pathData)%2 ==0:
-            wl = min(11, len(velocity.pathData)-1)
-        else:
-            wl = min(11, len(velocity.pathData))
-        bleh = signal.savgol_filter(velocity.pathData,wl,2)
-        plt2.getPlotItem().plot(velocity.distanceData, bleh, pen=whitePlotPen)
-        dv = bleh[1:] - bleh[:-1]
-        plt3.getPlotItem().plot(velocity.distanceData[:-1], dv, pen=redPlotPen)
-        plt3.getPlotItem().plot(velocity.distanceData[:-2], dv[1:]-dv[:-1], pen=whitePlotPen)
-        mx = 0
-        mxdv = 0
-        mndv = 0
-        for i in range(len(bleh)-1):
-            if bleh[i] > bleh[mx]:
-                mx = i
-            if dv[i] > dv[mxdv]:
-                mxdv = i
-            if dv[i] < dv[mndv]:
-                mndv = i
-        plt2.addItem(pg.InfiniteLine(angle=90, movable=False, pos=velocity.distanceData[mx]))
-        plt2.addItem(pg.InfiniteLine(angle=90, movable=False, pos=velocity.distanceData[mxdv]))
-        plt2.addItem(pg.InfiniteLine(angle=90, movable=False, pos=velocity.distanceData[mndv]))
+            #
+            #   Adds line where slop ~0
+            #
+
+        # if len(velocity.pathData)%2 ==0:
+        #     wl = min(11, len(velocity.pathData)-1)
+        # else:
+        #     wl = min(11, len(velocity.pathData))
+        # bleh = signal.savgol_filter(velocity.pathData,wl,1)
+        # plt2.getPlotItem().plot(velocity.distanceData, bleh, pen=whitePlotPen)
+        # dv = bleh[1:] - bleh[:-1]
+        # plt3.getPlotItem().plot(velocity.distanceData[:-1], dv, pen=redPlotPen)
+        # plt3.getPlotItem().plot(velocity.distanceData, bleh, pen=whitePlotPen)
+        # mx = 0
+        # mxdv = 0
+        # mndv = 0
+        # for i in range(len(bleh)-1):
+        #     if bleh[i] > bleh[mx]:
+        #         mx = i
+        #     if dv[i] > dv[mxdv]:
+        #         mxdv = i
+        #     if dv[i] < dv[mndv]:
+        #         mndv = i
+        #     if math.fabs(dv[i]) < 0.1:
+        #         plt2.addItem(pg.InfiniteLine(angle=90, movable=False, pos=velocity.distanceData[i]))
+        # plt2.addItem(pg.InfiniteLine(angle=90, movable=False, pos=velocity.distanceData[mx]))
+        # plt2.addItem(pg.InfiniteLine(angle=90, movable=False, pos=velocity.distanceData[mxdv]))
+        # plt2.addItem(pg.InfiniteLine(angle=90, movable=False, pos=velocity.distanceData[mndv]))
+        #
+        #   Line at maximum/minimum dv and maximum v
+        #
+
+        # LETS FIND THE PEAKS
+
+
+        # x = linspace(0,100,500)
+        # y = np.sin(x)
+        # lah = max((len(velocity.pathData)/velocity.distanceData[-1])*200, int(np.floor(float(model_res_lineEdit.text()))))  # points/meter * 100 meters
+        # peaks = peakdetect(velocity.pathData, velocity.distanceData, lookahead=lah)
+        # print 'peaks', peaks
+        # print 'max peaks', peaks[0]
+        # print 'min peaks', peaks[1]
+        # for p in peaks[0]:
+        #     print 'maxpeak: ', p[1]
+        #     plt2.addItem(pg.InfiniteLine(angle=90, movable=False, pos=p[0]))
+        #
+        # for p in peaks[1]:
+        #     if len(p[0]) > 0:
+        #         print 'minpeak: ', p[1]
+        #         plt2.addItem(pg.InfiniteLine(angle=90, movable=False, pos=p[0], pen=redPlotPen))
+        #
+        #
+        #
+        # peaksdv = peakdetect(dv, velocity.distanceData[:-1], lookahead=lah)
+        #
+        # for p in peaksdv:
+        #     if len(p[0]) > 0:
+        #         print 'peak: ', p
+        #         plt3.addItem(pg.InfiniteLine(angle=90, movable=False, pos=p[0]))
+
 
 
 
@@ -106,3 +147,4 @@ def runStaticPlot():
 
     legend3.setParentItem(plt3.getPlotItem())
     staticPlotWindow.show()
+

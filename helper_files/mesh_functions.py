@@ -17,6 +17,7 @@ from dolfin.cpp.mesh import *
 import fenics as fc
 # Local imports.
 import distmesh as dm
+from dolfin.cpp.io import File
 
 # Polygon example:
 # pv are the vertices
@@ -43,8 +44,8 @@ def fstats(p, t):
 
 
 def runPoly():
-    cx, cy = 1,1 #map['cmap_x1'], map['cmap_y1']
-    pv = [[vpts[0].cx/cx, vpts[0].cy/cy]]
+    px, py = 1,1 #map['cmap_x1'], map['cmap_y1']
+    pv = [[vpts[0].px, vpts[0].py]]
     dmin = 99999
     minx = 99999
     miny = 99999
@@ -52,26 +53,26 @@ def runPoly():
     maxy = -1
 
     for i in range(1,len(vpts)):
-        d = sqrt((vpts[i].cx/cx - vpts[i-1].cx/cx)**2 + (vpts[i].cy/cy - vpts[i-1].cy/cy)**2)
+        d = sqrt((vpts[i].px - vpts[i-1].px)**2 + (vpts[i].py - vpts[i-1].py)**2)
         if d < dmin:
             dmin = d
-        if vpts[i].cx < minx:
-            minx = vpts[i].cx
+        if vpts[i].px < minx:
+            minx = vpts[i].px
 
-        if vpts[i].cx > maxx:
-            maxx = vpts[i].cx
+        if vpts[i].px > maxx:
+            maxx = vpts[i].px
 
-        if vpts[i].cy < miny:
-            miny = vpts[i].cy
+        if vpts[i].py < miny:
+            miny = vpts[i].py
 
-        if vpts[i].cy > maxy:
-            maxy = vpts[i].cy
+        if vpts[i].py > maxy:
+            maxy = vpts[i].py
 
-        pv.append([vpts[i].cx/cx, vpts[i].cy/cy])
+        pv.append([vpts[i].px, vpts[i].py])
     pause = lambda : None
-    plt.ion()
+    # plt.ion()
     np.random.seed(1) # Always the same results
-    p, t = polygon(np.array(pv),dmin, minx/cx, miny/cy, maxx/cx, maxy/cy)
+    p, t = polygon(np.array(pv),dmin, minx, miny, maxx, maxy)
     fstats(p, t)
     # pause()
     return p, t
@@ -91,7 +92,7 @@ def saveMeshAsXML(p, t, fname):
     f.write('\t\t</cells>\n')
     f.write('\t</mesh>\n')
     f.write('</dolfin>\n')
-    f.close()
+    f.close( )
     print 'Mesh file done.'
 
 def writeToHDF5(p, t, fname, meshname):
@@ -110,8 +111,10 @@ def writeToHDF5(p, t, fname, meshname):
     functSurface   = fc.Function(V, name="Surface")
     functSMB       = fc.Function(V, name='SMB')
     functVelocity  = fc.Function(V, name='Velocity')
+
     print 'len: ', len(functThickness.vector()[:])
     print 'len: ', len(thicknessModelData)
+
     functThickness.vector()[:] = thicknessModelData
     functBed.vector()[:]       = bedModelData
     functSurface.vector()[:]   = surfaceModelData
@@ -123,9 +126,23 @@ def writeToHDF5(p, t, fname, meshname):
     hfile.write(functSurface,   "surface")
     hfile.write(functSMB,       "smb")
     hfile.write(functVelocity,  "velocity")
-    hfile.write(mesh, "/mesh")
+    hfile.write(mesh,           "mesh")
     hfile.close()
+    print 'mesh ', mesh.coordinates()[::, 0], mesh.coordinates()[::, 1]
+    print 'velocity', velocityModelData
+    print 'thick', thicknessModelData
+    print 'bed', bedModelData
+    print 'surfae', surfaceModelData
+    print 'smb', smbModelData
 
+
+    paraF = File('paraf.pvd')
+    # paraF << mesh
+    paraF << functBed
+    paraF << functSurface
+    paraF << functSMB
+    paraF << functVelocity
+    paraF << functThickness
 
 
 def meshGui():
@@ -156,9 +173,7 @@ def meshGui():
         x.append(p[row[0]][0])
         y.append(p[row[0]][1])
         c.append(0)
-
     meshPW.getPlotItem().plot(x, y, pen=(255, 0, 0), connect=np.array(c))
-
 
 '''
 

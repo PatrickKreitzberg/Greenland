@@ -4,7 +4,8 @@ from math_functions import *
 import time
 import pickle
 import os
-
+import scipy.signal as signal
+from peakdetect import *
 
 
 
@@ -28,11 +29,11 @@ def cwLoop(e):
     :param e:
     :return:
     '''
-    calcVelWidth(vpts[0].getX(), vpts[0].getY(), vpts[1].getX(), vpts[1].getY(), True)
+    calcVelWidth(vpts[0].cx, vpts[0].cy, vpts[1].cx, vpts[1].cy, True)
 
     for i in range(1, len(vpts)):
         # if not vpts[i][2]:
-        calcVelWidth(vpts[i - 1].getX(), vpts[i - 1].getY(), vpts[i].getX(), vpts[i].getY(), True)
+        calcVelWidth(vpts[i - 1].cx, vpts[i - 1].cy, vpts[i].cx, vpts[i].cy, True)
 
 def gaussian(x, A, x0, sig):
     return A*math.exp(-(x-x0)**2/(2.0*sig**2))
@@ -53,32 +54,75 @@ def fit(p,x):
 #     :param draw:
 #     :return:
 #     '''
+#     staticPlotWindow = QtGui.QMainWindow(mw)
+#     staticPlotWindow.setWindowTitle('Static Plotter')
+#     dummyWidget = QtGui.QWidget()
+#     staticPlotWindow.setCentralWidget(dummyWidget)
+#     layout = QtGui.QVBoxLayout()
+#     dummyWidget.setLayout(layout)
+#     plt1 = pg.PlotWidget()
+#     layout.addWidget(plt1)
+#
 #
 #     # input is in map coordinates
 #     #
 #     # This is with interpolation
 #     #
 #     theta = np.arctan2(float(y1 - y0), float(x1-x0))
+#     rotMatrix = np.matrix([[np.cos(theta), -1 * np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+#     ls = linspace(-1,1,2,endpoint=True)
+#
+#     # lines perp to path
+#     tn = rotMatrix * np.matrix([[0.0], [-10]])
+#     tp = rotMatrix * np.matrix([[0.0], [10]])
+#
 #     tx1, ty1 = colorToProj(x1,y1)
 #     v0 = velocity.interp(tx1,ty1, grid=False)
 #     dv = [[0, 0, 0], [0, 0, 0]]   # x, y, dv for left and right
 #     endPoints = [[0, 0], [0, 0]]  # end points [left[x,y], right[x,y]]
 #     # print 'v0 ', vx0, vy0, v0
 #
-#     txn, tyn = colorToProj(x1 + (-1 * -np.sin(theta)), y1 + (dr * -1 * np.cos(theta)))  # dis either + or negative
-#     txp, typ = colorToProj(x1 + (1 * -np.sin(theta)) , y1 + (dr * 1 * np.cos(theta)))
+#     txn, tyn = colorToProj(x1 + tn[0], y1 + tn[1])  # dis either + or negative
+#     txp, typ = colorToProj(x1 + tp[0], y1 + tp[1])
 #     vn = velocity.interp(txn, tyn, grid=False)
 #     vp = velocity.interp(txp, typ, grid=False)
-#     if vn > v0: #head in positive direction
-#         pathx = linspace(0,-10*-np.sin(theta), 10)
+#     dwidth = 550
+#     if vn > v0: #head in negative direction
+#         path = linspace(0, dwidth, dwidth/10, endpoint=True)  # would be every 10 meters this in proj coord
+#         t = rotMatrix * np.matrix([[0] * len(path), path])  # proj coord
 #
-#         while vn > v0:
-#             px, py = colorToProj(x1, y1)
-#             # pathx = linspace(px, )
-#             tx1, ty1, = txn + (dr * -1 * -np.sin(theta)), tyn + (dr * -1 * np.cos(theta))
+#         vn = velocity.interp(t[0]*-150 + tx1, t[1]*-150 + ty1, grid=False)
+#
+#         peaks = peakdetect(vn[0], path*150, lookahead=5)
+#         print 'up'
+#         print vn
+#         print 'peaks', peaks
+#         print 'path', path
+#         plt1.getPlotItem().plot(path*150, vn[0])
+#         for p in peaks[0]:
+#             plt1.addItem(pg.InfiniteLine(angle=90, movable=False, pos=p[0]))
+#         endPoints = [[x1, y1], [x1 - t.item((0, t.shape[1]-1)), y1 - t.item((1, t.shape[1]-1))]]
+#         #     px, py = colorToProj(x1, y1)
+#         #     # pathx = linspace(px, )
+#         #     tx1, ty1, = txn + (dr * -1 * -np.sin(theta)), tyn + (dr * -1 * np.cos(theta))
 #     else:
-#         pass
+#         path = linspace(0, dwidth, dwidth/10, endpoint=True)  # would be every 10 meters
+#         t = rotMatrix * np.matrix([[0] * len(path), path])  # proj coord
+#         print 'down'
 #
+#         vp = velocity.interp(t[0] * 150 + tx1, t[1] * 150 + ty1, grid=False)
+#         print vp
+#         peaks = peakdetect(vp[0], path*150, lookahead=5)
+#         print 'peaks', peaks
+#         print 'path', path
+#         plt1.getPlotItem().plot(path*150, vp[0])
+#         for p in peaks[0]:
+#             plt1.addItem(pg.InfiniteLine(angle=90, movable=False, pos=p[0]))
+#         print t
+#         print t.shape
+#         endPoints = [[x1, y1], [x1 + t.item((0, t.shape[1]-1)), y1 + t.item((1, t.shape[1]-1))]]
+#     print endPoints
+#     draw = True
 #     if draw:
 #         iiContainer.currentWidget().addItem(pg.PlotDataItem([endPoints[0][0], endPoints[1][0]], [endPoints[0][1], endPoints[1][1]], connect='all', pen=whitePlotPen))
 #         # circle plotting
@@ -87,6 +131,7 @@ def fit(p,x):
 #         xc, yc = circArr(cax, cay)
 #         iiContainer.currentWidget().addItem(pg.PlotDataItem(xc, yc, connect='all', pen=blackPlotPen))
 #         iiContainer.currentWidget().addItem(pg.PlotDataItem([cax], [cay], pen=blackPlotPen))
+#     staticPlotWindow.show()
 #     return endPoints[0][0], endPoints[0][1], endPoints[1][0], endPoints[1][1]
 
 def calcVelWidth(x0, y0, x1, y1, draw):
@@ -112,36 +157,92 @@ def calcVelWidth(x0, y0, x1, y1, draw):
     dv = [[0, 0, 0], [0, 0, 0]]   # x, y, dv for left and right
     endPoints = [[0, 0], [0, 0]]  # end points [left[x,y], right[x,y]]
     # print 'v0 ', vx0, vy0, v0
-    err = lambda p, x, y: fit(p,x)-y
-
+    vOverTTot = []
+    distance = []
+    staticPlotWindow = QtGui.QMainWindow(mw)
+    # staticPlotWindow.setWindowTitle('Static Plotter')
+    # dummyWidget = QtGui.QWidget()
+    # staticPlotWindow.setCentralWidget(dummyWidget)
+    # layout = QtGui.QVBoxLayout()
+    # dummyWidget.setLayout(layout)
+    # plt1 = pg.PlotWidget()
+    # layout.addWidget(plt1)
     for i in range(2):
         # one loop for each boundary
+        vOverT = []
+        dist = []
         dr = 0
         currentVelocity = 10
         startEndRatio = 0
         vOld = v0
+        minReached = False
+        minIndex = 0
+        minVel = 9999
+        run = True
         if i == 0:
             dis = 1
         else:
             dis = -1
         # print 'min([int(v0%100),8]) ', min([int(v0%100),8])
-        while currentVelocity > 5 and startEndRatio <= min([int(v0%100),8]):
+        while currentVelocity > 5 and startEndRatio <= min([int(v0%100),8]) and run:
             # this while loop determines when the edge is reached
             dr += 1
             tx, ty = colorToProj(x1 + (dr*dis * -np.sin(theta)), y1 + (dr*dis * np.cos(theta)))  # Line perpindicular to flow
+            dist.append(dis*sqrt((dr*dis * -np.sin(theta))**2 + (dr*dis * np.cos(theta))**2))
             currentVelocity = velocity.interp(tx, ty, grid=False)
+            if currentVelocity < minVel:
+                minVel = currentVelocity
+                minIndex = dr - 1
+                if minVel < 1/3:
+                    minReached = True
+            vOverT.append(currentVelocity)
             if np.abs(currentVelocity - vOld) > dv[i][2]:
                 dv[i][0], dv[i][1] = x1 + (dr*dis * -np.sin(theta)), y1 + (dr*dis * np.cos(theta))
                 dv[i][2] = np.abs(currentVelocity - vOld)
             if currentVelocity !=0:
                 startEndRatio = v0/currentVelocity
+            if minReached and currentVelocity >= v0:
+                #
+                # If velocity got much smaller than equally as big should end.  Means there is probably another stream very close.
+                #
+                run = False
+                dist = dist[:minIndex]
+                vOverT = vOverT[:minIndex]
             vOld = currentVelocity
+
+
+        if i == 0:
+            for j in range(len(vOverT)):
+                vOverTTot.append(vOverT[::-1][j])
+                distance.append(dist[::-1][j]*150)
+
+            # vOverTTot.append(vOverT[::-1][:])
+        else:
+            for j in range(len(vOverT)):
+                vOverTTot.append(vOverT[j])
+                distance.append(dist[j]*150)
+            # vOverTTot.append(vOverT[:])
         if currentVelocity < 5:
             # plotting line
             endPoints[i][0], endPoints[i][1] = dv[i][0], dv[i][1]#mapCoord(tx, ty)#mapCoord(xa[ir], ya[ir])
         else:
             endPoints[i][0], endPoints[i][1] = colorCoord(tx, ty)#mapCoord(xa[ir], ya[ir])
-
+    lah = 6 #int(700*len(distance)/math.fabs(distance[0]-distance[-1]))
+    # print 'look ahead ', lah
+    # print len(distance)
+    # print 'distance', math.fabs(distance[0]-distance[-1])
+    # print 'vou', vOverTTot
+    peaks = peakdetect(vOverTTot, distance, lookahead=lah, delta=np.amax(vOverTTot)/5)
+    # print 'peaks', peaks
+    # plt1.getPlotItem().plot(distance, vOverTTot)
+    # if len(peaks[0]) > 0:
+    #     for p in peaks[0]:
+    #         plt1.addItem(pg.InfiniteLine(angle=90, movable=False, pos=p[0]))
+    # if len(peaks[1]) > 0:
+    #     for p in peaks[1]:
+    #         plt1.addItem(pg.InfiniteLine(angle=90, movable=False, pos=p[0], pen=redPlotPen))
+    # staticPlotWindow.show()
+    # draw=True
     if draw:
         iiContainer.currentWidget().addItem(pg.PlotDataItem([endPoints[0][0], endPoints[1][0]], [endPoints[0][1], endPoints[1][1]], connect='all', pen=whitePlotPen))
 
@@ -319,6 +420,7 @@ def interpolateData(runModel):
         # remainder = distance % dr
         # Xline needs to be in map coordinates because tx,ty are in map coordinates
         xline = linspace(0, distance, int(distance*(150/dr)), endpoint=True)  # * 1/dr*150 makes the resolution dr
+
         '''
         #FIXME NEED TO CHANGE SO IT LINES UP WITH FENICS MESH
         '''
@@ -333,7 +435,6 @@ def interpolateData(runModel):
         for j in range(len(xline)):
             # rotate coordinates
             t = rotMatrix * np.matrix([[xline[j]], [0.0]])
-            # FIXME probably more elegant way to do this
             # transform coordinates into projected coordinates
             tx, ty = colorToProj(vpts[i - 1].cx + t[0, 0], vpts[i - 1].cy + t[1, 0])
             px.append(tx)
@@ -366,7 +467,6 @@ def interpolateData(runModel):
         ########################################
         ##        CALCULATE VELOCITY          ##
         ########################################
-
         if velocityCheck.checkState() == 2 or runModel:
             # velInterp = getInterpolators(velocity.data, 'velocity', mix, miy, x1=mxx, y1=mxy)
             vi = velocity.interp(px, py, grid=False)
@@ -376,20 +476,21 @@ def interpolateData(runModel):
         ########################################
         ##     CALCULATE VELOCITY WIDTH       ##
         ########################################
-        if vWidthCheck == 2 or runModel:
+        if vWidthCheck.checkState() == 2 or runModel:
             vwd = []
             for i in range(len(px)):
                 xp0, yp0 = colorCoord(px[i - 1], py[i - 1])
                 xp1, yp1 = colorCoord(px[i], py[i])
-                xril, yril, xrir, yrir = calcVelWidth(xp0, yp0, xp1, yp1, True)
+                xril, yril, xrir, yrir = calcVelWidth(xp0, yp0, xp1, yp1, False)
                 vwd.append(sqrt((xril - xrir) ** 2 + (yril - yrir) ** 2))
             vwValues.append(vwd)
 
         ########################################
         ##   CALCULATE SURFACE MASS-BALANCE   ##
         ########################################
-        if smbCheck == 2 or runModel:
+        if smbCheck.checkState() == 2 or runModel:
             # smbInterp = getInterpolators(smb.data, smb.name, mix, miy, x1=mxx, y1=mxy)
+            'init smb'
             localSMB = smb.interp(px, py, grid=False)
             smbValues.append(localSMB)
 

@@ -378,6 +378,21 @@ def regionIntLine(e):
         lines.append(intLine(x0p, y0p))
         iiContainer.currentWidget().addItem(lines[-1])
 
+def allCheckChange(e):
+    if allCheck.checkState() == 2:
+        velocityCheck.setCheckState(2)
+        vWidthCheck.setCheckState(2)
+        smbCheck.setCheckState(2)
+        surfaceCheck.setCheckState(2)
+        bedCheck.setCheckState(2)
+        thicknessCheck.setCheckState(2)
+    else:
+        velocityCheck.setCheckState(0)
+        vWidthCheck.setCheckState(0)
+        smbCheck.setCheckState(0)
+        surfaceCheck.setCheckState(0)
+        bedCheck.setCheckState(0)
+        thicknessCheck.setCheckState(0)
 
 
 

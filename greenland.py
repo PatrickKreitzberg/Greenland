@@ -19,7 +19,6 @@ from helper_files.constants import *
 from helper_files.mesh_functions import *
 from helper_files.classes.Instructions import *
 
-print 'post map', map
 ##################################################
 
 #        BRANCHING   BRANCHING   BRANCHING   BRANCHING   BRANCHING
@@ -178,6 +177,10 @@ modelButton.clicked.connect(runModelButt)
 hiResButton.clicked.connect(hiResInterpolators)
 meshButton.clicked.connect(meshGui)
 instructionButton.clicked.connect(showInstructions)
+
+allCheck.stateChanged.connect(allCheckChange)
+
+# pg.SignalProxy(allCheck.stateChanged, rateLimit=60, slot=allCheckChange)
 
 velocity.imageItem.hoverEvent = mouseMoved
 # bed.imageItem.hoverEvent = mouseMoved

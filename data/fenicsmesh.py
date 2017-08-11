@@ -23,4 +23,5 @@ f.close()
 f = HDF5File(mesh.mpi_comm(),'mesh2d.h5','r')
 print f.has_dataset('bed')
 
+
 f.close()

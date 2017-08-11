@@ -7,7 +7,7 @@ class vpt:
         self.plotWidget = plotWidget
         self.cx, self.cy = cx, cy  # color coordinates
         self.dx, self.dy = dx, dy  # data coordinates
-
+        self.px, self.py = colorToProj(self.cx, self.cy)
         self.v = velocity
         self.pen = blackPlotPen
         self.pen.setWidth(2)

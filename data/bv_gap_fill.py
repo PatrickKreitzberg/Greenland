@@ -13,6 +13,7 @@ from dolfin.cpp.io import *
 from dolfin.cpp.fem import *
 from dolfin.cpp.mesh import *
 import fenics as fc
+import numpy as np
 import scipy
 import pylab
 from smooth import smooth
@@ -74,12 +75,16 @@ Unorm = v
 
 # Mark facets where velocity is non-zero, 
 # Objective function is only computed in these regions
+print mesh.coordinates()
+print mesh.cells()
 class ValidData(SubDomain):
     def __init__(self,u):
         SubDomain.__init__(self)
         self.u = u
+
     def inside(self,x,on_boundary):
-        u = self.u(x[0],x[1])
+        print 'x,y', x[0], x[1]
+        u = self.u(x[0], x[1])
         return u != 0.
 
 subdomains = CellFunction("size_t", mesh)
@@ -164,6 +169,7 @@ adot_    = Function(Q)
 
 # The _I_fun computes the value of the objective function from doing a forward
 # solve.
+
 def _I_fun(s,*args):
     adot.vector()[:] = s
     solve(fwd == 0, Ub, dbc_U, J = J_fwd,\
