@@ -99,8 +99,8 @@ def saveMeshAsXML(p, t, fname):
 def writeToHDF5(p, t, fname, meshname):
     mesh = Mesh(meshname)
     hfile = fc.HDF5File(mesh.mpi_comm(), fname, "w")
-    V = fc.FunctionSpace(mesh, 'CG', 1)
 
+    V = fc.FunctionSpace(mesh, 'CG', 1)
     # thicknessModelData = thickness.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
     # bedModelData       = bed.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
     # surfaceModelData   = surface.interp(mesh.coordinates()[::, 0], mesh.coordinates()[::, 1], grid=False)
@@ -129,11 +129,11 @@ def writeToHDF5(p, t, fname, meshname):
     # hfile.write(functVelocity,  "velocity")
 
 
-    thicknessiD = interpolateData(thickness.interp)
-    bediD       = interpolateData(bed.interp)
-    surfaceiD   = interpolateData(surface.interp)
-    smbiD       = interpolateData(smb.interp)
-    velocityiD  = interpolateData(velocity.interp)
+    thicknessiD = interpolateData(thickness.interp,degree=2)
+    bediD       = interpolateData(bed.interp,degree=2)
+    surfaceiD   = interpolateData(surface.interp,degree=2)
+    smbiD       = interpolateData(smb.interp,degree=2)
+    velocityiD  = interpolateData(velocity.interp,degree=2)
 
     th = project(thicknessiD, V)
     be = project(bediD, V)
@@ -145,7 +145,7 @@ def writeToHDF5(p, t, fname, meshname):
     hfile.write(th, 'thickness')
     hfile.write(be, 'bed')
     hfile.write(su, 'surface')
-    hfile.write(smbiD, 'smb')
+    hfile.write(sm, 'smb')
     hfile.write(ve, 'velocity')
     hfile.write(mesh,           "mesh")
     hfile.close()
@@ -158,11 +158,11 @@ def writeToHDF5(p, t, fname, meshname):
 
 
     paraF = File('paraf.pvd')
-    paraF << thicknessiD
-    paraF << bediD
-    paraF << surfaceiD
-    paraF << smbiD
-    paraF << velocityiD
+    # paraF << th
+    # paraF << be
+    # paraF << su
+    # paraF << sm
+    paraF << ve
     print 'Done with mesh'
     # paraF << mesh
     # paraF << functBed
