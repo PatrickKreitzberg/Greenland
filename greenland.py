@@ -112,7 +112,9 @@ def runModelButt():
         # Data points on interval [0, N*dr] inclusive on both ends
 
         N = int(np.floor(bed.distanceData[-1]/float(dr))) # length of path / resolution
+
         x = np.arange(0, (N+1)*dr, dr) # start point, end point, number of segments. END POINT NOT INCLUDED!
+        print 'N, dr, dr*N', N, dr, dr*N
         mesh = fc.IntervalMesh(N, 0, dr * N)  # number of cells, start point, end point
 
         thicknessModelData = thickness1dInterp(x)

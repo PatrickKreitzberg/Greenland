@@ -1,14 +1,6 @@
 import fenics as fc
 from time import *
 from dolfin import *
-from dolfin.cpp.mesh import *
-from dolfin.cpp.common import *
-from dolfin.cpp.function import *
-from dolfin.cpp.io import *
-from dolfin.cpp.fem import *
-from dolfin.cpp.la import *
-
-
 from gui import *
 from helper_files.classes.ModelPlotter import *
 from support.expressions import *
@@ -53,6 +45,7 @@ def runModel(hdf_name):
     ################           MESH          #################
     ##########################################################
     in_file.read(mesh,"/mesh", False)
+
 
     # H5FILE Data:
     # bed and surface are datasets shape (378,)
