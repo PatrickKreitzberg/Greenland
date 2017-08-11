@@ -107,7 +107,7 @@ time_container = QtGui.QGridLayout()
 time_widget.setLayout(time_container)
 
 model_res_label    = QtGui.QLabel('Sptl res(m):')
-model_res_lineEdit = QtGui.QLineEdit('500')
+model_res_lineEdit = QtGui.QLineEdit('2000')
 
 t_end_label    = QtGui.QLabel('t_end(yr):')
 t_end_lineEdit = QtGui.QLineEdit('20000')
