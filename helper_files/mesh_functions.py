@@ -3,7 +3,6 @@ from math_functions import *
 from pens import *
 from gui import *
 from dataset_objects import *
-import numpy as np
 from data_functions import *
 from classes.PlotPoint import *
 from velocity_functions import *

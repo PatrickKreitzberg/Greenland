@@ -23,6 +23,7 @@ class Dataset():
         interpSS = 6
         self.name = name
         self.pen = pen
+        self.dataCMFileName = dataCMFileName
         if self.name == 'velocity':
             self.data, self.vx, self.vy = self.setData(dataFileName, name)
             bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
@@ -81,9 +82,9 @@ class Dataset():
         self.distanceData = None    # x data for plots.  Which is distance in proj coordinates
 
     def createColorMap(self):
-        fn = './data/' + self.name + 'CM.h5'
-        self.colorMapFile = h5py.File(fn, 'r')
-        self.colorData = self.colorMapFile['colormap'][:]
+        # fn = './data/' + self.name + 'CM.h5'
+        self.colorMapFile = h5py.File(self.dataCMFileName, 'r')
+        self.colorData = self.colorMapFile[self.name][:]
 
         # Setup imageitem
         self.imageItem = pg.ImageItem(self.colorData)
