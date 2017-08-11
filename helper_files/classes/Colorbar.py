@@ -2,6 +2,7 @@ import numpy as np
 import pyqtgraph as pg
 # https://gist.github.com/maedoc/b61090021d2a5161c5b9
 
+
 class LogColorBar(pg.GraphicsWidget):
     def __init__(self, cmap, width, height, ticks=None, tick_labels=None, label=None):
         pg.GraphicsWidget.__init__(self)

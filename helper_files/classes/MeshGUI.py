@@ -10,6 +10,7 @@ class MeshGUI(QtGui.QMainWindow):
         self.horLayout = QtGui.QHBoxLayout()
         self.cw.setLayout(self.horLayout)
         self.verLayout = QtGui.QVBoxLayout()
+        self.pw = pg.PlotWidget()
 
 
 
