@@ -3,7 +3,7 @@
 run greenland.py
 
 https://umt.box.com/s/8nosww6t9q0vhdtcsdlh3tpee8g3b1sx
-<a href="http://www.wired.com/wiredenterprise/2013/09/github-for-anything/all/">Article: WIRED - GitHub Is Going Mainstream</a>
+<a href="/howto.md">HOWTWO</a>
 {{ "/howto.md" | relative_url }}
 
 
