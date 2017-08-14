@@ -4,7 +4,7 @@ run greenland.py
 
 https://umt.box.com/s/8nosww6t9q0vhdtcsdlh3tpee8g3b1sx
 
-{{ "/assets/style.css" | relative_url }}
+{{ "/howto.md" | relative_url }}
 
 
 These are the dependencies.  I am using Python2.7
