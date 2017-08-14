@@ -1,12 +1,17 @@
-import distmesh
+# local imports
 from math_functions import *
 from pens import *
 from gui import *
 from dataset_objects import *
 from data_functions import *
 from classes.PlotPoint import *
+from classes.MeshGUI import MeshGUI
 from velocity_functions import *
 from classes.StaticPlotter import *
+from classes.InterpolateData import interpolateDataClass
+
+# nonlocal imports
+import distmesh
 import numpy as np
 import matplotlib.pyplot as plt
 from constants import *
@@ -17,7 +22,7 @@ import fenics as fc
 # Local imports.
 import distmesh as dm
 from dolfin.cpp.io import File
-from classes.InterpolateData import interpolateData
+
 
 
 # Polygon example:
@@ -173,34 +178,37 @@ def writeToHDF5(p, t, fname, meshname):
 
 
 def meshGui():
-    meshWindow = QtGui.QMainWindow(mw)
-    cw = QtGui.QWidget()
-    meshWindow.setCentralWidget(cw)
-    cwLayout = QtGui.QHBoxLayout()
-    cw.setLayout(cwLayout)
-    meshPW = pg.PlotWidget()
-    meshPW.invertY(True)
-    meshPW.setAspectLocked(True)
-    cwLayout.addWidget(meshPW)
-    meshWindow.show()
-    p, t = runPoly()
-    saveMeshAsXML(p,t,'./data/mesh2d.xml')
-    writeToHDF5(p, t, './data/mesh2d.h5', './data/mesh2d.xml')
-    x, y, c = [], [], []
-    for row in t:
-        x.append(p[row[0]][0])
-        y.append(p[row[0]][1])
-        c.append(1)
-        x.append(p[row[1]][0])
-        y.append(p[row[1]][1])
-        c.append(1)
-        x.append(p[row[2]][0])
-        y.append(p[row[2]][1])
-        c.append(1)
-        x.append(p[row[0]][0])
-        y.append(p[row[0]][1])
-        c.append(0)
-    meshPW.getPlotItem().plot(x, y, pen=(255, 0, 0), connect=np.array(c))
+    mg = MeshGUI(mw)
+
+
+    # meshWindow = QtGui.QMainWindow(mw)
+    # cw = QtGui.QWidget()
+    # meshWindow.setCentralWidget(cw)
+    # cwLayout = QtGui.QHBoxLayout()
+    # cw.setLayout(cwLayout)
+    # meshPW = pg.PlotWidget()
+    # meshPW.invertY(True)
+    # meshPW.setAspectLocked(True)
+    # cwLayout.addWidget(meshPW)
+    # meshWindow.show()
+    # p, t = runPoly()
+    # saveMeshAsXML(p,t,'./data/mesh2d.xml')
+    # writeToHDF5(p, t, './data/mesh2d.h5', './data/mesh2d.xml')
+    # x, y, c = [], [], []
+    # for row in t:
+    #     x.append(p[row[0]][0])
+    #     y.append(p[row[0]][1])
+    #     c.append(1)
+    #     x.append(p[row[1]][0])
+    #     y.append(p[row[1]][1])
+    #     c.append(1)
+    #     x.append(p[row[2]][0])
+    #     y.append(p[row[2]][1])
+    #     c.append(1)
+    #     x.append(p[row[0]][0])
+    #     y.append(p[row[0]][1])
+    #     c.append(0)
+    # meshPW.getPlotItem().plot(x, y, pen=(255, 0, 0), connect=np.array(c))
 
 '''
 
