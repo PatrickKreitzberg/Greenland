@@ -9,10 +9,6 @@ run greenland.py
 https://umt.box.com/s/8nosww6t9q0vhdtcsdlh3tpee8g3b1sx
 
 
-sfdafd
-
-<a href="{{ "/howto.md" | relative_url }}">'how to'</a> 
-
 
 
 These are the dependencies.  I am using Python2.7
