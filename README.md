@@ -1,10 +1,14 @@
+# Greenland
+
+run greenland.py
+
 <ul class="posts">
     {% for post in site.posts %}
       <li><a href="{{ post.url }}">{{ post.title }}</a></li>
     {% endfor %}
-</ul># Greenland
+</ul>
 
-run greenland.py
+
 
 https://umt.box.com/s/8nosww6t9q0vhdtcsdlh3tpee8g3b1sx
 
