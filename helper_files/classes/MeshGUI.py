@@ -90,7 +90,7 @@ class MeshGUI(QtGui.QMainWindow):
             os.makedirs('./data/' + str(self.fileName.text()))
         self.hdfFileName = './data/' + str(self.fileName.text()) + '/' + str(self.fileName.text()) + '_mesh.h5'
         self.xmlFileName = './data/' + str(self.fileName.text()) + '/' + str(self.fileName.text()) + '_mesh_data.xml'
-        self.paraFileName = './data/' + str(self.fileName.text()) + '/' + str(self.fileName.text()) + '_para.pvd'
+        self.paraFileName = './data/' + str(self.fileName.text()) + '/para_files/'# + str(self.fileName.text()) + '_para.pvd'
         self.p, self.t = self.runPoly()
         self.graphMesh()
         self.saveMeshAsXML()
@@ -218,10 +218,18 @@ class MeshGUI(QtGui.QMainWindow):
         hfile.write(mesh, "mesh")
         hfile.close()
 
-        paraF = File(self.paraFileName)
-        paraF << th
-        paraF << be
-        paraF << su
-        paraF << sm
-        paraF << ve
+        parTHF = File(self.paraFileName + 'thickness' + '.pvd')
+        parTHF << th
+
+        parBEF = File(self.paraFileName + 'bed' + '.pvd')
+        parBEF << be
+
+        parSUF = File(self.paraFileName + 'surface' + '.pvd')
+        parSUF << su
+
+        parSMF = File(self.paraFileName + 'smb' + '.pvd')
+        parSMF << sm
+
+        parVEF = File(self.paraFileName + 'velocity' + '.pvd')
+        parVEF << ve
         print 'Done with mesh'
