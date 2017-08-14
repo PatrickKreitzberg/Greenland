@@ -1,6 +1,6 @@
-# GL_clean
+# Greenland
 
-run gl.py
+run greenland.py
 
 
 These are the dependencies.  I am using Python2.7
