@@ -1,15 +1,16 @@
-import h5py
 
-# import pyqtgraph.examples
-# pyqtgraph.examples.run()
 
-f = h5py.File('./data/modelOut.h5', 'r')
-print f.keys()
-print f['bed'].keys()
-print f['bed']['0'][:]
-for key in f['bed'].keys():
-    print key
-f.close()
+import pyqtgraph.examples
+pyqtgraph.examples.run()
+
+# import h5py
+# f = h5py.File('./data/modelOut.h5', 'r')
+# print f.keys()
+# print f['bed'].keys()
+# print f['bed']['0'][:]
+# for key in f['bed'].keys():
+#     print key
+# f.close()
 
 
 
