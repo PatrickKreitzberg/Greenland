@@ -1,8 +1,17 @@
-import numpy as np
-
+import h5py
 
 # import pyqtgraph.examples
 # pyqtgraph.examples.run()
+
+f = h5py.File('./data/modelOut.h5', 'r')
+print f.keys()
+print f['bed'].keys()
+print f['bed']['0'][:]
+for key in f['bed'].keys():
+    print key
+f.close()
+
+
 
 #
 import h5py
@@ -22,19 +31,19 @@ import h5py
 # # print bedData.keys()
 # bedData.close()
 
-from scipy import linspace
-import numpy as np
-path = linspace(0,150,15)
-
-m = np.matrix([[1,1],[0,1]])
-
-
-x = linspace(-1,1,2, endpoint=True)
-y = [0]*2
-print m*np.matrix([x, y])
-z = m*np.matrix([x, y])
-print ''
-print z.shape
-print z.itemsize
-print z.item((z.shape[0]-1,0))
+# from scipy import linspace
+# import numpy as np
+# path = linspace(0,150,15)
+#
+# m = np.matrix([[1,1],[0,1]])
+#
+#
+# x = linspace(-1,1,2, endpoint=True)
+# y = [0]*2
+# print m*np.matrix([x, y])
+# z = m*np.matrix([x, y])
+# print ''
+# print z.shape
+# print z.itemsize
+# print z.item((z.shape[0]-1,0))
 # print x+10

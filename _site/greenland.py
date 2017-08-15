@@ -31,9 +31,9 @@ https://stackoverflow.com/questions/38065570/pyqtgraph-is-it-possible-to-have-a-
 
 RACMO:
 
-Latitude of the origin:                             90
+Latitude of the origin:     90
 Longitude of the origin(central meridian):         -45
-Standard parallel:                                  70
+Standard parallel:          70
 Ellipsoid:WGS84
 Datum:WGS84
 '''

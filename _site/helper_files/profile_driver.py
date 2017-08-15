@@ -1,5 +1,4 @@
 import fenics as fc
-import h5py
 from time import *
 from dolfin import *
 from gui import *
@@ -8,7 +7,18 @@ from support.expressions import *
 from support.fenics_optimizations import *
 from support.momentum import *
 
+
+
+run = True
+
+def winclose(e):
+    global run
+    run = False
+
+
 def runModel(hdf_name):
+    global run
+    run = True
 
     ##########################################################
     ################           FILES         #################
@@ -16,7 +26,7 @@ def runModel(hdf_name):
 
     mesh = Mesh()
     in_file  = HDF5File(mesh.mpi_comm(), hdf_name, "r")  #mesh.mpi_comm() is ussed to read in parallel?
-    # outF = h5py.File('./data/modelOut')
+
 
 
     # out_file = HDF5File(mesh.mpi_comm(),"./output_data/peterman.h5","w")
@@ -189,6 +199,7 @@ def runModel(hdf_name):
     # PyQt gui items
     mw2 = QtGui.QMainWindow(mw)
     mw2.setWindowTitle('PyQt PLOTTER')  # MAIN WINDOW
+    mw2.closeEvent = winclose
     cw2 = QtGui.QWidget()  # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
     mw2.setCentralWidget(cw2)
     l = QtGui.QVBoxLayout()  # CENTRAL WIDGET LAYOUT (layout of the central widget)
@@ -201,15 +212,11 @@ def runModel(hdf_name):
     l.addWidget(plt3)
     mw2.show()
 
-    pPlt = pyqtplotter(strs, mesh, plt1, plt2, plt3, t, dt_float)
-    pPlt.refresh_plot(0)
-    mw2.closeEvent = pPlt.closed
+    pPlt = pyqtplotter(strs, mesh, plt1, plt2, plt3)
+    pPlt.refresh_plot()
     pg.QtGui.QApplication.processEvents()
-    print 'mw2..isActive', mw2.isActiveWindow()
-    mw2.activateWindow()
-    print 'mw2..isActive', mw2.isActiveWindow()
 
-    while t<t_end and pPlt.run:
+    while t<t_end and run:
         # time0 = time.time()
         print( "Solving for time: ",t)
         t_current.setText("Current year: " + str(t))
@@ -230,7 +237,18 @@ def runModel(hdf_name):
             coupled_solver.parameters['snes_solver']['error_on_nonconvergence'] = True
 
         assigner_inv.assign([un,u2n,H0],U)
-        t += dt_float
-        pPlt.refresh_plot(t)
+        t+=dt_float
+        pPlt.refresh_plot()
         pg.QtGui.QApplication.processEvents()
     in_file.close()
+    # pg.exit()
+    # mw2.at
+
+
+
+# m = model()
+## Start Qt event loop unless running in interactive mode.
+# if __name__ == '__main__':
+#     import sys
+#     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+#         QtGui.QApplication.instance().exec_()

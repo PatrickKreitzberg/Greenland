@@ -6,17 +6,10 @@ from pylab import plot,show,ion,subplots
 from dolfin import project
 from MyLegend import *
 from ..pens import *
-import h5py
 
 
 class pyqtplotter(object):
-    def __init__(self, strs, mesh, plt1, plt2, plt3, t0, dt):
-        self.run = True
-        self.outF = h5py.File('./data/modelOut.h5', 'w')
-        self.bedOut = self.outF.create_group('bed')
-        self.surfaceOut = self.outF.create_group('surface')
-        self.outF.attrs['dt'] = dt
-        self.outF.attrs['t0'] = t0
+    def __init__(self, strs, mesh, plt1, plt2, plt3):
         self.strs = strs # stresses
         self.mesh = mesh # mesh (2-d)
         self.x = mesh.coordinates().flatten()
@@ -84,12 +77,7 @@ class pyqtplotter(object):
         self.legend3.addItem(self.ph8, '&mu;<sub>b</sub>')
 
 
-    def closed(self, e):
-        self.run = False
-        self.outF.close()
-
-    def refresh_plot(self, time):
-
+    def refresh_plot(self):
         BB = self.strs.B.compute_vertex_values()
         HH = self.strs.H0.compute_vertex_values()
         TD = project(self.strs.tau_d_plot)
@@ -99,9 +87,6 @@ class pyqtplotter(object):
         TZ = project(self.strs.tau_xz_plot)
         us = project(self.strs.u(0))
         ub = project(self.strs.u(1))
-        if self.run:
-            self.bedOut.create_dataset(name=str(time), data=BB)
-            self.surfaceOut.create_dataset(name=str(time), data=(BB + HH))
 
         self.ph0.setData(self.x, BB)
         self.ph1.setData(self.x, (BB + HH))
