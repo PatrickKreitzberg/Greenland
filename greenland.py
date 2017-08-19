@@ -18,6 +18,7 @@ from helper_files.gui_functions import *
 from helper_files.constants import *
 from helper_files.mesh_functions import *
 from helper_files.classes.Instructions import *
+from helper_files.classes.ModelGui import ModelGUI
 
 ##################################################
 
@@ -89,72 +90,78 @@ def clearPoints():
     bed.pathPlotItem.clear()
     thickness.pathPlotItem.clear()
 
-def runModelButt():
-    dr = float(model_res_lineEdit.text()) # dr = 150
-    if len(vpts) > 0:
 
-        interpolateData(True)
+def createModelGUI():
+    m = ModelGUI(mw)
 
-        ###########################################
-        ###  INTERPOLATE DATA SO EVEN INTERVAL  ###
-        ###########################################
-        '''
-        Interpolating data at an even interval so the data points align with the 
-        invterval mesh.
-        '''
-        thickness1dInterp = interp1d(thickness.distanceData, thickness.pathData)
-        bed1dInterp       = interp1d(bed.distanceData,       bed.pathData)
-        surface1dInterp   = interp1d(surface.distanceData,   surface.pathData)
-        smb1dInterp       = interp1d(smb.distanceData,       smb.pathData)
-        velocity1dInterp  = interp1d(velocity.distanceData,  velocity.pathData)
 
-        # N is the number of total data points including the last
-        # Data points on interval [0, N*dr] inclusive on both ends
-
-        N = int(np.floor(bed.distanceData[-1]/float(dr))) # length of path / resolution
-
-        x = np.arange(0, (N+1)*dr, dr) # start point, end point, number of segments. END POINT NOT INCLUDED!
-        print 'N, dr, dr*N', N, dr, dr*N
-        mesh = fc.IntervalMesh(N, 0, dr * N)  # number of cells, start point, end point
-
-        thicknessModelData = thickness1dInterp(x)
-        bedModelData       = bed1dInterp(x)
-        surfaceModelData   = surface1dInterp(x)
-        smbModelData       = smb1dInterp(x)
-        velocityModelData  = velocity1dInterp(x)
-
-        THICKLIMIT = 10.  # Ice is never less than this thick
-        H = surfaceModelData - bedModelData
-        surfaceModelData[H <= THICKLIMIT] = bedModelData[H <= THICKLIMIT]
-
-        #FIXME the intervalMesh is consistantly 150 between each datapoint this not true for the data being sent
-        hdf_name = '.data/latest_profile.h5'
-        hfile = fc.HDF5File(mesh.mpi_comm(), hdf_name, "w")
-        V = fc.FunctionSpace(mesh,"CG",1)
-
-        functThickness = fc.Function(V, name="Thickness")
-        functBed       = fc.Function(V, name="Bed")
-        functSurface   = fc.Function(V, name="Surface")
-        functSMB       = fc.Function(V, name='SMB')
-        functVelocity  = fc.Function(V, name='Velocity')
-
-        surface.pathPlotItem.setData(x, surfaceModelData)
-        pg.QtGui.QApplication.processEvents()
-
-        functThickness.vector()[:] = thicknessModelData
-        functBed.vector()[:]       = bedModelData
-        functSurface.vector()[:]   = surfaceModelData
-        functSMB.vector()[:]       = smbModelData
-        functVelocity.vector()[:]  = velocityModelData
-
-        hfile.write(functThickness.vector(), "/thickness")
-        hfile.write(functBed.vector(),       "/bed")
-        hfile.write(functSurface.vector(),   "/surface")
-        hfile.write(functSMB.vector(),       "/smb")
-        hfile.write(functVelocity.vector(),  "/velocity")
-        hfile.write(mesh, "/mesh")
-        hfile.close()
-        runModel(hdf_name)
+#
+# def runModelButt():
+#     dr = float(model_res_lineEdit.text()) # dr = 150
+#     if len(vpts) > 0:
+#
+#         interpolateData(True)
+#
+#         ###########################################
+#         ###  INTERPOLATE DATA SO EVEN INTERVAL  ###
+#         ###########################################
+#         '''
+#         Interpolating data at an even interval so the data points align with the
+#         invterval mesh.
+#         '''
+#         thickness1dInterp = interp1d(thickness.distanceData, thickness.pathData)
+#         bed1dInterp       = interp1d(bed.distanceData,       bed.pathData)
+#         surface1dInterp   = interp1d(surface.distanceData,   surface.pathData)
+#         smb1dInterp       = interp1d(smb.distanceData,       smb.pathData)
+#         velocity1dInterp  = interp1d(velocity.distanceData,  velocity.pathData)
+#
+#         # N is the number of total data points including the last
+#         # Data points on interval [0, N*dr] inclusive on both ends
+#
+#         N = int(np.floor(bed.distanceData[-1]/float(dr))) # length of path / resolution
+#
+#         x = np.arange(0, (N+1)*dr, dr) # start point, end point, number of segments. END POINT NOT INCLUDED!
+#         print 'N, dr, dr*N', N, dr, dr*N
+#         mesh = fc.IntervalMesh(N, 0, dr * N)  # number of cells, start point, end point
+#
+#         thicknessModelData = thickness1dInterp(x)
+#         bedModelData       = bed1dInterp(x)
+#         surfaceModelData   = surface1dInterp(x)
+#         smbModelData       = smb1dInterp(x)
+#         velocityModelData  = velocity1dInterp(x)
+#
+#         THICKLIMIT = 10.  # Ice is never less than this thick
+#         H = surfaceModelData - bedModelData
+#         surfaceModelData[H <= THICKLIMIT] = bedModelData[H <= THICKLIMIT]
+#
+#         #FIXME the intervalMesh is consistantly 150 between each datapoint this not true for the data being sent
+#         hdf_name = '.data/latest_profile.h5'
+#         hfile = fc.HDF5File(mesh.mpi_comm(), hdf_name, "w")
+#         V = fc.FunctionSpace(mesh,"CG",1)
+#
+#         functThickness = fc.Function(V, name="Thickness")
+#         functBed       = fc.Function(V, name="Bed")
+#         functSurface   = fc.Function(V, name="Surface")
+#         functSMB       = fc.Function(V, name='SMB')
+#         functVelocity  = fc.Function(V, name='Velocity')
+#
+#         surface.pathPlotItem.setData(x, surfaceModelData)
+#         pg.QtGui.QApplication.processEvents()
+#
+#         functThickness.vector()[:] = thicknessModelData
+#         functBed.vector()[:]       = bedModelData
+#         functSurface.vector()[:]   = surfaceModelData
+#         functSMB.vector()[:]       = smbModelData
+#         functVelocity.vector()[:]  = velocityModelData
+#
+#         hfile.write(functThickness.vector(), "/thickness")
+#         hfile.write(functBed.vector(),       "/bed")
+#         hfile.write(functSurface.vector(),   "/surface")
+#         hfile.write(functSMB.vector(),       "/smb")
+#         hfile.write(functVelocity.vector(),  "/velocity")
+#         hfile.write(mesh, "/mesh")
+#         hfile.close()
+#         runModel(hdf_name)
 
 def showInstructions():
     Instructions(mw)
@@ -175,7 +182,7 @@ intButton.clicked.connect(calcProf)
 cProfButton.clicked.connect(calcBP) #FIXME should change names so calcProf isn't the integration function
 cRegionButton.clicked.connect(intLine)
 cVelArrowsButton.clicked.connect(arrows)
-modelButton.clicked.connect(runModelButt)
+modelButton.clicked.connect(createModelGUI)
 hiResButton.clicked.connect(hiResInterpolators)
 meshButton.clicked.connect(meshGui)
 instructionButton.clicked.connect(showInstructions)

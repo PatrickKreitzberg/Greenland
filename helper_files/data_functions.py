@@ -9,7 +9,7 @@ from peakdetect import *
 
 
 
-dr = 150
+# dr = 150
 
 def getProfile(t,y):
     '''
@@ -360,13 +360,13 @@ def calcVelWidth(x0, y0, x1, y1, draw):
 #     #FIXME changed the interpolator
 
 
-def interpolateData(runModel):
+def interpolateData(runModel, dr):
     '''
     Calculate the data for bottom plot or to run the model.
     If botPlotBool, calculate all the data.  Else, calculate just bed/surface.
     :return:
     '''
-    dr = float(model_res_lineEdit.text()) # dr = 150
+    # dr = float(model_res_lineEdit.text()) # dr = 150
     velValues = []
     xValues = []
     smbValues = []

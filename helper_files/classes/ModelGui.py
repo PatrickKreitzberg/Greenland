@@ -2,6 +2,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
 import fenics as fc
 import h5py
+from PyQt4 import *
 from time import *
 from dolfin import *
 from ..gui import *
@@ -14,10 +15,11 @@ from helper_files.support.momentum import *
 from scipy.interpolate import interp1d
 
 class ModelGUI(QtGui.QMainWindow):
-    def __init__(self, parent, hdf_name):
+    def __init__(self, parent):
         self.hdf_name = None
         self.parent = parent
         QtGui.QMainWindow.__init__(self, self.parent)
+
         self.cw = QtGui.QWidget()
         self.setCentralWidget(self.cw)
         self.horLayout = QtGui.QHBoxLayout()
@@ -26,24 +28,28 @@ class ModelGUI(QtGui.QMainWindow):
 
         # RIGHT PANEL
 
-        self.rightPanelW = QtGui.QWidget()
-        self.rightPanelLay = QtGui.QGridLayout()
+        self.rightPanelW   = QtGui.QWidget()
+        self.rightPanelLay = QtGui.QVBoxLayout()
         self.rightPanelW.setLayout(self.rightPanelLay)
 
             # GUI TIME COMPONENTS
-        self.timeWidget = QtGui.QWidget()
-        self.timeContainer = QtGui.QGridLayout()
-        self.timeWidget.setLayout(self.timeContainer)
-        self.tEndLabel = QtGui.QLabel('t_end(yr):')
-        self.tEndLineEdit = QtGui.QLineEdit('20000')
-        self.tStepLabel = QtGui.QLabel('t_step(yr):')
-        self.tStepLineEdit = QtGui.QLineEdit('10')
-        self.tCurrent = QtGui.QLabel('Current year: ')
-        self.timeContainer.addWidget(self.tEndLabel, 1, 0)
-        self.timeContainer.addWidget(self.tEndLineEdit, 1, 1)
-        self.timeContainer.addWidget(self.tStepLabel, 2, 0)
-        self.timeContainer.addWidget(self.tStepLineEdit, 2, 1)
-        self.timeContainer.addWidget(self.tCurrent, 3, 0, 1, 2)
+        self.inputWidget = QtGui.QWidget()
+        self.inputContainer  = QtGui.QGridLayout()
+        self.inputWidget.setLayout(self.inputContainer)
+        self.tEndLabel       = QtGui.QLabel('t_end(yr):')
+        self.tEndLineEdit    = QtGui.QLineEdit('20000')
+        self.tStepLabel      = QtGui.QLabel('t_step(yr):')
+        self.tStepLineEdit   = QtGui.QLineEdit('10')
+        self.tCurrent        = QtGui.QLabel('Current year: ')
+        self.sptlResLabel    = QtGui.QLabel('Spatial Res(m)')
+        self.sptlResLineEdit = QtGui.QLineEdit('2000')
+        self.inputContainer.addWidget(self.tEndLabel,       1, 0)
+        self.inputContainer.addWidget(self.tEndLineEdit,    1, 1)
+        self.inputContainer.addWidget(self.tStepLabel,      2, 0)
+        self.inputContainer.addWidget(self.tStepLineEdit,   2, 1)
+        self.inputContainer.addWidget(self.sptlResLabel,    3, 0)
+        self.inputContainer.addWidget(self.sptlResLineEdit, 3, 1)
+        self.inputContainer.addWidget(self.tCurrent,        4, 0, 1, 2)
 
             # SAVE FILE
         self.saveFileW = QtGui.QWidget()
@@ -59,7 +65,7 @@ class ModelGUI(QtGui.QMainWindow):
 
             # ADD TO LAYOUT
 
-        self.rightPanelLay.addWidget(self.timeContainer)
+        self.rightPanelLay.addWidget(self.inputWidget)
         self.rightPanelLay.addWidget(self.saveFileW)
         self.rightPanelLay.addWidget(self.runButt)
         self.rightPanelLay.addWidget(self.pauseButt)
@@ -72,7 +78,7 @@ class ModelGUI(QtGui.QMainWindow):
         self.plt1 = pg.PlotWidget()
         self.plt2 = pg.PlotWidget()
         self.plt3 = pg.PlotWidget()
-        self.slider = QtGui.QSlider()
+        self.slider = QtGui.QSlider(2)
         self.leftPanelLay.addWidget(self.plt1)
         self.leftPanelLay.addWidget(self.plt2)
         self.leftPanelLay.addWidget(self.plt3)
@@ -83,71 +89,80 @@ class ModelGUI(QtGui.QMainWindow):
         self.horLayout.addWidget(self.leftPanelW)
         self.horLayout.addWidget(self.rightPanelW)
 
+        self.runButt.clicked.connect(self.runModelButt)
+        self.show()
+
+
     def runModelButt(self):
-        dr = float(model_res_lineEdit.text())  # dr = 150
         if len(vpts) > 0:
-            interpolateData(True)
+            try:
+                self.dr = float(self.sptlResLineEdit.text())  # dr = 150
+                self.pauseButt.setEnabled(True)
+                interpolateData(True, self.dr)
 
-            ###########################################
-            ###  INTERPOLATE DATA SO EVEN INTERVAL  ###
-            ###########################################
-            '''
-            Interpolating data at an even interval so the data points align with the 
-            invterval mesh.
-            '''
-            thickness1dInterp = interp1d(thickness.distanceData, thickness.pathData)
-            bed1dInterp       = interp1d(bed.distanceData, bed.pathData)
-            surface1dInterp   = interp1d(surface.distanceData, surface.pathData)
-            smb1dInterp       = interp1d(smb.distanceData, smb.pathData)
-            velocity1dInterp  = interp1d(velocity.distanceData, velocity.pathData)
+                ###########################################
+                ###  INTERPOLATE DATA SO EVEN INTERVAL  ###
+                ###########################################
+                '''
+                Interpolating data at an even interval so the data points align with the 
+                invterval mesh.
+                '''
+                self.thickness1dInterp = interp1d(thickness.distanceData, thickness.pathData)
+                self.bed1dInterp       = interp1d(bed.distanceData, bed.pathData)
+                self.surface1dInterp   = interp1d(surface.distanceData, surface.pathData)
+                self.smb1dInterp       = interp1d(smb.distanceData, smb.pathData)
+                self.velocity1dInterp  = interp1d(velocity.distanceData, velocity.pathData)
 
-            # N is the number of total data points including the last
-            # Data points on interval [0, N*dr] inclusive on both ends
+                # N is the number of total data points including the last
+                # Data points on interval [0, N*dr] inclusive on both ends
 
-            N = int(np.floor(bed.distanceData[-1] / float(dr)))  # length of path / resolution
+                self.N = int(np.floor(bed.distanceData[-1] / float(self.dr)))  # length of path / resolution
 
-            x = np.arange(0, (N + 1) * dr, dr)  # start point, end point, number of segments. END POINT NOT INCLUDED!
-            print 'N, dr, dr*N', N, dr, dr * N
-            mesh = fc.IntervalMesh(N, 0, dr * N)  # number of cells, start point, end point
+                self.x = np.arange(0, (self.N + 1) * self.dr, self.dr)  # start point, end point, number of segments. END POINT NOT INCLUDED!
+                print 'N, dr, dr*N', self.N, self.dr, self.dr * self.N
+                self.mesh = fc.IntervalMesh(self.N, 0, self.dr * self.N)  # number of cells, start point, end point
 
-            thicknessModelData = thickness1dInterp(x)
-            bedModelData = bed1dInterp(x)
-            surfaceModelData = surface1dInterp(x)
-            smbModelData = smb1dInterp(x)
-            velocityModelData = velocity1dInterp(x)
+                self.thicknessModelData = self.thickness1dInterp(self.x)
+                self.bedModelData       = self.bed1dInterp(self.x)
+                self.surfaceModelData   = self.surface1dInterp(self.x)
+                self.smbModelData       = self.smb1dInterp(self.x)
+                self.velocityModelData  = self.velocity1dInterp(self.x)
 
-            THICKLIMIT = 10.  # Ice is never less than this thick
-            H = surfaceModelData - bedModelData
-            surfaceModelData[H <= THICKLIMIT] = bedModelData[H <= THICKLIMIT]
+                self.THICKLIMIT = 10.  # Ice is never less than this thick
+                self.H = self.surfaceModelData - self.bedModelData
+                self.surfaceModelData[self.H <= self.THICKLIMIT] = self.bedModelData[self.H <= self.THICKLIMIT]
 
-            # FIXME the intervalMesh is consistantly 150 between each datapoint this not true for the data being sent
-            self.hdf_name = '.data/latest_profile.h5'
-            hfile = fc.HDF5File(mesh.mpi_comm(), self.hdf_name, "w")
-            V = fc.FunctionSpace(mesh, "CG", 1)
+                # FIXME the intervalMesh is consistantly 150 between each datapoint this not true for the data being sent
+                self.hdf_name = '.data/latest_profile.h5'
+                self.hfile = fc.HDF5File(self.mesh.mpi_comm(), self.hdf_name, "w")
+                self.V = fc.FunctionSpace(self.mesh, "CG", 1)
 
-            functThickness = fc.Function(V, name="Thickness")
-            functBed = fc.Function(V, name="Bed")
-            functSurface = fc.Function(V, name="Surface")
-            functSMB = fc.Function(V, name='SMB')
-            functVelocity = fc.Function(V, name='Velocity')
+                self.functThickness = fc.Function(self.V, name="Thickness")
+                self.functBed       = fc.Function(self.V, name="Bed")
+                self.functSurface   = fc.Function(self.V, name="Surface")
+                self.functSMB       = fc.Function(self.V, name='SMB')
+                self.functVelocity  = fc.Function(self.V, name='Velocity')
 
-            surface.pathPlotItem.setData(x, surfaceModelData)
-            pg.QtGui.QApplication.processEvents()
+                surface.pathPlotItem.setData(self.x, self.surfaceModelData)
+                pg.QtGui.QApplication.processEvents()
 
-            functThickness.vector()[:] = thicknessModelData
-            functBed.vector()[:] = bedModelData
-            functSurface.vector()[:] = surfaceModelData
-            functSMB.vector()[:] = smbModelData
-            functVelocity.vector()[:] = velocityModelData
+                self.functThickness.vector()[:] = self.thicknessModelData
+                self.functBed.vector()[:]       = self.bedModelData
+                self.functSurface.vector()[:]   = self.surfaceModelData
+                self.functSMB.vector()[:]       = self.smbModelData
+                self.functVelocity.vector()[:]  = self.velocityModelData
 
-            hfile.write(functThickness.vector(), "/thickness")
-            hfile.write(functBed.vector(), "/bed")
-            hfile.write(functSurface.vector(), "/surface")
-            hfile.write(functSMB.vector(), "/smb")
-            hfile.write(functVelocity.vector(), "/velocity")
-            hfile.write(mesh, "/mesh")
-            hfile.close()
-            self.runModel()
+                self.hfile.write(self.functThickness.vector(), "/thickness")
+                self.hfile.write(self.functBed.vector(), "/bed")
+                self.hfile.write(self.functSurface.vector(), "/surface")
+                self.hfile.write(self.functSMB.vector(), "/smb")
+                self.hfile.write(self.functVelocity.vector(), "/velocity")
+                self.hfile.write(self.mesh, "/mesh")
+                self.hfile.close()
+                self.runModel()
+
+            except ValueError:
+                print 'ERROR: Must have valid spatial resolution.'
 
     def runModel(self):
 
@@ -157,7 +172,7 @@ class ModelGUI(QtGui.QMainWindow):
 
         #FIXME Probably dont have to save then open mesh
         self.mesh = Mesh()
-        self.in_file  = HDF5File(mesh.mpi_comm(), self.hdf_name, "r")  #mesh.mpi_comm() is ussed to read in parallel?
+        self.in_file  = HDF5File(self.mesh.mpi_comm(), self.hdf_name, "r")  #mesh.mpi_comm() is ussed to read in parallel?
         # outF = h5py.File('./data/modelOut')
 
 
@@ -176,7 +191,7 @@ class ModelGUI(QtGui.QMainWindow):
         ##########################################################
         ################           MESH          #################
         ##########################################################
-        self.in_file.read(mesh,"/mesh", False)
+        self.in_file.read(self.mesh,"/mesh", False)
 
 
         # H5FILE Data:
@@ -190,7 +205,7 @@ class ModelGUI(QtGui.QMainWindow):
         #########################################################
         #################  FUNCTION SPACES  #####################
         #########################################################
-        self.E_Q = FiniteElement("CG",mesh.ufl_cell(),1)
+        self.E_Q = FiniteElement("CG",self.mesh.ufl_cell(),1)
         self.Q   = FunctionSpace(self.mesh, self.E_Q) # E_Q defined over the mesh
         self.E_V = MixedElement(self.E_Q, self.E_Q, self.E_Q)
         self.V   = FunctionSpace(self.mesh ,self.E_V)
@@ -231,7 +246,7 @@ class ModelGUI(QtGui.QMainWindow):
         self.H0.assign(self.S0-self.B)   # Initial thickness  #OLD
 
         # A generalization of the Crank-Nicolson method, which is theta = .5
-        self.Hmid = self.theta*self.H + (1-self.theta)*self.H0
+        self.Hmid = theta*self.H + (1-theta)*self.H0
 
         # Define surface elevation
         self.S = self.B + self.Hmid  #OLD
@@ -257,7 +272,7 @@ class ModelGUI(QtGui.QMainWindow):
         #############################################################################
         ########################  MASS CONSERVATION  ################################
         #############################################################################
-        self.h = CellSize(mesh)
+        self.h = CellSize(self.mesh)
         self.D = self.h*abs(self.U[0])/2.
         self.area = self.Hmid*self.width
 
@@ -270,9 +285,9 @@ class ModelGUI(QtGui.QMainWindow):
 
         for f in facets(self.mesh):
             if near(f.midpoint().x(),self.mesh_max):
-               ocean[f] = 1
+               self.ocean[f] = 1
             if near(f.midpoint().x(),self.mesh_min):
-               ocean[f] = 2
+               self.ocean[f] = 2
 
         # Directly write the form, with SPUG and area correction,
         self.R += ((self.H-self.H0)/dt*self.xsi - self.xsi.dx(0)*self.U[0]*self.Hmid + self.D*self.xsi.dx(0)*self.Hmid.dx(0) - (self.A - self.U[0]*self.H/self.width*self.width.dx(0))*self.xsi)*dx\
@@ -309,73 +324,73 @@ class ModelGUI(QtGui.QMainWindow):
         #Define variational solver for the mass-momentum coupled problem
         self.J = derivative(self.R,self.U,self.dU)
 
-        self.coupled_problem = NonlinearVariationalProblem(self.R,self.U,bcs=[dbc0,dbc1,dbc3],J=J)
+        self.coupled_problem = NonlinearVariationalProblem(self.R,self.U,bcs=[self.dbc0,self.dbc1,self.dbc3],J=self.J)
 
         self.coupled_problem.set_bounds(self.l_bound, self.u_bound)
 
         self.coupled_solver = NonlinearVariationalSolver(self.coupled_problem)
 
         # Accquire the optimizations in fenics_optimizations
-        self.set_solver_options(self.coupled_solver)
+        set_solver_options(self.coupled_solver)
 
         ######################################################################
         #######################   TIME LOOP   ################################
         ######################################################################
 
         # Time interval
-        t = 0
+        self.t = 0
         # t_end = 20000.
-        t_end = float(t_end_lineEdit.text())
-        dt_float = float(t_step_lineEdit.text())
+        self.t_end = float(self.tEndLineEdit.text())
+        self.dt_float = float(self.tStepLineEdit.text())
 
         # PyQt gui items
-        mw2 = QtGui.QMainWindow(mw)
-        mw2.setWindowTitle('PyQt PLOTTER')  # MAIN WINDOW
-        cw2 = QtGui.QWidget()  # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
-        mw2.setCentralWidget(cw2)
-        l = QtGui.QVBoxLayout()  # CENTRAL WIDGET LAYOUT (layout of the central widget)
-        cw2.setLayout(l)
-        plt1 = pg.PlotWidget()
-        plt2 = pg.PlotWidget()
-        plt3 = pg.PlotWidget()
-        l.addWidget(plt1)
-        l.addWidget(plt2)
-        l.addWidget(plt3)
-        mw2.show()
+        # mw2 = QtGui.QMainWindow(mw)
+        # mw2.setWindowTitle('PyQt PLOTTER')  # MAIN WINDOW
+        # cw2 = QtGui.QWidget()  # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
+        # mw2.setCentralWidget(cw2)
+        # l = QtGui.QVBoxLayout()  # CENTRAL WIDGET LAYOUT (layout of the central widget)
+        # cw2.setLayout(l)
+        # plt1 = pg.PlotWidget()
+        # plt2 = pg.PlotWidget()
+        # plt3 = pg.PlotWidget()
+        # l.addWidget(plt1)
+        # l.addWidget(plt2)
+        # l.addWidget(plt3)
+        # mw2.show()
 
-        pPlt = pyqtplotter(strs, mesh, plt1, plt2, plt3, t, dt_float)
+        pPlt = pyqtplotter(self.strs, self.mesh, self.plt1, self.plt2, self.plt3, self.t, self.dt_float)
         pPlt.refresh_plot(0)
-        mw2.closeEvent = pPlt.closed
+        # mw2.closeEvent = pPlt.closed
         pg.QtGui.QApplication.processEvents()
-        print 'mw2..isActive', mw2.isActiveWindow()
-        mw2.activateWindow()
-        print 'mw2..isActive', mw2.isActiveWindow()
+        # print 'mw2..isActive', mw2.isActiveWindow()
+        # mw2.activateWindow()
+        # print 'mw2..isActive', mw2.isActiveWindow()
 
-        while t<t_end and pPlt.run:
+        while self.t < self.t_end and pPlt.run:
             # time0 = time.time()
-            print( "Solving for time: ",t)
-            t_current.setText("Current year: " + str(t))
-            coupled_problem = NonlinearVariationalProblem(R, U, bcs=[dbc0, dbc1, dbc3], J=J)
-            coupled_problem.set_bounds(l_bound, u_bound)
-            coupled_solver = NonlinearVariationalSolver(coupled_problem)
+            print( "Solving for time: ", self.t)
+            self.tCurrent.setText("Current year: " + str(self.t))
+            self.coupled_problem = NonlinearVariationalProblem(self.R, self.U, bcs=[self.dbc0, self.dbc1, self.dbc3], J=self.J)
+            self.coupled_problem.set_bounds(self.l_bound, self.u_bound)
+            self.coupled_solver = NonlinearVariationalSolver(self.coupled_problem)
 
             # Accquire the optimizations in fenics_optimizations
-            set_solver_options(coupled_solver)
+            set_solver_options(self.coupled_solver)
 
             try:
-                coupled_solver.solve(set_solver_options())
+                self.coupled_solver.solve(set_solver_options())
             except:
                 print ("Exception Triggered!")
-                coupled_solver.parameters['snes_solver']['error_on_nonconvergence'] = False
-                assigner.assign(U,[zero_sol,zero_sol,H0])
-                coupled_solver.solve()
-                coupled_solver.parameters['snes_solver']['error_on_nonconvergence'] = True
+                self.coupled_solver.parameters['snes_solver']['error_on_nonconvergence'] = False
+                self.assigner.assign(self.U,[self.zero_sol,self.zero_sol,self.H0])
+                self.coupled_solver.solve()
+                self.coupled_solver.parameters['snes_solver']['error_on_nonconvergence'] = True
 
-            assigner_inv.assign([un,u2n,H0],U)
-            t += dt_float
-            pPlt.refresh_plot(t)
+            self.assigner_inv.assign([self.un,self.u2n,self.H0],self.U)
+            self.t += self.dt_float
+            pPlt.refresh_plot(self.t)
             pg.QtGui.QApplication.processEvents()
-        in_file.close()
+        self.in_file.close()
 
 
 
