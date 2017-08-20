@@ -2,7 +2,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
 import fenics as fc
 import h5py
-from PyQt4 import *
+from PyQt4 import QtCore
 from time import *
 from dolfin import *
 from ..gui import *
@@ -17,6 +17,7 @@ from scipy.interpolate import interp1d
 class ModelGUI(QtGui.QMainWindow):
     def __init__(self, parent):
         self.hdf_name = None
+        self.pPlt = None
         self.parent = parent
         QtGui.QMainWindow.__init__(self, self.parent)
 
@@ -29,35 +30,42 @@ class ModelGUI(QtGui.QMainWindow):
         # RIGHT PANEL
 
         self.rightPanelW   = QtGui.QWidget()
-        self.rightPanelLay = QtGui.QVBoxLayout()
+        self.rightPanelLay = QtGui.QGridLayout()
         self.rightPanelW.setLayout(self.rightPanelLay)
 
             # GUI TIME COMPONENTS
-        self.inputWidget = QtGui.QWidget()
-        self.inputContainer  = QtGui.QGridLayout()
-        self.inputWidget.setLayout(self.inputContainer)
+        # self.inputWidget = QtGui.QWidget()
+        # self.inputContainer  = QtGui.QGridLayout()
+        # self.inputWidget.setLayout(self.inputContainer)
         self.tEndLabel       = QtGui.QLabel('t_end(yr):')
         self.tEndLineEdit    = QtGui.QLineEdit('20000')
         self.tStepLabel      = QtGui.QLabel('t_step(yr):')
         self.tStepLineEdit   = QtGui.QLineEdit('10')
         self.tCurrent        = QtGui.QLabel('Current year: ')
+        self.rightPanelLay.setSpacing(4)
         self.sptlResLabel    = QtGui.QLabel('Spatial Res(m)')
         self.sptlResLineEdit = QtGui.QLineEdit('2000')
-        self.inputContainer.addWidget(self.tEndLabel,       1, 0)
-        self.inputContainer.addWidget(self.tEndLineEdit,    1, 1)
-        self.inputContainer.addWidget(self.tStepLabel,      2, 0)
-        self.inputContainer.addWidget(self.tStepLineEdit,   2, 1)
-        self.inputContainer.addWidget(self.sptlResLabel,    3, 0)
-        self.inputContainer.addWidget(self.sptlResLineEdit, 3, 1)
-        self.inputContainer.addWidget(self.tCurrent,        4, 0, 1, 2)
+
+        self.rightPanelLay.addWidget(self.tEndLabel,       0, 0)
+        self.rightPanelLay.addWidget(self.tEndLineEdit,    0, 1)
+        self.rightPanelLay.addWidget(self.tStepLabel,      1, 0)
+        self.rightPanelLay.addWidget(self.tStepLineEdit,   1, 1)
+        self.rightPanelLay.addWidget(self.sptlResLabel,    2, 0)
+        self.rightPanelLay.addWidget(self.sptlResLineEdit, 2, 1)
+        self.rightPanelLay.addWidget(self.tCurrent,        3, 0, 1, 2)
+
 
             # SAVE FILE
-        self.saveFileW = QtGui.QWidget()
-        self.saveFileLay = QtGui.QHBoxLayout()
+        # self.saveFileW = QtGui.QWidget()
+        # self.saveFileLay = QtGui.QHBoxLayout()
+        # self.saveFileW.setLayout(self.saveFileLay)
         self.saveFileLabel = QtGui.QLabel('Out File')
         self.saveFileLineEdit = QtGui.QLineEdit('./data/outModel.h5')
-        self.saveFileLay.addWidget(self.saveFileLabel)
-        self.saveFileLay.addWidget(self.saveFileLineEdit)
+        self.rightPanelLay.addWidget(self.saveFileLabel,    4, 0)
+        self.rightPanelLay.addWidget(self.saveFileLineEdit, 4, 1)
+        self.rightPanelLay.setAlignment(QtCore.Qt.AlignTop)
+        # self.saveFileLay.addWidget(self.saveFileLabel)
+        # self.saveFileLay.addWidget(self.saveFileLineEdit)
 
             # BUTTONS
         self.runButt = QtGui.QPushButton('Run Model')
@@ -65,10 +73,12 @@ class ModelGUI(QtGui.QMainWindow):
 
             # ADD TO LAYOUT
 
-        self.rightPanelLay.addWidget(self.inputWidget)
-        self.rightPanelLay.addWidget(self.saveFileW)
-        self.rightPanelLay.addWidget(self.runButt)
-        self.rightPanelLay.addWidget(self.pauseButt)
+        # self.rightPanelLay.addWidget(self.inputWidget)
+        # self.rightPanelLay.addWidget(self.saveFileW, 4, 0, 1, 2)
+        self.rightPanelLay.addWidget(self.runButt,   5, 0, 1, 2)
+        self.rightPanelLay.addWidget(self.pauseButt, 6, 0, 1, 2)
+        self.rightPanelLay.setVerticalSpacing(3)
+
         self.pauseButt.setEnabled(False)
 
         # LEFT SIDE
@@ -78,11 +88,14 @@ class ModelGUI(QtGui.QMainWindow):
         self.plt1 = pg.PlotWidget()
         self.plt2 = pg.PlotWidget()
         self.plt3 = pg.PlotWidget()
-        self.slider = QtGui.QSlider(2)
+        self.slider = QtGui.QSlider(QtCore.Qt.Horizontal)
+        self.slider.setEnabled(False)
+        self.slider.sliderChange = self.sliderChange
         self.leftPanelLay.addWidget(self.plt1)
         self.leftPanelLay.addWidget(self.plt2)
         self.leftPanelLay.addWidget(self.plt3)
         self.leftPanelLay.addWidget(self.slider)
+
 
         # ADD SIDES TO MAIN WINDOW
 
@@ -90,12 +103,39 @@ class ModelGUI(QtGui.QMainWindow):
         self.horLayout.addWidget(self.rightPanelW)
 
         self.runButt.clicked.connect(self.runModelButt)
+        self.pauseButt.clicked.connect(self.pause)
         self.show()
+        self.closeEvent = self.windowClosed
 
+    def windowClosed(self, e):
+        if self.pPlt:
+            self.pPlt.run = False
+            self.pPlt.closePlots()
+        print 'window closed called'
+
+    def sliderChange(self, e):
+        print self.slider.value()
+        # self.pPlt.ph0.setData(self.pPlt.x, self.pPlt.outF[''])
+
+    def pause(self):
+        if self.pPlt.run:
+            self.pPlt.run = False
+            self.pauseButt.setText('Resume')
+            self.slider.setEnabled(True)
+            self.slider.setTickInterval(10)#int(self.tStepLineEdit.text()))
+
+            self.slider.setRange(0,len(self.pPlt.outFTimeList))
+            print 'range ', self.pPlt.outFTimeList[-1], self.slider.tickInterval()
+        else:
+            self.pPlt.run = True
+            self.slider.setEnabled(False)
+            self.pauseButt.setText('Pause')
+            self.runLoop()
 
     def runModelButt(self):
         if len(vpts) > 0:
             try:
+                self.runButt.setEnabled(False)
                 self.dr = float(self.sptlResLineEdit.text())  # dr = 150
                 self.pauseButt.setEnabled(True)
                 interpolateData(True, self.dr)
@@ -173,11 +213,9 @@ class ModelGUI(QtGui.QMainWindow):
         #FIXME Probably dont have to save then open mesh
         self.mesh = Mesh()
         self.in_file  = HDF5File(self.mesh.mpi_comm(), self.hdf_name, "r")  #mesh.mpi_comm() is ussed to read in parallel?
-        # outF = h5py.File('./data/modelOut')
 
 
         # out_file = HDF5File(mesh.mpi_comm(),"./output_data/peterman.h5","w")
-
         # cell_indices: self-explanatory
         # coordinates:  self-explanatory
         # topology:     Shows which nodes are linked together
@@ -342,31 +380,15 @@ class ModelGUI(QtGui.QMainWindow):
         # t_end = 20000.
         self.t_end = float(self.tEndLineEdit.text())
         self.dt_float = float(self.tStepLineEdit.text())
-
-        # PyQt gui items
-        # mw2 = QtGui.QMainWindow(mw)
-        # mw2.setWindowTitle('PyQt PLOTTER')  # MAIN WINDOW
-        # cw2 = QtGui.QWidget()  # GENERIC WIDGET AS CENTRAL WIDGET (inside main window)
-        # mw2.setCentralWidget(cw2)
-        # l = QtGui.QVBoxLayout()  # CENTRAL WIDGET LAYOUT (layout of the central widget)
-        # cw2.setLayout(l)
-        # plt1 = pg.PlotWidget()
-        # plt2 = pg.PlotWidget()
-        # plt3 = pg.PlotWidget()
-        # l.addWidget(plt1)
-        # l.addWidget(plt2)
-        # l.addWidget(plt3)
-        # mw2.show()
-
-        pPlt = pyqtplotter(self.strs, self.mesh, self.plt1, self.plt2, self.plt3, self.t, self.dt_float)
-        pPlt.refresh_plot(0)
-        # mw2.closeEvent = pPlt.closed
+        self.pPlt = pyqtplotter(self.strs, self.mesh, self.plt1, self.plt2, self.plt3, self.t, self.dt_float, str(self.saveFileLineEdit.text()))
+        self.pPlt.refresh_plot(0)
         pg.QtGui.QApplication.processEvents()
-        # print 'mw2..isActive', mw2.isActiveWindow()
-        # mw2.activateWindow()
-        # print 'mw2..isActive', mw2.isActiveWindow()
+        self.in_file.close()
+        self.runLoop()
 
-        while self.t < self.t_end and pPlt.run:
+
+    def runLoop(self):
+        while self.t < self.t_end and self.pPlt.run:
             # time0 = time.time()
             print( "Solving for time: ", self.t)
             self.tCurrent.setText("Current year: " + str(self.t))
@@ -388,9 +410,8 @@ class ModelGUI(QtGui.QMainWindow):
 
             self.assigner_inv.assign([self.un,self.u2n,self.H0],self.U)
             self.t += self.dt_float
-            pPlt.refresh_plot(self.t)
+            self.pPlt.refresh_plot(self.t)
             pg.QtGui.QApplication.processEvents()
-        self.in_file.close()
 
 
 

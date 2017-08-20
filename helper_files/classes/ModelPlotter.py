@@ -10,9 +10,10 @@ import h5py
 
 
 class pyqtplotter(object):
-    def __init__(self, strs, mesh, plt1, plt2, plt3, t0, dt):
+    def __init__(self, strs, mesh, plt1, plt2, plt3, t0, dt, hdf_name):
         self.run = True
-        self.outF = h5py.File('./data/modelOut.h5', 'w')
+        self.outF = h5py.File(hdf_name, 'w')
+        self.outFTimeList = []
         self.bedOut = self.outF.create_group('bed')
         self.surfaceOut = self.outF.create_group('surface')
         self.outF.attrs['dt'] = dt
@@ -83,9 +84,11 @@ class pyqtplotter(object):
         self.legend3.addItem(self.ph7, '&mu;<sub>s</sub>')
         self.legend3.addItem(self.ph8, '&mu;<sub>b</sub>')
 
-
-    def closed(self, e):
+    def closePlots(self):
+        print 'closeplots called'
         self.run = False
+        self.outF.create_dataset(name='keysInOrder', data=self.outFTimeList)
+
         self.outF.close()
 
     def refresh_plot(self, time):
@@ -101,10 +104,11 @@ class pyqtplotter(object):
         ub = project(self.strs.u(1))
         if self.run:
             self.bedOut.create_dataset(name=str(time), data=BB)
+            self.outFTimeList.append(str(time))
             self.surfaceOut.create_dataset(name=str(time), data=(BB + HH))
 
         self.ph0.setData(self.x, BB)
-        self.ph1.setData(self.x, (BB + HH))
+        self.ph1.setData(self.x, (BB + HH)) # SURFACE
 
         self.ph2.setData(self.x, TD.compute_vertex_values())
         self.ph3.setData(self.x, TB.compute_vertex_values())

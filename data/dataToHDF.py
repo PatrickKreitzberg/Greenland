@@ -1,12 +1,21 @@
-import netCDF4 as ncdf
-from scipy.interpolate import RegularGridInterpolator, RectBivariateSpline, griddata, SmoothBivariateSpline
-from pylab import *
-import numpy as np
-from RacmoToBed import *
-from VelocityToBedConversion import *
-from helper_files.createCMDatasets import *
-import time
+# import netCDF4 as ncdf
+# from scipy.interpolate import RegularGridInterpolator, RectBivariateSpline, griddata, SmoothBivariateSpline
+# from pylab import *
+# import numpy as np
+# from RacmoToBed import *
+# from VelocityToBedConversion import *
+# from helper_files.createCMDatasets import *
+# import time
 import h5py
+
+
+f = h5py.File('outModel.h5')
+
+print f['bed']['10.0']
+
+f.close()
+
+
 '''
 
 Converts all data to bed coordinates and puts all in hdf file
