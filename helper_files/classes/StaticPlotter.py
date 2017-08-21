@@ -9,6 +9,7 @@ from scipy.optimize import curve_fit
 import numpy as np
 from ..dataset_objects import *
 from ..peakdetect import *
+from ..data_functions import interpolateData
 
 from ..gui import *
 import scipy.signal as signal
@@ -23,6 +24,186 @@ def gaussian(x, A, x0, sig):
 def fit(p,x):
     return np.sum([gaussian(x, p[i*3],p[i*3+1],p[i*3+2])
                    for i in xrange(len(p)/3)],axis=0)
+
+class StaticPlot(QtGui.QMainWindow):
+    def __init__(self, parent):
+        self.parent = parent
+        QtGui.QMainWindow.__init__(self, self.parent)
+        self.setWindowTitle('Static Plotter')
+        self.mainWidget = QtGui.QWidget()
+        self.setCentralWidget(self.mainWidget)
+        self.mainLayout = QtGui.QHBoxLayout()
+        self.mainWidget.setLayout(self.mainLayout)
+
+        # LEFT PANEL
+        self.leftPanelWidget = QtGui.QWidget()
+
+        self.leftPanelLayout = QtGui.QVBoxLayout()
+        self.leftPanelWidget.setLayout(self.leftPanelLayout)
+        self.plt1 = pg.PlotWidget()
+        self.plt2 = pg.PlotWidget()
+        self.plt3 = pg.PlotWidget()
+        self.leftPanelLayout.addWidget(self.plt1)
+        self.leftPanelLayout.addWidget(self.plt2)
+        self.leftPanelLayout.addWidget(self.plt3)
+        self.legend1 = pg.LegendItem(offset=(-1, 1))
+        self.legend2 = pg.LegendItem(offset=(-1, 1))
+        self.legend3 = pg.LegendItem(offset=(-1, 1))
+
+        # RIGHT PANEL
+        self.rightPanelWidget = QtGui.QWidget()
+        self.rightPanelLayout = QtGui.QGridLayout()
+        self.rightPanelWidget.setLayout(self.rightPanelLayout)
+
+        self.resLabel = QtGui.QLabel('Spatial Resolution(m)')
+        self.resLineEdit = QtGui.QLineEdit()
+        self.plotButt = QtGui.QPushButton('Plot')
+        self.errorLabel = QtGui.QLabel('')
+        self.plotButt.clicked.connect(self.run)
+
+        self.allCheck        = QtGui.QCheckBox('Plot All')
+        self.velocityCheck   = QtGui.QCheckBox('Velocity')
+        self.vWidthCheck     = QtGui.QCheckBox('Velocity Width')
+        self.smbCheck        = QtGui.QCheckBox('SMB')
+        self.surfaceCheck    = QtGui.QCheckBox('Surface')
+        self.bedCheck        = QtGui.QCheckBox('Bed')
+        self.thicknessCheck  = QtGui.QCheckBox('Thickness')
+
+        self.checkBoxW = QtGui.QWidget()
+        self.checkBLayout = QtGui.QVBoxLayout()
+        self.checkBoxW.setLayout(self.checkBLayout)
+        self.allCheck.setTristate(False)
+        self.velocityCheck.setTristate(False)
+        self.vWidthCheck.setTristate(False)
+        self.smbCheck.setTristate(False)
+        self.surfaceCheck.setTristate(False)
+        self.bedCheck.setTristate(False)
+        self.thicknessCheck.setTristate(False)
+        self.allCheck.setCheckState(2)
+        self.velocityCheck.setCheckState(2)
+        self.vWidthCheck.setCheckState(2)
+        self.smbCheck.setCheckState(2)
+        self.surfaceCheck.setCheckState(2)
+        self.bedCheck.setCheckState(2)
+        self.thicknessCheck.setCheckState(2)
+        self.checkBLayout.addWidget(QtGui.QLabel('Plot Checked Data:'))
+        self.checkBLayout.addWidget(self.allCheck)
+        self.checkBLayout.addWidget(self.velocityCheck)
+        self.checkBLayout.addWidget(self.vWidthCheck)
+        self.checkBLayout.addWidget(self.smbCheck)
+        self.checkBLayout.addWidget(self.surfaceCheck)
+        self.checkBLayout.addWidget(self.bedCheck)
+        self.checkBLayout.addWidget(self.thicknessCheck)
+        self.checkBLayout.setSpacing(0)
+        self.allCheck.stateChanged.connect(self.allCheckChange)
+
+        self.rightPanelLayout.addWidget(self.resLabel,    0, 0)
+        self.rightPanelLayout.addWidget(self.resLineEdit, 0, 1)
+        self.rightPanelLayout.addWidget(self.plotButt,    1, 0, 1, 2)
+        self.rightPanelLayout.addWidget(self.checkBoxW,    2, 0, 1, 2)
+        self.rightPanelLayout.addWidget(self.errorLabel,  3, 0, 1, 2)
+        self.rightPanelLayout.setAlignment(QtCore.Qt.AlignTop)
+
+        self.mainLayout.addWidget(self.leftPanelWidget)
+        self.mainLayout.addWidget(self.rightPanelWidget)
+
+
+        # if surfaceCheck.checkState() == 2:
+        #     surfPlt  = self.plt1.getPlotItem().plot(surface.distanceData, surface.pathData, pen=surface.pen)
+        #     self.legend1.addItem(surfPlt, 'Surface(m)')
+        #
+        # if vWidthCheck.checkState() == 2:
+        #     vWidthPlt = self.plt1.getPlotItem().plot(velocityWidth.distanceData, velocityWidth.pathData, pen=velocityWidth.pen)
+        #     self.legend1.addItem(vWidthPlt, 'Vel. Width(m)')
+        #
+        # if bedCheck.checkState() == 2:
+        #     bedPlt   = self.plt1.getPlotItem().plot(bed.distanceData, bed.pathData, pen=bed.pen)
+        #     self.legend1.addItem(bedPlt, 'Bed(m)')
+        #
+        # if thicknessCheck.checkState() == 2:
+        #     thickPlt = self.plt1.getPlotItem().plot(thickness.distanceData, thickness.pathData, pen=thickness.pen)
+        #     self.legend1.addItem(thickPlt, 'Thickness(m)')
+        #
+        # if velocityCheck.checkState() == 2:
+        #     velocityPlt = self.plt2.getPlotItem().plot(velocity.distanceData, velocity.pathData, pen=velocity.pen)
+        #     self.legend2.addItem(velocityPlt, 'Velocity(m/yr)')
+        #
+        # if smbCheck.checkState() == 2:
+        #     smbPlt = self.plt3.getPlotItem().plot(smb.distanceData, smb.pathData, pen=smb.pen)
+        #     self.legend3.addItem(smbPlt, 'SMB(m)')
+
+        self.legend1.setParentItem(self.plt1.getPlotItem())
+        self.legend2.setParentItem(self.plt2.getPlotItem())
+        self.legend3.setParentItem(self.plt3.getPlotItem())
+        self.show()
+
+    def allCheckChange(self, e):
+        if self.allCheck.checkState() == 2:
+            self.velocityCheck.setCheckState(2)
+            self.vWidthCheck.setCheckState(2)
+            self.smbCheck.setCheckState(2)
+            self.surfaceCheck.setCheckState(2)
+            self.bedCheck.setCheckState(2)
+            self.thicknessCheck.setCheckState(2)
+        else:
+            self.velocityCheck.setCheckState(0)
+            self.vWidthCheck.setCheckState(0)
+            self.smbCheck.setCheckState(0)
+            self.surfaceCheck.setCheckState(0)
+            self.bedCheck.setCheckState(0)
+            self.thicknessCheck.setCheckState(0)
+
+    def run(self):
+        try:
+            dr = float(self.resLineEdit.text())
+            self.errorLabel.setText('')
+        except ValueError:
+            self.errorLabel.setText('ERROR: must enter resolution')
+            return -1
+        velocity.pathPlotItem.clear()
+        surface.pathPlotItem.clear()
+        smb.pathPlotItem.clear()
+        bed.pathPlotItem.clear()
+        velocityWidth.pathPlotItem.clear()
+        thickness.pathPlotItem.clear()
+        if len(vpts) > 0:
+            print 'Plotting...'
+            # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
+
+
+            interpolateData(False, dr, staticPlotter=self)
+            if self.velocityCheck.checkState() == 2:
+                print 'plot velocity!'
+                velocityPlt = self.plt2.getPlotItem().plot(velocity.distanceData, velocity.pathData, pen=velocity.pen)
+                self.legend2.addItem(velocityPlt, 'Velocity(m/yr)')
+                velocity.pathPlotItem.setData(velocity.distanceData          , velocity.pathData)
+
+            if self.smbCheck.checkState() == 2:
+                smbPlt = self.plt3.getPlotItem().plot(smb.distanceData, smb.pathData, pen=smb.pen)
+                self.legend3.addItem(smbPlt, 'SMB(m)')
+                smb.pathPlotItem.setData(smb.distanceData                    , smb.pathData)
+
+            if self.surfaceCheck.checkState() == 2:
+                surfPlt  = self.plt1.getPlotItem().plot(surface.distanceData, surface.pathData, pen=surface.pen)
+                self.legend1.addItem(surfPlt, 'Surface(m)')
+                surface.pathPlotItem.setData(surface.distanceData            , surface.pathData)
+
+            if self.bedCheck.checkState() == 2:
+                bedPlt = self.plt1.getPlotItem().plot(bed.distanceData, bed.pathData, pen=bed.pen)
+                self.legend1.addItem(bedPlt, 'Bed(m)')
+                bed.pathPlotItem.setData(bed.distanceData                    , bed.pathData)
+
+            if self.thicknessCheck.checkState() == 2:
+                thickPlt = self.plt1.getPlotItem().plot(thickness.distanceData, thickness.pathData, pen=thickness.pen)
+                self.legend1.addItem(thickPlt, 'Thickness(m)')
+                thickness.pathPlotItem.setData(thickness.distanceData, thickness.pathData)
+
+            if self.vWidthCheck.checkState() == 2:
+                vWidthPlt = self.plt1.getPlotItem().plot(velocityWidth.distanceData, velocityWidth.pathData, pen=velocityWidth.pen)
+                self.legend1.addItem(vWidthPlt, 'Vel. Width(m)')
+                velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
+            pg.QtGui.QApplication.processEvents()
+            print 'Plotting done.'
 
 def runStaticPlot():
     staticPlotWindow = QtGui.QMainWindow(mw)

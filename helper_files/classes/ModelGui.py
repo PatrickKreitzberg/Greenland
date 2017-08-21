@@ -91,10 +91,12 @@ class ModelGUI(QtGui.QMainWindow):
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.slider.setEnabled(False)
         self.slider.sliderChange = self.sliderChange
+        self.sliderLabel = QtGui.QLabel('Year:')
         self.leftPanelLay.addWidget(self.plt1)
         self.leftPanelLay.addWidget(self.plt2)
         self.leftPanelLay.addWidget(self.plt3)
         self.leftPanelLay.addWidget(self.slider)
+        self.leftPanelLay.addWidget(self.sliderLabel)
 
 
         # ADD SIDES TO MAIN WINDOW
@@ -115,7 +117,9 @@ class ModelGUI(QtGui.QMainWindow):
 
     def sliderChange(self, e):
         print self.slider.value()
-        # self.pPlt.ph0.setData(self.pPlt.x, self.pPlt.outF[''])
+        key = self.pPlt.outFTimeList[self.slider.value()]
+        self.pPlt.ph1.setData(self.pPlt.x, self.pPlt.outF['surface'][key])
+        self.sliderLabel.setText('Year: ' + key)
 
     def pause(self):
         if self.pPlt.run:
@@ -123,9 +127,9 @@ class ModelGUI(QtGui.QMainWindow):
             self.pauseButt.setText('Resume')
             self.slider.setEnabled(True)
             self.slider.setTickInterval(10)#int(self.tStepLineEdit.text()))
-
-            self.slider.setRange(0,len(self.pPlt.outFTimeList))
+            self.slider.setRange(0,len(self.pPlt.outFTimeList)-1)
             print 'range ', self.pPlt.outFTimeList[-1], self.slider.tickInterval()
+
         else:
             self.pPlt.run = True
             self.slider.setEnabled(False)

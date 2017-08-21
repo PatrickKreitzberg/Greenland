@@ -106,9 +106,9 @@ class Dataset():
 
         self.plotWidget.addItem(self.colorBarAnchorWidget)
         self.colorBarAnchorWidget.setFixedWidth(158)
-        self.colorBarAnchorWidget.setFixedHeight(292)
+        self.colorBarAnchorWidget.setFixedHeight(250)
         self.colorBarAnchorWidget.setAspectLocked(True)
-        self.colorBarAnchorWidget.getViewBox().setRange(xRange=[-44.0, 114], yRange=[-15, 247], padding=0.0)
+        self.colorBarAnchorWidget.getViewBox().setRange(xRange=[-64.0, 114], yRange=[-15, 247], padding=0.0)
         self.colorBarAnchorWidget.invertY(True)
         self.colorBarAnchorWidget.setParentItem(self.plotWidget.getPlotItem())
         self.colorBarAnchorWidget.getViewBox().setMouseEnabled(x=False, y=False)

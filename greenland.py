@@ -83,7 +83,6 @@ def clearPoints():
     textOut.setText('')
     modelButton.setEnabled(False)
     cProfButton.setEnabled(False)
-    intButton.setEnabled(False)
     velocity.pathPlotItem.clear()
     surface.pathPlotItem.clear()
     smb.pathPlotItem.clear()
@@ -178,7 +177,6 @@ vptCur = None
 
 clearButton.clicked.connect(clearPoints)
 calcWidthButton.clicked.connect(cwLoop)
-intButton.clicked.connect(calcProf)
 cProfButton.clicked.connect(calcBP) #FIXME should change names so calcProf isn't the integration function
 cRegionButton.clicked.connect(intLine)
 cVelArrowsButton.clicked.connect(arrows)
@@ -187,9 +185,7 @@ hiResButton.clicked.connect(hiResInterpolators)
 meshButton.clicked.connect(meshGui)
 instructionButton.clicked.connect(showInstructions)
 
-allCheck.stateChanged.connect(allCheckChange)
 
-# pg.SignalProxy(allCheck.stateChanged, rateLimit=60, slot=allCheckChange)
 
 velocity.imageItem.hoverEvent = mouseMoved
 # bed.imageItem.hoverEvent = mouseMoved

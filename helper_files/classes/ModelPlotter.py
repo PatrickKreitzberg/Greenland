@@ -88,7 +88,6 @@ class pyqtplotter(object):
         print 'closeplots called'
         self.run = False
         self.outF.create_dataset(name='keysInOrder', data=self.outFTimeList)
-
         self.outF.close()
 
     def refresh_plot(self, time):
@@ -104,8 +103,8 @@ class pyqtplotter(object):
         ub = project(self.strs.u(1))
         if self.run:
             self.bedOut.create_dataset(name=str(time), data=BB)
-            self.outFTimeList.append(str(time))
             self.surfaceOut.create_dataset(name=str(time), data=(BB + HH))
+            self.outFTimeList.append(str(time))
 
         self.ph0.setData(self.x, BB)
         self.ph1.setData(self.x, (BB + HH)) # SURFACE

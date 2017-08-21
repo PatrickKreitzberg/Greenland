@@ -43,7 +43,6 @@ def mouseClick(e):
     first = False
     if len(vpts) == 0:
         first = True
-        intButton.setEnabled(True)
         cx = e.pos().x()
         cy = e.pos().y()
         if autoCorrectVpt.checkState() == 2:
@@ -89,8 +88,6 @@ def mouseClick(e):
                         modelButton.setEnabled(False)
                         cProfButton.setEnabled(False)
                         meshButton.setEnabled(False)
-                    if len(vpts) < 1:
-                        intButton.setEnabled(False)
                 else:
                     vptSel = True
                     vptCur = vpts[i]
@@ -223,34 +220,35 @@ def calcBP():
     Calculate the data for bottom plot then populate the plot.
     :return:
     '''
-    t0 = time.time()
-    # Empty the graph
-    velocity.pathPlotItem.clear()
-    surface.pathPlotItem.clear()
-    smb.pathPlotItem.clear()
-    bed.pathPlotItem.clear()
-    velocityWidth.pathPlotItem.clear()
-    thickness.pathPlotItem.clear()
-    if len(vpts) > 0:
-        print 'Plotting...'
-        # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
-        interpolateData(False)
-        if velocityCheck.checkState() == 2:
-            velocity.pathPlotItem.setData(velocity.distanceData          , velocity.pathData)
-        if smbCheck.checkState() == 2:
-            smb.pathPlotItem.setData(smb.distanceData                    , smb.pathData)
-        if vWidthCheck.checkState() == 2:
-            velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
-        if surfaceCheck.checkState() == 2:
-            surface.pathPlotItem.setData(surface.distanceData            , surface.pathData)
-        if bedCheck.checkState() == 2:
-            bed.pathPlotItem.setData(bed.distanceData                    , bed.pathData)
-        if thicknessCheck.checkState() == 2:
-            thickness.pathPlotItem.setData(thickness.distanceData, thickness.pathData)
-        if vWidthCheck.checkState() == 2:
-            velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
-        pg.QtGui.QApplication.processEvents()
-        runStaticPlot()
+    foo = StaticPlot(mw)
+    # t0 = time.time()
+    # # Empty the graph
+    # velocity.pathPlotItem.clear()
+    # surface.pathPlotItem.clear()
+    # smb.pathPlotItem.clear()
+    # bed.pathPlotItem.clear()
+    # velocityWidth.pathPlotItem.clear()
+    # thickness.pathPlotItem.clear()
+    # if len(vpts) > 0:
+    #     print 'Plotting...'
+    #     # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
+    #     interpolateData(False, 150)
+    #     if velocityCheck.checkState() == 2:
+    #         velocity.pathPlotItem.setData(velocity.distanceData          , velocity.pathData)
+    #     if smbCheck.checkState() == 2:
+    #         smb.pathPlotItem.setData(smb.distanceData                    , smb.pathData)
+    #     if vWidthCheck.checkState() == 2:
+    #         velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
+    #     if surfaceCheck.checkState() == 2:
+    #         surface.pathPlotItem.setData(surface.distanceData            , surface.pathData)
+    #     if bedCheck.checkState() == 2:
+    #         bed.pathPlotItem.setData(bed.distanceData                    , bed.pathData)
+    #     if thicknessCheck.checkState() == 2:
+    #         thickness.pathPlotItem.setData(thickness.distanceData, thickness.pathData)
+    #     if vWidthCheck.checkState() == 2:
+    #         velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
+    #     pg.QtGui.QApplication.processEvents()
+    #     runStaticPlot()
 
 def mouseMoved(e):
     global vptSel, vptCur, integrateLine, currentMap
@@ -393,22 +391,6 @@ def regionIntLine(e):
         x0p, y0p = projCoord((xp1 + trot[0, 0]), (yp1 + trot[1, 0]))
         lines.append(intLine(x0p, y0p))
         iiContainer.currentWidget().addItem(lines[-1])
-
-def allCheckChange(e):
-    if allCheck.checkState() == 2:
-        velocityCheck.setCheckState(2)
-        vWidthCheck.setCheckState(2)
-        smbCheck.setCheckState(2)
-        surfaceCheck.setCheckState(2)
-        bedCheck.setCheckState(2)
-        thicknessCheck.setCheckState(2)
-    else:
-        velocityCheck.setCheckState(0)
-        vWidthCheck.setCheckState(0)
-        smbCheck.setCheckState(0)
-        surfaceCheck.setCheckState(0)
-        bedCheck.setCheckState(0)
-        thicknessCheck.setCheckState(0)
 
 
 

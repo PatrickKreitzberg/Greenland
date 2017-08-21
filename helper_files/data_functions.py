@@ -360,7 +360,7 @@ def calcVelWidth(x0, y0, x1, y1, draw):
 #     #FIXME changed the interpolator
 
 
-def interpolateData(runModel, dr):
+def interpolateData(runModel, dr, staticPlotter=None):
     '''
     Calculate the data for bottom plot or to run the model.
     If botPlotBool, calculate all the data.  Else, calculate just bed/surface.
@@ -450,7 +450,11 @@ def interpolateData(runModel, dr):
         ########################################
         ##    CALCULATE SURFACE ELEVATION     ##
         ########################################
-        if surfaceCheck.checkState() == 2 or runModel:
+        if staticPlotter is not None:
+            print 'staticPlotter true'
+        else:
+            print 'Static PLOTTER NOT TRUE'
+        if runModel or (staticPlotter and staticPlotter.surfaceCheck.checkState() == 2):
             # surfaceInterp = getInterpolators(surface.data, surface.name, mix, miy, x1=mxx, y1=mxy)
             localSurface = surface.interp(px, py, grid=False)
             surfValues.append(localSurface)
@@ -458,7 +462,7 @@ def interpolateData(runModel, dr):
         ########################################
         ##         CALCULATE BED              ##
         ########################################
-        if bedCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.bedCheck.checkState() == 2):
             # bedInterp = getInterpolators(bed.data, bed.name, mix, miy, x1=mxx, y1=mxy)
             localBed = bed.interp(px, py, grid=False)
             bedValues.append(localBed)
@@ -466,7 +470,7 @@ def interpolateData(runModel, dr):
         ########################################
         ##        CALCULATE VELOCITY          ##
         ########################################
-        if velocityCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.velocityCheck.checkState() == 2):
             # velInterp = getInterpolators(velocity.data, 'velocity', mix, miy, x1=mxx, y1=mxy)
             vi = velocity.interp(px, py, grid=False)
             xValues.append(xline)
@@ -475,7 +479,7 @@ def interpolateData(runModel, dr):
         ########################################
         ##     CALCULATE VELOCITY WIDTH       ##
         ########################################
-        if vWidthCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.vWidthCheck.checkState() == 2):
             vwd = []
             for i in range(len(px)):
                 xp0, yp0 = colorCoord(px[i - 1], py[i - 1])
@@ -487,7 +491,7 @@ def interpolateData(runModel, dr):
         ########################################
         ##   CALCULATE SURFACE MASS-BALANCE   ##
         ########################################
-        if smbCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.smbCheck.checkState() == 2):
             # smbInterp = getInterpolators(smb.data, smb.name, mix, miy, x1=mxx, y1=mxy)
             'init smb'
             localSMB = smb.interp(px, py, grid=False)
@@ -498,40 +502,40 @@ def interpolateData(runModel, dr):
         ########################################
         # if smbCheck == 2 or runModel:
         # thickInterp   = getInterpolators(thickness.data, thickness.name, mix, miy, x1=mxx, y1=mxy)
-        if thicknessCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.thicknessCheck.checkState() == 2):
             localThick = thickness.interp(px, py, grid=False)
             thickValues.append(localThick)
 
         ########################################
         ##   COMPILE DATA                     ##
         ########################################
-        if bedCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.bedCheck.checkState() == 2):
             bed.pathData = np.array(bedValues[0])
-        if surfaceCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.surfaceCheck.checkState() == 2):
             surface.pathData = np.array(surfValues[0])
-        if velocityCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.velocityCheck.checkState() == 2):
             velocity.pathData = np.array(velValues[0])
-        if smbCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.smbCheck.checkState() == 2):
             smb.pathData = np.array(smbValues[0])
-        if vWidthCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.vWidthCheck.checkState() == 2):
             velocityWidth.pathData = np.array(vwValues[0])
-        if thicknessCheck.checkState() == 2 or runModel:
+        if runModel or (staticPlotter and staticPlotter.thicknessCheck.checkState() == 2):
             thickness.pathData = np.array(thickValues[0])
 
         for i in range(1, len(velValues)):
-            if velocityCheck.checkState() == 2 or runModel:
+            if runModel or (staticPlotter and staticPlotter.velocityCheck.checkState() == 2):
                 velocity.pathData      = np.append(velocity.pathData, velValues[i])
-            if smbCheck.checkState() == 2 or runModel:
+            if runModel or (staticPlotter and staticPlotter.smbCheck.checkState() == 2):
                 smb.pathData           = np.append(smb.pathData, smbValues[i])
-            if vWidthCheck.checkState() == 2 or runModel:
+            if runModel or (staticPlotter and staticPlotter.vWidthCheck.checkState() == 2):
                 velocityWidth.pathData = np.append(velocityWidth.pathData, vwValues[i])
-            if bedCheck.checkState() == 2 or runModel:
+            if runModel or (staticPlotter and staticPlotter.bedCheck.checkState() == 2):
                 bed.pathData           = np.append(bed.pathData, bedValues[i])
-            if surfaceCheck.checkState() == 2 or runModel:
+            if runModel or (staticPlotter and staticPlotter.surfaceCheck.checkState() == 2):
                 surface.pathData       = np.append(surface.pathData, surfValues[i])
-            if thicknessCheck.checkState() == 2 or runModel:
+            if runModel or (staticPlotter and staticPlotter.thicknessCheck.checkState() == 2):
                 thickness.pathData = np.append(thickness.pathData, thickValues[i])
-    if smbCheck.checkState() == 2 or runModel:
+    if runModel or (staticPlotter and staticPlotter.smbCheck.checkState() == 2):
         smb.pathData = smb.pathData*(1.0/1000.0)*(916.7/1000.0) # millimeters -> meters then water-equivalent to ice-equivalent
     # print 'graphx[-1]: ', graphX[len(graphX) - 1]
     dist = 0
@@ -542,16 +546,16 @@ def interpolateData(runModel, dr):
         # print xd0, yd0, xd1, yd1
         dist += sqrt(((xd1 - xd0) ** 2 + (yd1 - yd0) ** 2))
     # print 'dist: ', dist
-    if thicknessCheck.checkState() == 2 or runModel:
+    if runModel or (staticPlotter and staticPlotter.thicknessCheck.checkState() == 2):
         thickness.distanceData = graphX
-    if surfaceCheck.checkState() == 2 or runModel:
+    if runModel or (staticPlotter and staticPlotter.surfaceCheck.checkState() == 2):
         surface.distanceData = graphX
-    if bedCheck.checkState() == 2 or runModel:
+    if runModel or (staticPlotter and staticPlotter.bedCheck.checkState() == 2):
         bed.distanceData = graphX
-    if velocityCheck.checkState() == 2 or runModel:
+    if runModel or (staticPlotter and staticPlotter.velocityCheck.checkState() == 2):
         velocity.distanceData = graphX
-    if smbCheck.checkState() == 2 or runModel:
+    if runModel or (staticPlotter and staticPlotter.smbCheck.checkState() == 2):
         smb.distanceData = graphX
-    if vWidthCheck.checkState() == 2 or runModel:
+    if runModel or (staticPlotter and staticPlotter.vWidthCheck.checkState() == 2):
         velocityWidth.distanceData = graphX
 
