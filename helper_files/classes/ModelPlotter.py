@@ -35,7 +35,7 @@ class pyqtplotter(object):
         self.plt1 = plt1
         self.plt1.showGrid(x=True, y=True)
 
-        self.plt1.getPlotItem().getViewBox().setRange(xRange=(mesh_min, mesh_max), yRange=(Bmin * 1.05, Smax * 1.2))
+        # self.plt1.getPlotItem().getViewBox().setRange(xRange=(mesh_min, mesh_max), yRange=(Bmin * 1.05, Smax * 1.2))
         self.ph0   =  self.plt1.plot(self.x,self.strs.B.compute_vertex_values(), pen=bluePlotPen)
         self.ph100 =  self.plt1.plot(self.x,S.compute_vertex_values(), pen=redPlotPen)
         self.ph1   =  self.plt1.plot(self.x,S.compute_vertex_values(), pen=whitePlotPen)
@@ -52,7 +52,7 @@ class pyqtplotter(object):
 
         self.plt2 = plt2
         self.plt2.showGrid(x=True, y=True)
-        self.plt2.getPlotItem().getViewBox().setRange(xRange=(mesh_min, mesh_max), yRange=(TD.vector().array().min(), TD.vector().array().max()))
+        # self.plt2.getPlotItem().getViewBox().setRange(xRange=(mesh_min, mesh_max), yRange=(TD.vector().array().min(), TD.vector().array().max()))
         # self.ax[1].legend([r"$\tau_d$",r"$\tau_b$",r"$\tau_{xx}$",r"$\tau_{xy}$",r"$\tau_{xz}$"])
         self.ph2 = self.plt2.plot(self.x,TD.compute_vertex_values(), pen=bluePlotPen)
         self.ph3 = self.plt2.plot(self.x,TB.compute_vertex_values(), pen=greenPlotPen)
@@ -71,7 +71,7 @@ class pyqtplotter(object):
 
         self.plt3 = plt3
         self.plt3.showGrid(x=True, y=True)
-        self.plt3.getPlotItem().getViewBox().setRange(xRange=(mesh_min, mesh_max), yRange=(0, 500))
+        # self.plt3.getPlotItem().getViewBox().setRange(xRange=(mesh_min, mesh_max), yRange=(0, 500))
         # self.ax[2].legend([r"$u_s$",r"$u_b$"])
         self.legend3 = myLegend(offset=(-50,50))
         self.legend3.setParentItem(self.plt3.graphicsItem())

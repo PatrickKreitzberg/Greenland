@@ -21,7 +21,8 @@ from ..constants import *
 from InterpolateData import interpolateDataClass
 from ..velocity_functions import *
 from StaticPlotter import *
-
+#
+# deepsun648
 class MeshGUI(QtGui.QMainWindow):
     def __init__(self, parent):
         self.parent = parent
@@ -53,18 +54,17 @@ class MeshGUI(QtGui.QMainWindow):
                         mn = d
                     if d > mx:
                         mx = d
-        minTxt = 'Min side distance: ' + "{:.3f}".format(mn * 150) + 'm'
-        maxTxt = 'Max side distance: ' + "{:.3f}".format(mx * 150) + 'm'
+
+        minTxt = 'Min side distance: ' + "{:,.3f}".format(mn * 150) + 'm'
+        maxTxt = 'Max side distance: ' + "{:,.3f}".format(mx * 150) + 'm'
         self.lenMinLabel = QtGui.QLabel(minTxt)
         self.lenMaxLabel = QtGui.QLabel(maxTxt)
         self.distLabel   = QtGui.QLabel('Mesh len(m):')
         self.distInput   = QtGui.QLineEdit()
         self.genMeshButt = QtGui.QPushButton('Generate Mesh')
         self.genMeshButt.setEnabled(False)
-
         self.fileNameLabel   = QtGui.QLabel('Data Dir: ./data/')
         self.fileName = QtGui.QLineEdit()
-
         self.saveMeshButt = QtGui.QPushButton('Save Mesh')
 
         mnmxlabelrow = 0
@@ -77,6 +77,7 @@ class MeshGUI(QtGui.QMainWindow):
         self.gui.addWidget(self.fileNameLabel, saverow+1, 0)
         self.gui.addWidget(self.fileName, saverow+1, 1)
         self.gui.addWidget(self.genMeshButt, saverow + 2, 0, 1, 2)
+        self.gui.setAlignment(QtCore.Qt.AlignTop)
         self.show()
         self.p, self.t, self.meshLen, self.savedMeshName = None, None, -1, None
         self.distInput.textChanged.connect(self.setMeshLength)

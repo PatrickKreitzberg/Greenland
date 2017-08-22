@@ -77,7 +77,7 @@ class ModelGUI(QtGui.QMainWindow):
         # self.rightPanelLay.addWidget(self.saveFileW, 4, 0, 1, 2)
         self.rightPanelLay.addWidget(self.runButt,   5, 0, 1, 2)
         self.rightPanelLay.addWidget(self.pauseButt, 6, 0, 1, 2)
-        self.rightPanelLay.setVerticalSpacing(3)
+        self.rightPanelW.setMaximumWidth(300)
 
         self.pauseButt.setEnabled(False)
 
@@ -106,6 +106,7 @@ class ModelGUI(QtGui.QMainWindow):
 
         self.runButt.clicked.connect(self.runModelButt)
         self.pauseButt.clicked.connect(self.pause)
+        self.showMaximized()
         self.show()
         self.closeEvent = self.windowClosed
 
@@ -113,10 +114,8 @@ class ModelGUI(QtGui.QMainWindow):
         if self.pPlt:
             self.pPlt.run = False
             self.pPlt.closePlots()
-        print 'window closed called'
 
     def sliderChange(self, e):
-        print self.slider.value()
         key = self.pPlt.outFTimeList[self.slider.value()]
         self.pPlt.ph1.setData(self.pPlt.x, self.pPlt.outF['surface'][key])
         self.sliderLabel.setText('Year: ' + key)
@@ -128,7 +127,6 @@ class ModelGUI(QtGui.QMainWindow):
             self.slider.setEnabled(True)
             self.slider.setTickInterval(10)#int(self.tStepLineEdit.text()))
             self.slider.setRange(0,len(self.pPlt.outFTimeList)-1)
-            print 'range ', self.pPlt.outFTimeList[-1], self.slider.tickInterval()
 
         else:
             self.pPlt.run = True
@@ -163,7 +161,6 @@ class ModelGUI(QtGui.QMainWindow):
                 self.N = int(np.floor(bed.distanceData[-1] / float(self.dr)))  # length of path / resolution
 
                 self.x = np.arange(0, (self.N + 1) * self.dr, self.dr)  # start point, end point, number of segments. END POINT NOT INCLUDED!
-                print 'N, dr, dr*N', self.N, self.dr, self.dr * self.N
                 self.mesh = fc.IntervalMesh(self.N, 0, self.dr * self.N)  # number of cells, start point, end point
 
                 self.thicknessModelData = self.thickness1dInterp(self.x)
