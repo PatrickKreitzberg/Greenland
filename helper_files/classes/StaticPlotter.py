@@ -170,7 +170,6 @@ class StaticPlot(QtGui.QMainWindow):
             print 'Plotting...'
             # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
 
-
             interpolateData(False, dr, staticPlotter=self)
             if self.velocityCheck.checkState() == 2:
                 print 'plot velocity!'

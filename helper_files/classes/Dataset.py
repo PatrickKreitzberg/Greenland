@@ -29,9 +29,9 @@ class Dataset():
             bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
             bed_yarray = linspace(map['proj_y1'], map['proj_y0'], map['y1'], endpoint=True)
             t0 = time.time()
-            self.interp   = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
-            self.vxInterp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vx).transpose())
-            self.vyInterp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vy).transpose())
+            # self.interp   = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
+            # self.vxInterp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vx).transpose())
+            # self.vyInterp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vy).transpose())
             self.createColorMap()
             # print "interp took ", time.time() - t0
         elif self.name == 'velocitywidth':
@@ -44,8 +44,10 @@ class Dataset():
             map['y1'] = len(self.data)
             bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
             bed_yarray = linspace(map['proj_y1'], map['proj_y0'], map['y1'], endpoint=True)
-            self.interp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
-            self.createColorMap()
+            it0 = time.time()
+            # self.interp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
+            print 'created interp in ', time.time() - it0, 'seconds'
+            # self.createColorMap()
             # print "interp took ", time.time() - t0
         # if draw:
         #     self.colorData = self.setColorData(dataCMFileName, name)

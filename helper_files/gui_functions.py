@@ -189,12 +189,14 @@ def changeMap(index):
     if index != currentMap:
         oldMap = currentMap
         currentMap = index
-        if not colormaps[maps[index].name]:
-            maps[index].createColorMap()
-            iiContainer.addWidget(maps[index].plotWidget)
-            maps[index].imageItem.hoverEvent = mouseMoved
+        # if not colormaps[maps[index].name]:
+        #     print 'not colormap'
+        #     maps[index].createColorMap()
+        #     iiContainer.addWidget(maps[index].plotWidget)
+        #     maps[index].imageItem.hoverEvent = mouseMoved
 
         iiContainer.setCurrentWidget(maps[index].plotWidget)
+        maps[index].imageItem.hoverEvent = mouseMoved
         maps[index].imageItem.mouseClickEvent = mouseClick
         maps[index].plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
         for ln in intLines:

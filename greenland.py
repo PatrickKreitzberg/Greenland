@@ -1,5 +1,5 @@
-# import time
-# startTime = time.time()
+import time
+startTime = time.time()
 import fenics as fc
 import sys
 from scipy.interpolate import interp1d
@@ -94,7 +94,6 @@ def createModelGUI():
     m = ModelGUI(mw)
 
 
-#
 # def runModelButt():
 #     dr = float(model_res_lineEdit.text()) # dr = 150
 #     if len(vpts) > 0:
@@ -204,7 +203,7 @@ iiContainer.keyPressEvent = ky
 iiContainer.keyReleaseEvent = ky
 
 
-# print 'Loaded in: ', time.time() - startTime, ' seconds!'
+print 'Loaded in: ', time.time() - startTime, ' seconds!'
 
 ## Start Qt event loop unless running in interactive mode.
 if __name__ == '__main__':
