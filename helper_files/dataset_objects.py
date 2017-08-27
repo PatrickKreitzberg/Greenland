@@ -31,19 +31,19 @@ print 'Loaded velocity object in ', time.time() - velT0, 'seconds'
 
 smbT0 = time.time()
 smb = Dataset('smb', redPlotPen, draw=True)
-# iiContainer.addWidget(smb.plotWidget)
+iiContainer.addWidget(smb.plotWidget)
 print 'Loaded SMB in', time.time() - smbT0,' seconds'
 
 bed = Dataset('bed', bluePlotPen, draw=True)
-# iiContainer.addWidget(bed.plotWidget)
+iiContainer.addWidget(bed.plotWidget)
 
 surface = Dataset('surface', greyPlotPen, draw=True)
-# iiContainer.addWidget(surface.plotWidget)
+iiContainer.addWidget(surface.plotWidget)
 
 velocityWidth = Dataset('velocitywidth', purplePlotPen)
 
 thickness = Dataset('thickness', orangePlotPen, draw=True)
-# iiContainer.addWidget(thickness.plotWidget)
+iiContainer.addWidget(thickness.plotWidget)
 
 velocity.pathPlotItem.clear()
 surface.pathPlotItem.clear()

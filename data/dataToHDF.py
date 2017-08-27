@@ -1,4 +1,4 @@
-# import netCDF4 as ncdf
+import netCDF4 as ncdf
 # from scipy.interpolate import RegularGridInterpolator, RectBivariateSpline, griddata, SmoothBivariateSpline
 # from pylab import *
 # import numpy as np
@@ -8,12 +8,39 @@
 # import time
 import h5py
 
-
-f = h5py.File('outModel.h5')
-
-print f['bed']['10.0']
-
+f = h5py.File('GreenlandInBedCoord.h5', 'a')
+print f.keys()
+print f['x'][:].shape
+print f['smb'][:].shape
+print f['surface'][:].shape
+print f['VX'][:].shape
 f.close()
+
+def createLowResDataSet():
+    res = 13 # * 150 meters
+    out = h5py.File('lowRes.h5', 'w')
+    inF = h5py.File('large_GreenlandInBedCoord.h5','r')
+    out.create_dataset('VX',        data=inF['VX'][:][::res, ::res])
+    out.create_dataset('VY',        data=inF['VY'][:][::res, ::res])
+    out.create_dataset('bed',       data=inF['bed'][:][::res, ::res])
+    out.create_dataset('smb',       data=inF['smb'][:][::res, ::res])
+    out.create_dataset('surface',   data=inF['surface'][:][::res, ::res])
+    out.create_dataset('thickness', data=inF['thickness'][:][::res, ::res])
+    out.create_dataset('x',         data=inF['x'][:][::res])
+    out.create_dataset('y',         data=inF['y'][:][::res])
+    inF.close()
+    out.close()
+
+f = h5py.File('lowRes.h5', 'r')
+print f.keys()
+print f['x'][:].shape
+print f['smb'][:].shape
+print f['surface'][:].shape
+print f['VX'][:].shape
+f.close()
+
+
+
 
 
 '''

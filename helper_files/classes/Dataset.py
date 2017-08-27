@@ -29,9 +29,9 @@ class Dataset():
             bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
             bed_yarray = linspace(map['proj_y1'], map['proj_y0'], map['y1'], endpoint=True)
             t0 = time.time()
-            # self.interp   = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
-            # self.vxInterp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vx).transpose())
-            # self.vyInterp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vy).transpose())
+            self.interp   = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
+            self.vxInterp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vx).transpose())
+            self.vyInterp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vy).transpose())
             self.createColorMap()
             # print "interp took ", time.time() - t0
         elif self.name == 'velocitywidth':
@@ -45,39 +45,10 @@ class Dataset():
             bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
             bed_yarray = linspace(map['proj_y1'], map['proj_y0'], map['y1'], endpoint=True)
             it0 = time.time()
-            # self.interp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
+            self.interp = RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
             print 'created interp in ', time.time() - it0, 'seconds'
-            # self.createColorMap()
-            # print "interp took ", time.time() - t0
-        # if draw:
-        #     self.colorData = self.setColorData(dataCMFileName, name)
-        #
-        #     # Setup imageitem
-        #     self.imageItem    = pg.ImageItem(self.colorData)
-        #     self.imageItem.setOpts(axisOrder='row-major')
-        #
-        #     # Setup plotWidget
-        #     self.plotWidget   = pg.PlotWidget()      # velW
-        #     self.plotWidget.addItem(self.imageItem)
-        #     self.plotWidget.setAspectLocked(True)
-        #     self.plotWidget.invertY(True)
-        #     self.colorMap  = getCM(name)
-        #     self.colorBar  = getColorBar(name, self.colorMap)
-        #
-        #     self.colorBarAnchorWidget = ColorBarAnchorWidget()
-        #     self.colorBarAnchorWidget.hideAxis('left')
-        #     self.colorBarAnchorWidget.hideAxis('bottom')
-        #     self.colorBarAnchorWidget.addItem(self.colorBar)
-        #
-        #     self.plotWidget.addItem(self.colorBarAnchorWidget)
-        #     self.colorBarAnchorWidget.setFixedWidth(158)
-        #     self.colorBarAnchorWidget.setFixedHeight(292)
-        #     self.colorBarAnchorWidget.setAspectLocked(True)
-        #     self.colorBarAnchorWidget.getViewBox().setRange(xRange=[-44.0,114], yRange=[-15,247], padding=0.0)
-        #     self.colorBarAnchorWidget.invertY(True)
-        #     self.colorBarAnchorWidget.setParentItem(self.plotWidget.getPlotItem())
-        #     self.colorBarAnchorWidget.getViewBox().setMouseEnabled(x=False, y=False)
-        #     self.colorBarAnchorWidget.anchor(itemPos=(1,0), parentPos=(1,0), offset=(-10,-10))
+            self.createColorMap()
+            print "interp took ", time.time() - t0
 
         self.pathPlotItem = pg.PlotDataItem([0,0], pen=self.pen)  # bpSurf
         # self.legendItem   = bpLegend.addItem(self.pathPlotItem, name)      # bplSMB

@@ -1,4 +1,5 @@
 import pyqtgraph as pg
+import time
 from pyqtgraph.Qt import QtGui
 from  constants import *
 
@@ -15,6 +16,7 @@ The purpose of this file is to reduce the clutter of the main file.
 #####################################################
 
 print 'Building GUI'
+guiT0 = time.time()
 #Main window
 app = QtGui.QApplication([])
 mw = QtGui.QMainWindow()
@@ -161,4 +163,4 @@ currentMap = 0  # selects which data map to show [velocity, bed, surface]
 vptSel = False
 shift = False
 
-print 'Done building gui'
+print 'Done building gui in', time.time() - guiT0, 'seconds'
