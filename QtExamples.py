@@ -1,50 +1,45 @@
 
 
-import pyqtgraph.examples
-pyqtgraph.examples.run()
-
-# import h5py
-# f = h5py.File('./data/modelOut.h5', 'r')
-# print f.keys()
-# print f['bed'].keys()
-# print f['bed']['0'][:]
-# for key in f['bed'].keys():
-#     print key
-# f.close()
+# import pyqtgraph.examples
+# pyqtgraph.examples.run()
 
 
-
-#
 import h5py
-# f = h5py.File('/home/pat/research/Greenland/data/GreenlandInBedCoord.h5','r')
-# print f.keys()
-# # f.__delitem__('VY')
-# print f['smb'][:]
-# print f.keys()
-# f.close()
+from multiprocessing import *
+import time
+dataFile = h5py.File('./data/GreenlandInBedCoord.h5', 'r')
+def worker(i, num, out_q, dataFile):
+    """thread worker function"""
 
-#
-# import netCDF4 as ncdf
-# bedData = ncdf.Dataset('/home/pat/research/Data/BedMachineGreenland-2017-05-10.nc')
-# thickBed = bedData.variables['thickness'][:]
-# print np.amin(thickBed[:])
-# print np.amax(thickBed[:])
-# # print bedData.keys()
-# bedData.close()
+    time.sleep(num)
+    outdict = {}
+    # print dataFile.keys()
+    fd = dataFile['VX'][:]
+    print fd
+    # print 'Worker:', i, 'seconds', num
+    outdict[i] = num
+    out_q.put(outdict)
 
-# from scipy import linspace
-# import numpy as np
-# path = linspace(0,150,15)
-#
-# m = np.matrix([[1,1],[0,1]])
-#
-#
-# x = linspace(-1,1,2, endpoint=True)
-# y = [0]*2
-# print m*np.matrix([x, y])
-# z = m*np.matrix([x, y])
-# print ''
-# print z.shape
-# print z.itemsize
-# print z.item((z.shape[0]-1,0))
-# print x+10
+    return
+
+out_q = Queue()
+
+if __name__ == '__main__':
+    jobs = []
+    nms = [2,1,1,1,3]
+    for i in range(5):
+        p = Process(target=worker, args=(i,nms[i], out_q, dataFile))
+        jobs.append(p)
+        p.start()
+    resultdict = {}
+    for j in jobs:
+        resultdict.update(out_q.get())
+
+    for j in jobs:
+        j.join()
+
+    print resultdict
+    print resultdict[0]
+
+dataFile.close()
+
