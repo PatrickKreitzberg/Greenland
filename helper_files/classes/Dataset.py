@@ -18,18 +18,17 @@ class Dataset():
         interpParamter is parameter to send to mathFunctions.getInterpolators()
         pen is the pen for the bottom plot legend
         '''
-        spatialRes = subSample
-        subSample = 1
-        interpSS = 6
+        self.t0 = time.time()
+        self.spatialRes = subSample
+        self.subSample = 1
+        self.interpSS = 6
         self.name = name
         self.pen = pen
         self.dataCMFileName = dataCMFileName
-        self.fart = None
         if self.name == 'velocity':
             self.data, self.vx, self.vy = self.setData(dataFileName, name)
             self.bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
             self.bed_yarray = linspace(map['proj_y1'], map['proj_y0'], map['y1'], endpoint=True)
-            t0 = time.time()
             self.interp   = None#RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
             self.vxInterp = None#RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vx).transpose())
             self.vyInterp = None#RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.vy).transpose())
@@ -40,21 +39,19 @@ class Dataset():
         else:
             # subSample=10
             self.data = self.setData(dataFileName, name)
-            t0 = time.time()
-            map['x1'] = len(self.data[0])
-            map['y1'] = len(self.data)
+
+            # map['x1'] = len(self.data[0])
+            # map['y1'] = len(self.data)
             self.bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)
             self.bed_yarray = linspace(map['proj_y1'], map['proj_y0'], map['y1'], endpoint=True)
-            it0 = time.time()
             self.interp = None#RectBivariateSpline(bed_xarray, bed_yarray, np.flipud(self.data).transpose())
-            print 'created interp in ', time.time() - it0, 'seconds'
-            self.createColorMap()
-            print "interp took ", time.time() - t0
+            self.createColorMap2()
 
         self.pathPlotItem = pg.PlotDataItem([0,0], pen=self.pen)  # bpSurf
         # self.legendItem   = bpLegend.addItem(self.pathPlotItem, name)      # bplSMB
         self.pathData     = None        # nsmb nv etc.
         self.distanceData = None    # x data for plots.  Which is distance in proj coordinates
+        print 'created', self.name, 'in', time.time() - self.t0, 'seconds'
 
     def setInterpolator(self):
         t0 = time.time()
@@ -68,8 +65,19 @@ class Dataset():
             self.interp = RectBivariateSpline(self.bed_xarray, self.bed_yarray, np.flipud(self.data).transpose())
         print 'setting',  self.name, 'interp', time.time()-t0,'seconds'
 
+    def createColorMap2(self):
+        self.cmT0 = time.time()
+        # fn = './data/' + self.name + 'CM.h5'
+
+        # Setup imageitem
+        self.imageItem = pg.ImageItem()
+        self.imageItem.setOpts(axisOrder='row-major')
+
+        # Setup plotWidget
+        self.plotWidget = pg.PlotWidget()  # velW
 
     def createColorMap(self):
+        self.cmT0 = time.time()
         # fn = './data/' + self.name + 'CM.h5'
         self.colorMapFile = h5py.File(self.dataCMFileName, 'r')
         self.colorData = self.colorMapFile[self.name][:]
@@ -101,6 +109,7 @@ class Dataset():
         self.colorBarAnchorWidget.getViewBox().setMouseEnabled(x=False, y=False)
         self.colorBarAnchorWidget.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(-10, -10))
         self.colorMapFile.close()
+        print 'created', self.name,'colormap in', time.time() - self.cmT0, 'seconds'
 
     # def setInterpolator(self, subSample):
     #     bed_xarray = linspace(map['proj_x0'], map['proj_x1'], map['x1'], endpoint=True)

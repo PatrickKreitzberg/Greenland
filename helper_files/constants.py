@@ -1,3 +1,4 @@
+# map is updated in dataset_objects.py
 map = {'x0':0, 'y0':0,  'x1':10018, 'y1':17946,
        'cmap_x0':0, 'cmap_y0':0,
        'cmap_x1':10018, 'cmap_y1':17946,
@@ -16,6 +17,9 @@ colormaps = {'velocity': True,
 keysPress = {'shift': False,
              'ctrl': False
              }
+fileDict = {'data':'./data/GreenlandInBedCoord.h5',
+            'color': './data/dataCMValues.h5'
+            }
 
 spatialRes = 1 # multiplied by 150 meters
 integrateLine = None
