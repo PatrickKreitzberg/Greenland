@@ -151,51 +151,73 @@ smb.pathPlotItem.clear()
 bed.pathPlotItem.clear()
 print 'loading interps'
 int0 = time.time()
-def getInterpolators(ds):
-    ds.setInterpolator()
+
+
+def getInterpolators(ds, out_q):
+    # ds.setInterpolator()
+    outdict = {}
+    if ds.name == 'velocity':
+        interp = RectBivariateSpline(ds.bed_xarray, ds.bed_yarray, np.flipud(ds.data).transpose())
+        vxInterp = RectBivariateSpline(ds.bed_xarray, ds.bed_yarray, np.flipud(ds.vx).transpose())
+        vyInterp = RectBivariateSpline(ds.bed_xarray, ds.bed_yarray, np.flipud(ds.vy).transpose())
+        outdict[ds.name] =                    interp
+        outdict[str('vx' + ds.name)] =        vxInterp
+        outdict[str('vy' + ds.name)] = vyInterp
+    else:
+        interp = RectBivariateSpline(ds.bed_xarray, ds.bed_yarray, np.flipud(ds.data).transpose())
+        outdict[ds.name] = interp
+    out_q.put(outdict)
+    return
 
 #
 #
 #   https://stackoverflow.com/questions/19828612/python-multiprocessing-setting-class-attribute-value
 #
 #
+out_q = Queue()
 jobs = []
-p0 = Process(target=getInterpolators, args=(smb,))
+p0 = Process(target=getInterpolators, args=(smb, out_q))
 # print 'process smb'
 jobs.append(p0)
 p0.start()
 
 
-
-p1 = Process(target=getInterpolators, args=(velocity,))
+p1 = Process(target=getInterpolators, args=(velocity, out_q))
 # print 'process velocity'
 jobs.append(p1)
 p1.start()
 
-p2 = Process(target=getInterpolators, args=(bed,))
+p2 = Process(target=getInterpolators, args=(bed, out_q))
 # print 'process velocity'
 jobs.append(p2)
 p2.start()
 
 
-p3 = Process(target=getInterpolators, args=(surface,))
+p3 = Process(target=getInterpolators, args=(surface, out_q))
 # print 'process surface'
 jobs.append(p3)
 p3.start()
 
-p4 = Process(target=getInterpolators, args=(thickness,))
+p4 = Process(target=getInterpolators, args=(thickness, out_q))
 # print 'process thickness'
 jobs.append(p4)
 p4.start()
+resultdict = {}
 
-# for j in jobs:
-#     print 'for j in '
-#     resultdict.update(out_q.get())
+for j in jobs:
+    print 'for j in '
+    resultdict.update(out_q.get())
 
 for j in jobs:
     print 'for j in 2'
     j.join()
-print 'fart:', smb.interp
-print 'loaded interps', time.time() - int0
 
+print resultdict.keys()
+bed.interp = resultdict['bed']
+smb.interp = resultdict['smb']
+thickness.interp = resultdict['thickness']
+surface.interp = resultdict['surface']
+velocity.interp = resultdict['velocity']
+velocity.vxInterp = resultdict['vxvelocity']
+velocity.vyInterp = resultdict['vyvelocity']
 print 'Done loading data in', time.time()-dataT0, 'seconds'
