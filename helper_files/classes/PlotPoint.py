@@ -2,7 +2,7 @@ import pyqtgraph as pg
 from ..pens import *
 from ..math_functions import *
 
-class vpt:
+class Marker:
     def __init__(self, cx, cy, dx, dy, velocity, plotWidget):
         self.plotWidget = plotWidget
         self.cx, self.cy = cx, cy  # color coordinates
@@ -12,11 +12,10 @@ class vpt:
         self.pen = blackPlotPen
         self.pen.setWidth(2)
         c = 3
-        xV0 = [self.cx - c, self.cx + c]
-        xV1 = [self.cx - c, self.cx + c]
-        yV0 = [self.cy - c, self.cy + c]
-        yV1 = [self.cy + c, self.cy - c]
-        self.cross = [pg.PlotDataItem(xV0, yV0, connect='all', pen=self.pen), pg.PlotDataItem(xV1, yV1, connect='all', pen=self.pen)]
+        self.cross = [
+            pg.PlotDataItem([self.cx - c, self.cx + c], [self.cy - c, self.cy + c], connect='all', pen=self.pen)
+            , pg.PlotDataItem([self.cx - c, self.cx + c], [self.cy + c, self.cy - c], connect='all', pen=self.pen)
+        ]
         self.lines = [None] * 2
         self.intLine = None
 
@@ -32,10 +31,7 @@ class vpt:
 
     def updateCross(self):
         c = 3
-        xV0 = [self.cx - c, self.cx + c]
-        xV1 = [self.cx - c, self.cx + c]
-        yV0 = [self.cy - c, self.cy + c]
-        yV1 = [self.cy + c, self.cy - c]
+
         self.dx, self.dy = colorToData(self.cx, self.cy)
         self.cross[0].setData([self.cx - c, self.cx + c], [self.cy - c, self.cy + c], connect='all', pen=self.pen)
         self.cross[1].setData([self.cx - c, self.cx + c], [self.cy + c, self.cy - c], connect='all', pen=self.pen)
@@ -60,7 +56,7 @@ class vpt:
         return self.intLine
 
     def setLine(self, line, i):#, index):
-        # 0 connects to the previous vpt, 1 connects to the second
+        # 0 connects to the previous Marker, 1 connects to the second
         self.lines[i] = line
 
     def getLine(self): #, index):

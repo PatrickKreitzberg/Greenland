@@ -14,7 +14,8 @@ colormaps = {'velocity': True,
              }
 
 keysPress = {'shift': False,
-             'ctrl': False
+             'ctrl':  False,
+             'alt':   False
              }
 
 spatialRes = 1 # multiplied by 150 meters

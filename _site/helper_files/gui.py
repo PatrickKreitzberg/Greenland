@@ -39,7 +39,7 @@ mapList = QtGui.QComboBox()
 maps = ['Velocity', 'Bed', 'Surface', 'Smb', 'Thickness']#, 'OldThickness']
 mapList.addItems(maps)
 
-autoCorrectVpt   = QtGui.QCheckBox('Auto-correct vpt pos.')
+autoCorrectVpt   = QtGui.QCheckBox('Auto-correct Marker pos.')
 autoCorrectVpt.setTristate(False)
 autoCorrectVpt.setCheckState(2)
 instructionButton = QtGui.QPushButton('Instructions')

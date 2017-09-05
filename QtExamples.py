@@ -1,7 +1,12 @@
 
 
-import pyqtgraph.examples
-pyqtgraph.examples.run()
+# import pyqtgraph.examples
+# pyqtgraph.examples.run()
+
+for i in range(10):
+    print i
+    if i > 5:
+        break
 
 # import h5py
 # f = h5py.File('./data/modelOut.h5', 'r')

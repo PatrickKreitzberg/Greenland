@@ -60,7 +60,7 @@ class vpt:
         return self.intLine
 
     def setLine(self, line, i):#, index):
-        # 0 connects to the previous vpt, 1 connects to the second
+        # 0 connects to the previous Marker, 1 connects to the second
         self.lines[i] = line
 
     def getLine(self): #, index):

@@ -215,7 +215,7 @@ TO DO
     GENERAL
 - Work on velocity width alg.
 - TRY AND GET MESH WORKING!
-- Shift+click vpt to integrate from there
+- Shift+click Marker to integrate from there
 
     MODEL
 - Align extrapolated points with fenics mesh
