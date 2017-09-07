@@ -4,7 +4,7 @@ from pens import *
 from gui import *
 from dataset_objects import *
 from data_functions import *
-from classes.PlotPoint import *
+from classes.Marker import *
 from classes.MeshGUI import MeshGUI
 from velocity_functions import *
 from classes.StaticPlotter import *

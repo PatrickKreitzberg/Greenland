@@ -2,17 +2,20 @@ from pyqtgraph.Qt import QtCore, QtGui #, QtWidgets
 import pyqtgraph as pg
 from pyqtgraph import LegendItem
 import PyQt4
-from pylab import plot,show,ion,subplots, sqrt
+from pylab import plot,show,ion,subplots
+from scipy import sqrt
 from dolfin import project
-from MyLegend import *
 from scipy.optimize import curve_fit
 import numpy as np
+import scipy.signal as signal
+
+# LOCAL IMPORTS
+from MyLegend import *
 from ..dataset_objects import *
 from ..peakdetect import *
 from ..data_functions import interpolateData
-
 from ..gui import *
-import scipy.signal as signal
+
 
 def gauss(x, *p):
     A, mu, sigma = p
@@ -56,6 +59,7 @@ class StaticPlot(QtGui.QMainWindow):
         self.rightPanelWidget.setLayout(self.rightPanelLayout)
 
         self.resLabel = QtGui.QLabel('Spatial Resolution(m)')
+        self.warningLabel = QtGui.QLabel('Higher resolution takes time')
         self.resLineEdit = QtGui.QLineEdit()
         self.plotButt = QtGui.QPushButton('Plot')
         self.errorLabel = QtGui.QLabel('')
@@ -97,11 +101,12 @@ class StaticPlot(QtGui.QMainWindow):
         self.checkBLayout.setSpacing(0)
         self.allCheck.stateChanged.connect(self.allCheckChange)
 
-        self.rightPanelLayout.addWidget(self.resLabel,    0, 0)
-        self.rightPanelLayout.addWidget(self.resLineEdit, 0, 1)
-        self.rightPanelLayout.addWidget(self.plotButt,    1, 0, 1, 2)
-        self.rightPanelLayout.addWidget(self.checkBoxW,    2, 0, 1, 2)
-        self.rightPanelLayout.addWidget(self.errorLabel,  3, 0, 1, 2)
+        self.rightPanelLayout.addWidget(self.resLabel,     0, 0)
+        self.rightPanelLayout.addWidget(self.resLineEdit,  0, 1)
+        self.rightPanelLayout.addWidget(self.warningLabel, 1, 0, 1, 2)
+        self.rightPanelLayout.addWidget(self.plotButt,     2, 0, 1, 2)
+        self.rightPanelLayout.addWidget(self.checkBoxW,    3, 0, 1, 2)
+        self.rightPanelLayout.addWidget(self.errorLabel,   3, 0, 1, 2)
         self.rightPanelLayout.setAlignment(QtCore.Qt.AlignTop)
 
         self.mainLayout.addWidget(self.leftPanelWidget)
@@ -169,8 +174,22 @@ class StaticPlot(QtGui.QMainWindow):
         if len(vpts) > 0:
             print 'Plotting...'
             # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
+            dataSetsToPopulate = []
 
-            interpolateData(False, dr, staticPlotter=self)
+            if self.velocityCheck.checkState() == 2:
+                dataSetsToPopulate.append('vel')
+            if self.smbCheck.checkState() == 2:
+                dataSetsToPopulate.append('smb')
+            if self.surfaceCheck.checkState() == 2:
+                dataSetsToPopulate.append('sur')
+            if self.bedCheck.checkState() == 2:
+                dataSetsToPopulate.append('bed')
+            if self.thicknessCheck.checkState() == 2:
+                dataSetsToPopulate.append('thk')
+            if self.vWidthCheck.checkState() == 2:
+                dataSetsToPopulate.append('wth')
+
+            interpolateData(False, dr, dataSetsToPopulate)
             if self.velocityCheck.checkState() == 2:
                 print 'plot velocity!'
                 velocityPlt = self.plt2.getPlotItem().plot(velocity.distanceData, velocity.pathData, pen=velocity.pen)
@@ -178,67 +197,68 @@ class StaticPlot(QtGui.QMainWindow):
                 velocity.pathPlotItem.setData(velocity.distanceData          , velocity.pathData)
 
             if self.smbCheck.checkState() == 2:
-                smbPlt = self.plt3.getPlotItem().plot(smb.distanceData, smb.pathData, pen=smb.pen)
-                self.legend3.addItem(smbPlt, 'SMB(m)')
+                self.smbPlt = self.plt3.getPlotItem().plot(smb.distanceData, smb.pathData, pen=smb.pen)
+                self.legend3.addItem(self.smbPlt, 'SMB(m)')
                 smb.pathPlotItem.setData(smb.distanceData                    , smb.pathData)
 
             if self.surfaceCheck.checkState() == 2:
-                surfPlt  = self.plt1.getPlotItem().plot(surface.distanceData, surface.pathData, pen=surface.pen)
-                self.legend1.addItem(surfPlt, 'Surface(m)')
+                self.surfPlt  = self.plt1.getPlotItem().plot(surface.distanceData, surface.pathData, pen=surface.pen)
+                self.legend1.addItem(self.surfPlt, 'Surface(m)')
                 surface.pathPlotItem.setData(surface.distanceData            , surface.pathData)
 
             if self.bedCheck.checkState() == 2:
-                bedPlt = self.plt1.getPlotItem().plot(bed.distanceData, bed.pathData, pen=bed.pen)
-                self.legend1.addItem(bedPlt, 'Bed(m)')
+                self.bedPlt = self.plt1.getPlotItem().plot(bed.distanceData, bed.pathData, pen=bed.pen)
+                self.legend1.addItem(self.bedPlt, 'Bed(m)')
                 bed.pathPlotItem.setData(bed.distanceData                    , bed.pathData)
 
             if self.thicknessCheck.checkState() == 2:
-                thickPlt = self.plt1.getPlotItem().plot(thickness.distanceData, thickness.pathData, pen=thickness.pen)
-                self.legend1.addItem(thickPlt, 'Thickness(m)')
+                self.thickPlt = self.plt1.getPlotItem().plot(thickness.distanceData, thickness.pathData, pen=thickness.pen)
+                self.legend1.addItem(self.thickPlt, 'Thickness(m)')
                 thickness.pathPlotItem.setData(thickness.distanceData, thickness.pathData)
 
             if self.vWidthCheck.checkState() == 2:
-                vWidthPlt = self.plt1.getPlotItem().plot(velocityWidth.distanceData, velocityWidth.pathData, pen=velocityWidth.pen)
-                self.legend1.addItem(vWidthPlt, 'Vel. Width(m)')
+                self.vWidthPlt = self.plt1.getPlotItem().plot(velocityWidth.distanceData, velocityWidth.pathData, pen=velocityWidth.pen)
+                self.legend1.addItem(self.vWidthPlt, 'Vel. Width(m)')
                 velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
+
             pg.QtGui.QApplication.processEvents()
             print 'Plotting done.'
 
-def runStaticPlot():
-    staticPlotWindow = QtGui.QMainWindow(mw)
-    staticPlotWindow.setWindowTitle('Static Plotter')
-    dummyWidget = QtGui.QWidget()
-    staticPlotWindow.setCentralWidget(dummyWidget)
-    layout = QtGui.QVBoxLayout()
-    dummyWidget.setLayout(layout)
-    plt1 = pg.PlotWidget()
-    plt2 = pg.PlotWidget()
-    plt3 = pg.PlotWidget()
-    layout.addWidget(plt1)
-    layout.addWidget(plt2)
-    layout.addWidget(plt3)
-    legend1 = pg.LegendItem(offset=(-1, 1))
-    legend2 = pg.LegendItem(offset=(-1, 1))
-    legend3 = pg.LegendItem(offset=(-1, 1))
-
-    if surfaceCheck.checkState() == 2:
-        surfPlt  = plt1.getPlotItem().plot(surface.distanceData, surface.pathData, pen=surface.pen)
-        legend1.addItem(surfPlt, 'Surface(m)')
-
-    if vWidthCheck.checkState() == 2:
-        vWidthPlt = plt1.getPlotItem().plot(velocityWidth.distanceData, velocityWidth.pathData, pen=velocityWidth.pen)
-        legend1.addItem(vWidthPlt, 'Vel. Width(m)')
-
-    if bedCheck.checkState() == 2:
-        bedPlt   = plt1.getPlotItem().plot(bed.distanceData, bed.pathData, pen=bed.pen)
-        legend1.addItem(bedPlt, 'Bed(m)')
-
-    if thicknessCheck.checkState() == 2:
-        thickPlt = plt1.getPlotItem().plot(thickness.distanceData, thickness.pathData, pen=thickness.pen)
-        legend1.addItem(thickPlt, 'Thickness(m)')
-
-    if velocityCheck.checkState() == 2:
-        velocityPlt = plt2.getPlotItem().plot(velocity.distanceData, velocity.pathData, pen=velocity.pen)
+# def runStaticPlot():
+#     staticPlotWindow = QtGui.QMainWindow(mw)
+#     staticPlotWindow.setWindowTitle('Static Plotter')
+#     dummyWidget = QtGui.QWidget()
+#     staticPlotWindow.setCentralWidget(dummyWidget)
+#     layout = QtGui.QVBoxLayout()
+#     dummyWidget.setLayout(layout)
+#     plt1 = pg.PlotWidget()
+#     plt2 = pg.PlotWidget()
+#     plt3 = pg.PlotWidget()
+#     layout.addWidget(plt1)
+#     layout.addWidget(plt2)
+#     layout.addWidget(plt3)
+#     legend1 = pg.LegendItem(offset=(-1, 1))
+#     legend2 = pg.LegendItem(offset=(-1, 1))
+#     legend3 = pg.LegendItem(offset=(-1, 1))
+#
+#     if surfaceCheck.checkState() == 2:
+#         surfPlt  = plt1.getPlotItem().plot(surface.distanceData, surface.pathData, pen=surface.pen)
+#         legend1.addItem(surfPlt, 'Surface(m)')
+#
+#     if vWidthCheck.checkState() == 2:
+#         vWidthPlt = plt1.getPlotItem().plot(velocityWidth.distanceData, velocityWidth.pathData, pen=velocityWidth.pen)
+#         legend1.addItem(vWidthPlt, 'Vel. Width(m)')
+#
+#     if bedCheck.checkState() == 2:
+#         bedPlt   = plt1.getPlotItem().plot(bed.distanceData, bed.pathData, pen=bed.pen)
+#         legend1.addItem(bedPlt, 'Bed(m)')
+#
+#     if thicknessCheck.checkState() == 2:
+#         thickPlt = plt1.getPlotItem().plot(thickness.distanceData, thickness.pathData, pen=thickness.pen)
+#         legend1.addItem(thickPlt, 'Thickness(m)')
+#
+#     if velocityCheck.checkState() == 2:
+#         velocityPlt = plt2.getPlotItem().plot(velocity.distanceData, velocity.pathData, pen=velocity.pen)
         # dv = velocity.pathData[1:] - velocity.pathData[:-1]
         # dv2 = dv[1:] - dv[:-1]
         #
@@ -313,18 +333,18 @@ def runStaticPlot():
 
 
 
-
-        legend2.addItem(velocityPlt, 'Velocity(m/yr)')
-
-
-    if smbCheck.checkState() == 2:
-        smbPlt = plt3.getPlotItem().plot(smb.distanceData, smb.pathData, pen=smb.pen)
-        legend3.addItem(smbPlt, 'SMB(m)')
-
-    legend1.setParentItem(plt1.getPlotItem())
-
-    legend2.setParentItem(plt2.getPlotItem())
-
-    legend3.setParentItem(plt3.getPlotItem())
-    staticPlotWindow.show()
+    #
+    #     legend2.addItem(velocityPlt, 'Velocity(m/yr)')
+    #
+    #
+    # if smbCheck.checkState() == 2:
+    #     smbPlt = plt3.getPlotItem().plot(smb.distanceData, smb.pathData, pen=smb.pen)
+    #     legend3.addItem(smbPlt, 'SMB(m)')
+    #
+    # legend1.setParentItem(plt1.getPlotItem())
+    #
+    # legend2.setParentItem(plt2.getPlotItem())
+    #
+    # legend3.setParentItem(plt3.getPlotItem())
+    # staticPlotWindow.show()
 

@@ -8,7 +8,7 @@ from pens import *
 from gui import *
 from dataset_objects import *
 from data_functions import *
-from classes.PlotPoint import *
+from classes.Marker import *
 from velocity_functions import *
 from classes.StaticPlotter import *
 
@@ -122,6 +122,7 @@ def mouseClick(e):
                 imin = curveDistance(e.pos().x(), e.pos().y(), cData)
                 if imin != -1:
                     # If you clicked within one pixel of the line
+                    # FIXME need to make this line into the path data
                     break
                     found = True
 

@@ -1,6 +1,6 @@
 from data_functions import *
 from scipy.integrate import ode
-from classes.PlotPoint import *
+from classes.Marker import *
 
 def _intMesh0(t,y):
     return np.array([t * (velocity.vxInterp([y[0]], [y[1]], grid=False)), t * (velocity.vyInterp([y[0]], [y[1]], grid=False))])

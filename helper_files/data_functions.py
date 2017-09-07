@@ -1,12 +1,12 @@
+import time
+import os
+from peakdetect import *
+from scipy import sqrt
+
+# LOCAL IMPORTS
 from gui import *
 from dataset_objects import *
 from math_functions import *
-import time
-import pickle
-import os
-import scipy.signal as signal
-from peakdetect import *
-
 
 
 # dr = 150
@@ -360,10 +360,10 @@ def calcVelWidth(x0, y0, x1, y1, draw):
 #     #FIXME changed the interpolator
 
 
-def interpolateData(runModel, dr, staticPlotter=None):
+def interpolateData(runModel, dr, dataSetsToPopulate):
     '''
-    Calculate the data for bottom plot or to run the model.
-    If botPlotBool, calculate all the data.  Else, calculate just bed/surface.
+    Populates the data (velocity, thickness, etc.) along the path.
+    If staticPlotter, calculate all the data.  Else, calculate just bed/surface.
     :return:
     '''
     # dr = float(model_res_lineEdit.text()) # dr = 150
@@ -376,31 +376,9 @@ def interpolateData(runModel, dr, staticPlotter=None):
     linePoints = [0]
     vwValues = []
     graphX = []
-    ########################################
-    ##    GATHER LOCAL INTERPOLATORS      ##
-    ########################################
-    '''
-    mxx = max(pt.x for pt in vpts)
-    mxy = max(pt.y for pt in vpts)
-    mix = min(pt.x for pt in vpts)
-    miy = min(pt.y for pt in vpts)
 
-    
-    if velocityCheck.checkState() == 2 or runModel:
-        # vxInterp, vyInterp = getInterpolators(velocity.vx, velocity.name, mix, miy, x1=mxx, y1=mxy, d2=velocity.vy)
-        velInterp = getInterpolators(velocity.data, 'velocity', mix, miy, x1=mxx, y1=mxy)
-    if surfaceCheck.checkState() == 2 or runModel:
-        surfaceInterp = getInterpolators(surface.data, surface.name, mix, miy, x1=mxx, y1=mxy)
-    if bedCheck.checkState() == 2 or runModel:
-        bedInterp = getInterpolators(bed.data, bed.name, mix, miy, x1=mxx, y1=mxy)
-    if smbCheck.checkState() == 2 or runModel:
-        smbInterp = getInterpolators(smb.data, smb.name, mix, miy, x1=mxx, y1=mxy)
-    thickInterp   = getInterpolators(thickness.data, thickness.name, mix, miy, x1=mxx, y1=mxy)
-    '''
 
-    # thickInterp = getInterpolators(thickness.data, thickness.name, mix, miy, x1=mxx, y1=mxy)
 
-    # Find a distance ~150m which gets close to dividing the distance between first 2 spots
     d = 0
     for i in range(1, len(vpts)):
         d += sqrt((vpts[i - 1].cx - vpts[i].cx) ** 2 + (vpts[i - 1].cy - vpts[i].cy) ** 2)
@@ -450,11 +428,7 @@ def interpolateData(runModel, dr, staticPlotter=None):
         ########################################
         ##    CALCULATE SURFACE ELEVATION     ##
         ########################################
-        if staticPlotter is not None:
-            print 'staticPlotter true'
-        else:
-            print 'Static PLOTTER NOT TRUE'
-        if runModel or (staticPlotter and staticPlotter.surfaceCheck.checkState() == 2):
+        if runModel or 'sur' in dataSetsToPopulate:
             # surfaceInterp = getInterpolators(surface.data, surface.name, mix, miy, x1=mxx, y1=mxy)
             localSurface = surface.interp(px, py, grid=False)
             surfValues.append(localSurface)
@@ -462,16 +436,15 @@ def interpolateData(runModel, dr, staticPlotter=None):
         ########################################
         ##         CALCULATE BED              ##
         ########################################
-        if runModel or (staticPlotter and staticPlotter.bedCheck.checkState() == 2):
-            # bedInterp = getInterpolators(bed.data, bed.name, mix, miy, x1=mxx, y1=mxy)
+        if runModel or 'bed' in dataSetsToPopulate:
             localBed = bed.interp(px, py, grid=False)
             bedValues.append(localBed)
 
         ########################################
         ##        CALCULATE VELOCITY          ##
         ########################################
-        if runModel or (staticPlotter and staticPlotter.velocityCheck.checkState() == 2):
-            # velInterp = getInterpolators(velocity.data, 'velocity', mix, miy, x1=mxx, y1=mxy)
+        if runModel or 'vel' in dataSetsToPopulate:
+
             vi = velocity.interp(px, py, grid=False)
             xValues.append(xline)
             velValues.append(vi)
@@ -479,7 +452,7 @@ def interpolateData(runModel, dr, staticPlotter=None):
         ########################################
         ##     CALCULATE VELOCITY WIDTH       ##
         ########################################
-        if runModel or (staticPlotter and staticPlotter.vWidthCheck.checkState() == 2):
+        if runModel or 'wth' in dataSetsToPopulate:
             vwd = []
             for i in range(len(px)):
                 xp0, yp0 = colorCoord(px[i - 1], py[i - 1])
@@ -491,7 +464,7 @@ def interpolateData(runModel, dr, staticPlotter=None):
         ########################################
         ##   CALCULATE SURFACE MASS-BALANCE   ##
         ########################################
-        if runModel or (staticPlotter and staticPlotter.smbCheck.checkState() == 2):
+        if runModel or 'smb' in dataSetsToPopulate:
             # smbInterp = getInterpolators(smb.data, smb.name, mix, miy, x1=mxx, y1=mxy)
             'init smb'
             localSMB = smb.interp(px, py, grid=False)
@@ -500,62 +473,76 @@ def interpolateData(runModel, dr, staticPlotter=None):
         ########################################
         ##   CALCULATE THICKNESS              ##
         ########################################
-        # if smbCheck == 2 or runModel:
-        # thickInterp   = getInterpolators(thickness.data, thickness.name, mix, miy, x1=mxx, y1=mxy)
-        if runModel or (staticPlotter and staticPlotter.thicknessCheck.checkState() == 2):
+        if runModel or 'thk' in dataSetsToPopulate:
             localThick = thickness.interp(px, py, grid=False)
             thickValues.append(localThick)
 
         ########################################
         ##   COMPILE DATA                     ##
         ########################################
-        if runModel or (staticPlotter and staticPlotter.bedCheck.checkState() == 2):
+        if runModel or 'bed' in dataSetsToPopulate:
             bed.pathData = np.array(bedValues[0])
-        if runModel or (staticPlotter and staticPlotter.surfaceCheck.checkState() == 2):
+
+        if runModel or 'sur' in dataSetsToPopulate:
             surface.pathData = np.array(surfValues[0])
-        if runModel or (staticPlotter and staticPlotter.velocityCheck.checkState() == 2):
+
+        if runModel or 'vel' in dataSetsToPopulate:
             velocity.pathData = np.array(velValues[0])
-        if runModel or (staticPlotter and staticPlotter.smbCheck.checkState() == 2):
+
+        if runModel or 'smb' in dataSetsToPopulate:
             smb.pathData = np.array(smbValues[0])
-        if runModel or (staticPlotter and staticPlotter.vWidthCheck.checkState() == 2):
+
+        if runModel or 'wth' in dataSetsToPopulate:
             velocityWidth.pathData = np.array(vwValues[0])
-        if runModel or (staticPlotter and staticPlotter.thicknessCheck.checkState() == 2):
+
+        if runModel or 'thk' in dataSetsToPopulate:
             thickness.pathData = np.array(thickValues[0])
 
         for i in range(1, len(velValues)):
-            if runModel or (staticPlotter and staticPlotter.velocityCheck.checkState() == 2):
+            if runModel or 'vel' in dataSetsToPopulate:
                 velocity.pathData      = np.append(velocity.pathData, velValues[i])
-            if runModel or (staticPlotter and staticPlotter.smbCheck.checkState() == 2):
+
+            if runModel or 'smb' in dataSetsToPopulate:
                 smb.pathData           = np.append(smb.pathData, smbValues[i])
-            if runModel or (staticPlotter and staticPlotter.vWidthCheck.checkState() == 2):
+
+            if runModel or 'wth' in dataSetsToPopulate:
                 velocityWidth.pathData = np.append(velocityWidth.pathData, vwValues[i])
-            if runModel or (staticPlotter and staticPlotter.bedCheck.checkState() == 2):
+
+            if runModel or 'bed' in dataSetsToPopulate:
                 bed.pathData           = np.append(bed.pathData, bedValues[i])
-            if runModel or (staticPlotter and staticPlotter.surfaceCheck.checkState() == 2):
+
+            if runModel or 'sur' in dataSetsToPopulate:
                 surface.pathData       = np.append(surface.pathData, surfValues[i])
-            if runModel or (staticPlotter and staticPlotter.thicknessCheck.checkState() == 2):
+
+            if runModel or 'thk' in dataSetsToPopulate:
                 thickness.pathData = np.append(thickness.pathData, thickValues[i])
-    if runModel or (staticPlotter and staticPlotter.smbCheck.checkState() == 2):
+
+    if runModel or 'smb' in dataSetsToPopulate:
         smb.pathData = smb.pathData*(1.0/1000.0)*(916.7/1000.0) # millimeters -> meters then water-equivalent to ice-equivalent
-    # print 'graphx[-1]: ', graphX[len(graphX) - 1]
+
     dist = 0
     for i in range(len(vpts) - 1):
-        # print 'calc distance...'
+
         xd0, yd0 = colorToProj(vpts[i].cx, vpts[i].cy)
         xd1, yd1 = colorToProj(vpts[i + 1].cx, vpts[i + 1].cy)
-        # print xd0, yd0, xd1, yd1
+
         dist += sqrt(((xd1 - xd0) ** 2 + (yd1 - yd0) ** 2))
-    # print 'dist: ', dist
-    if runModel or (staticPlotter and staticPlotter.thicknessCheck.checkState() == 2):
+
+    if runModel or 'thk' in dataSetsToPopulate:
         thickness.distanceData = graphX
-    if runModel or (staticPlotter and staticPlotter.surfaceCheck.checkState() == 2):
+
+    if runModel or 'sur' in dataSetsToPopulate:
         surface.distanceData = graphX
-    if runModel or (staticPlotter and staticPlotter.bedCheck.checkState() == 2):
+
+    if runModel or 'bed' in dataSetsToPopulate:
         bed.distanceData = graphX
-    if runModel or (staticPlotter and staticPlotter.velocityCheck.checkState() == 2):
+
+    if runModel or 'vel' in dataSetsToPopulate:
         velocity.distanceData = graphX
-    if runModel or (staticPlotter and staticPlotter.smbCheck.checkState() == 2):
+
+    if runModel or 'smb' in dataSetsToPopulate:
         smb.distanceData = graphX
-    if runModel or (staticPlotter and staticPlotter.vWidthCheck.checkState() == 2):
+
+    if runModel or 'wth' in dataSetsToPopulate:
         velocityWidth.distanceData = graphX
 

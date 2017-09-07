@@ -15,7 +15,7 @@ from ..pens import *
 from ..gui import *
 from ..dataset_objects import *
 from ..data_functions import *
-from PlotPoint import *
+from Marker import *
 from ..constants import *
 
 from InterpolateData import interpolateDataClass

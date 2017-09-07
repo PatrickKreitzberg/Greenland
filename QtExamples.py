@@ -8,6 +8,12 @@ for i in range(10):
     if i > 5:
         break
 
+d = []
+d.append('p')
+d.append('n')
+print 'p' in d
+print 'q' in d
+
 # import h5py
 # f = h5py.File('./data/modelOut.h5', 'r')
 # print f.keys()

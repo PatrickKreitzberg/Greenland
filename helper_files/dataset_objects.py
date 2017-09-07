@@ -3,7 +3,7 @@ from classes.Dataset import Dataset
 from gui import *
 from pens import *
 from colorMaps import *
-from classes.ColorBarAnchorWidget import *
+from classes.Colorbar_Anchor_Widget import *
 from constants import *
 import time
 

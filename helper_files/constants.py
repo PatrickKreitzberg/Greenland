@@ -18,6 +18,8 @@ keysPress = {'shift': False,
              'alt':   False
              }
 
+globalConstants = {'isPathIntLine': False}
+
 spatialRes = 1 # multiplied by 150 meters
 integrateLine = None
 
