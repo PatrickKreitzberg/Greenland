@@ -3,11 +3,14 @@ import os
 from peakdetect import *
 from scipy import sqrt
 import numpy as np
+import pyqtgraph as pg
+
 
 # LOCAL IMPORTS
 from gui import *
 from dataset_objects import *
 from math_functions import *
+from pens import whitePlotPen
 
 
 # dr = 150
@@ -303,6 +306,22 @@ def interpolateData(runModel, dr, dataSetsToPopulate):
             # transform coordinates into projected coordinates
             # (the interpolators are set to use projected coordinates)
             tx, ty = colorToProj(markers[i - 1].cx + t[0, 0], markers[i - 1].cy + t[1, 0])
+
+            # The following was used for debugging, prints marks at every point in tx, ty
+            # c = 3
+            # iiContainer.currentWidget().addItem(
+            #     pg.PlotDataItem([markers[i - 1].cx + t[0, 0] - c,
+            #                      markers[i - 1].cx + t[0, 0] + c],
+            #                     [markers[i - 1].cy + t[1, 0] - c,
+            #                      markers[i - 1].cy + t[1, 0] + c],
+            #                     connect='all', pen=whitePlotPen))
+            # iiContainer.currentWidget().addItem(
+            #     pg.PlotDataItem([markers[i - 1].cx + t[0, 0] - c,
+            #                      markers[i - 1].cx + t[0, 0] + c],
+            #                     [markers[i - 1].cy + t[1, 0] - c,
+            #                      markers[i - 1].cy + t[1, 0] + c],
+            #                     connect='all', pen=whitePlotPen))
+
             px.append(tx)
             py.append(ty)
             if len(px) > 1:

@@ -90,6 +90,7 @@ class StaticPlot(QtGui.QMainWindow):
         self.surfaceCheck.setCheckState(2)
         self.bedCheck.setCheckState(2)
         self.thicknessCheck.setCheckState(2)
+
         self.checkBLayout.addWidget(QtGui.QLabel('Plot Checked Data:'))
         self.checkBLayout.addWidget(self.allCheck)
         self.checkBLayout.addWidget(self.velocityCheck)
@@ -105,37 +106,12 @@ class StaticPlot(QtGui.QMainWindow):
         self.rightPanelLayout.addWidget(self.resLineEdit,  0, 1)
         self.rightPanelLayout.addWidget(self.warningLabel, 1, 0, 1, 2)
         self.rightPanelLayout.addWidget(self.plotButt,     2, 0, 1, 2)
-        self.rightPanelLayout.addWidget(self.checkBoxW,    3, 0, 1, 2)
         self.rightPanelLayout.addWidget(self.errorLabel,   3, 0, 1, 2)
+        self.rightPanelLayout.addWidget(self.checkBoxW,    4, 0, 1, 2)
         self.rightPanelLayout.setAlignment(QtCore.Qt.AlignTop)
 
         self.mainLayout.addWidget(self.leftPanelWidget)
         self.mainLayout.addWidget(self.rightPanelWidget)
-
-
-        # if surfaceCheck.checkState() == 2:
-        #     surfPlt  = self.plt1.getPlotItem().plot(surface.distanceData, surface.pathData, pen=surface.pen)
-        #     self.legend1.addItem(surfPlt, 'Surface(m)')
-        #
-        # if vWidthCheck.checkState() == 2:
-        #     vWidthPlt = self.plt1.getPlotItem().plot(velocityWidth.distanceData, velocityWidth.pathData, pen=velocityWidth.pen)
-        #     self.legend1.addItem(vWidthPlt, 'Vel. Width(m)')
-        #
-        # if bedCheck.checkState() == 2:
-        #     bedPlt   = self.plt1.getPlotItem().plot(bed.distanceData, bed.pathData, pen=bed.pen)
-        #     self.legend1.addItem(bedPlt, 'Bed(m)')
-        #
-        # if thicknessCheck.checkState() == 2:
-        #     thickPlt = self.plt1.getPlotItem().plot(thickness.distanceData, thickness.pathData, pen=thickness.pen)
-        #     self.legend1.addItem(thickPlt, 'Thickness(m)')
-        #
-        # if velocityCheck.checkState() == 2:
-        #     velocityPlt = self.plt2.getPlotItem().plot(velocity.distanceData, velocity.pathData, pen=velocity.pen)
-        #     self.legend2.addItem(velocityPlt, 'Velocity(m/yr)')
-        #
-        # if smbCheck.checkState() == 2:
-        #     smbPlt = self.plt3.getPlotItem().plot(smb.distanceData, smb.pathData, pen=smb.pen)
-        #     self.legend3.addItem(smbPlt, 'SMB(m)')
 
         self.legend1.setParentItem(self.plt1.getPlotItem())
         self.legend2.setParentItem(self.plt2.getPlotItem())
