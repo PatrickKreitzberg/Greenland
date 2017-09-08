@@ -171,7 +171,7 @@ class StaticPlot(QtGui.QMainWindow):
         bed.pathPlotItem.clear()
         velocityWidth.pathPlotItem.clear()
         thickness.pathPlotItem.clear()
-        if len(vpts) > 0:
+        if len(markers) > 0:
             print 'Plotting...'
             # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
             dataSetsToPopulate = []

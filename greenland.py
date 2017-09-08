@@ -80,7 +80,7 @@ def hiResInterpolators():
     hiResButton.setEnabled(False)
 
 def clearPoints():
-    del vpts[:]
+    del markers[:]
     textOut.setText('')
     modelButton.setEnabled(False)
     cProfButton.setEnabled(False)

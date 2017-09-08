@@ -46,10 +46,10 @@ class MeshGUI(QtGui.QMainWindow):
 
         mn = 999999
         mx = 0
-        for i in range(len(vpts)):
-            for j in range(len(vpts)):
+        for i in range(len(markers)):
+            for j in range(len(markers)):
                 if i != j:
-                    d = sqrt((vpts[i].cx - vpts[j].cx)**2 + (vpts[i].cy - vpts[j].cy)**2)
+                    d = sqrt((markers[i].cx - markers[j].cx) ** 2 + (markers[i].cy - markers[j].cy) ** 2)
                     if d < mn:
                         mn = d
                     if d > mx:
@@ -135,30 +135,30 @@ class MeshGUI(QtGui.QMainWindow):
             h0 = float(self.distInput.text())
             print 'h0 is ', h0
             px, py = 1, 1  # map['cmap_x1'], map['cmap_y1']
-            pv = [[vpts[0].px, vpts[0].py]]
+            pv = [[markers[0].px, markers[0].py]]
             dmin = 99999
             minx = 99999
             miny = 99999
             maxx = -1
             maxy = -1
 
-            for i in range(1, len(vpts)):
-                d = sqrt((vpts[i].px - vpts[i - 1].px) ** 2 + (vpts[i].py - vpts[i - 1].py) ** 2)
+            for i in range(1, len(markers)):
+                d = sqrt((markers[i].px - markers[i - 1].px) ** 2 + (markers[i].py - markers[i - 1].py) ** 2)
                 if d < dmin:
                     dmin = d
-                if vpts[i].px < minx:
-                    minx = vpts[i].px
+                if markers[i].px < minx:
+                    minx = markers[i].px
 
-                if vpts[i].px > maxx:
-                    maxx = vpts[i].px
+                if markers[i].px > maxx:
+                    maxx = markers[i].px
 
-                if vpts[i].py < miny:
-                    miny = vpts[i].py
+                if markers[i].py < miny:
+                    miny = markers[i].py
 
-                if vpts[i].py > maxy:
-                    maxy = vpts[i].py
+                if markers[i].py > maxy:
+                    maxy = markers[i].py
 
-                pv.append([vpts[i].px, vpts[i].py])
+                pv.append([markers[i].px, markers[i].py])
             pause = lambda: None
             # plt.ion()
             np.random.seed(1)  # Always the same results

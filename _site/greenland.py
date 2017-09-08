@@ -78,7 +78,7 @@ def hiResInterpolators():
     hiResButton.setEnabled(False)
 
 def clearPoints():
-    del vpts[:]
+    del markers[:]
     textOut.setText('')
     modelButton.setEnabled(False)
     cProfButton.setEnabled(False)
@@ -91,7 +91,7 @@ def clearPoints():
 
 def runModelButt():
     dr = float(model_res_lineEdit.text()) # dr = 150
-    if len(vpts) > 0:
+    if len(markers) > 0:
 
         interpolateData(True)
 

@@ -135,7 +135,7 @@ class ModelGUI(QtGui.QMainWindow):
             self.runLoop()
 
     def runModelButt(self):
-        if len(vpts) > 0:
+        if len(markers) > 0:
             try:
                 self.runButt.setEnabled(False)
                 self.dr = float(self.sptlResLineEdit.text())  # dr = 150

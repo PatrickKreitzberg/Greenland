@@ -2,7 +2,7 @@ import time
 import h5py
 from helper_files.math_functions import *
 from helper_files.colorMaps import *
-from helper_files.classes.Colorbar_Anchor_Widget import ColorBarAnchorWidget
+from helper_files.classes.ColorbarAnchorWidget import ColorBarAnchorWidget
 from pylab import sqrt, linspace
 from scipy.interpolate import RectBivariateSpline
 import numpy as np

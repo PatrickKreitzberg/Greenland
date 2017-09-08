@@ -3,7 +3,7 @@ from classes.Dataset import Dataset
 from gui import *
 from pens import *
 from colorMaps import *
-from classes.Colorbar_Anchor_Widget import *
+from classes.ColorbarAnchorWidget import *
 from constants import *
 import time
 
@@ -20,7 +20,7 @@ map['proj_x1'] = dataSet['x'][:][-1]
 map['proj_y1'] = dataSet['y'][:][-1]
 dataSet.close()
 
-vpts = []     # holds [x,y,v] values, where x,y are the coordinates and v is the velocity magnitude at those coordinates
+markers = []     # holds [x,y,v] values, where x,y are the coordinates and v is the velocity magnitude at those coordinates
 intLines = [] # holds integration lines
 velT0 = time.time()
 velocity = Dataset('velocity', greenPlotPen, draw=True)

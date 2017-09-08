@@ -44,7 +44,7 @@ def centerVelocityStream(x, y):
 def mouseClick(e):
     global vptSel, vptCur#, integrateLine
     first = False
-    if len(vpts) == 0:
+    if len(markers) == 0:
         first = True
         cx = e.pos().x()
         cy = e.pos().y()
@@ -52,17 +52,17 @@ def mouseClick(e):
             cx, cy = centerVelocityStream(cx, cy)
     if not vptSel:
         # If there is not a marker selected already
-        for i in range(len(vpts)):
-            if vpts[i].checkClicked(e.pos()):
+        for i in range(len(markers)):
+            if markers[i].checkClicked(e.pos()):
                 # See if you clicked on an already existing point
                 if keysPress['shift']:
-                    x0p, y0p = colorToProj(vpts[i].cx, vpts[i].cy)
+                    x0p, y0p = colorToProj(markers[i].cx, markers[i].cy)
                     y0 = np.array([x0p, y0p])
                     t0, t1, dt = 0, 80, .1
                     r = ode(getProfile).set_integrator('zvode', method='bdf')
                     r.set_initial_value(y0, t0)
-                    ox = [vpts[i].cx]
-                    oy = [vpts[i].cy]
+                    ox = [markers[i].cx]
+                    oy = [markers[i].cy]
                     while r.successful() and r.t < t1:
                         ai = r.integrate(r.t + dt)
                         xi, yi = colorCoord(ai[0], ai[1])
@@ -77,30 +77,30 @@ def mouseClick(e):
                 elif keysPress['ctrl']:
                     # if you ctrl+click a maker it is deleted
                     if i > 0:
-                        if i + 1 < len(vpts):
+                        if i + 1 < len(markers):
                             # connect line from previous node to next point
-                            vpts[i - 1].lines[1] = pg.PlotDataItem([vpts[i - 1].cx, vpts[i + 1].cx], [vpts[i - 1].cy, vpts[i + 1].cy], connect='all', pen=skinnyBlackPlotPen)
-                            vpts[i + 1].lines[0] = vpts[i - 1].lines[1]
-                            iiContainer.currentWidget().addItem(vpts[i - 1].lines[1])
+                            markers[i - 1].lines[1] = pg.PlotDataItem([markers[i - 1].cx, markers[i + 1].cx], [markers[i - 1].cy, markers[i + 1].cy], connect='all', pen=skinnyBlackPlotPen)
+                            markers[i + 1].lines[0] = markers[i - 1].lines[1]
+                            iiContainer.currentWidget().addItem(markers[i - 1].lines[1])
                             pg.QtGui.QApplication.processEvents()
                         else:  # delete line because there is no next point
-                            iiContainer.currentWidget().removeItem(vpts[i - 1].lines[1])
-                            vpts[i - 1].lines[1] = None
-                    elif i == 0 and len(vpts) > 1:  # point is the first so delete line from first to second
-                        iiContainer.currentWidget().removeItem(vpts[1].lines[0])
-                        vpts[1].lines[0] = None
-                    for k in range(i, len(vpts) - 1):
-                        vpts[k] = vpts[k + 1]
-                    del vpts[-1]
-                    if len(vpts) < 2:
+                            iiContainer.currentWidget().removeItem(markers[i - 1].lines[1])
+                            markers[i - 1].lines[1] = None
+                    elif i == 0 and len(markers) > 1:  # point is the first so delete line from first to second
+                        iiContainer.currentWidget().removeItem(markers[1].lines[0])
+                        markers[1].lines[0] = None
+                    for k in range(i, len(markers) - 1):
+                        markers[k] = markers[k + 1]
+                    del markers[-1]
+                    if len(markers) < 2:
                         modelButton.setEnabled(False)
                         cProfButton.setEnabled(False)
                         meshButton.setEnabled(False)
-                    print 'Number of markers is ', len(vpts)
+                    print 'Number of markers is ', len(markers)
                 else:
                     # A marker is clicked on while no buttons are being held - it is selected and can be moved now
                     vptSel = True
-                    vptCur = vpts[i]
+                    vptCur = markers[i]
                 break # Exit loop if a marker has been clicked on
 
         if keysPress['ctrl']:
@@ -138,11 +138,11 @@ def mouseClick(e):
             px, py = colorToProj(cx, cy) # color map to projected
             v0 = velocity.interp([px], [py], grid=False)
             dx, dy = colorToData(cx, cy)
-            vpts.append(Marker(cx, cy, dx, dy, v0, iiContainer.currentWidget())) # in map coordinates x<10018, y< 17946
+            markers.append(Marker(cx, cy, dx, dy, v0, iiContainer.currentWidget())) # in map coordinates x<10018, y< 17946
 
             x = int(np.floor(dx))
             y = int(np.floor(dy))
-            txt = 'Point ' + str(len(vpts)-1) + \
+            txt = 'Point ' + str(len(markers) - 1) + \
             ':\n=================\n' + \
             'x: ' + str(cx) + '\n' +\
             'y: ' + str(cy) + '\n' +\
@@ -153,19 +153,19 @@ def mouseClick(e):
             '\nSMB: ' +  "{:.3f}".format(smb.data[y][x]) + '\n\n'
 
             textOut.append(txt)
-            iiContainer.currentWidget().addItem(vpts[-1].getCross()[0])
-            iiContainer.currentWidget().addItem(vpts[-1].getCross()[1])
+            iiContainer.currentWidget().addItem(markers[-1].getCross()[0])
+            iiContainer.currentWidget().addItem(markers[-1].getCross()[1])
             # vpts[-1].setIntLine(calcProf(None))
-            if len(vpts) > 1:
+            if len(markers) > 1:
                 if not modelButton.isEnabled():
                     modelButton.setEnabled(True)
                     cProfButton.setEnabled(True)
                     meshButton.setEnabled(True)
-                xa = [vpts[-2].cx, vpts[-1].cx]
-                ya = [vpts[-2].cy, vpts[-1].cy]
-                vpts[-1].setLine(pg.PlotDataItem(xa, ya, connect='all', pen=skinnyBlackPlotPen), 0)
-                vpts[-2].setLine(vpts[-1].lines[0], 1)
-                iiContainer.currentWidget().addItem(vpts[-1].lines[0])  # ,pen=plotPen)
+                xa = [markers[-2].cx, markers[-1].cx]
+                ya = [markers[-2].cy, markers[-1].cy]
+                markers[-1].setLine(pg.PlotDataItem(xa, ya, connect='all', pen=skinnyBlackPlotPen), 0)
+                markers[-2].setLine(markers[-1].lines[0], 1)
+                iiContainer.currentWidget().addItem(markers[-1].lines[0])  # ,pen=plotPen)
     else:
         #FIXME Why delete vptCur ?? I remember it caused a bug
         del vptCur
@@ -223,7 +223,7 @@ def changeMap(index):
         for ln in intLines:
             maps[oldMap].plotWidget.removeItem(ln)
             maps[currentMap].plotWidget.addItem(ln)
-        for pt in vpts:
+        for pt in markers:
             pt.plotWidget = maps[currentMap]
             maps[oldMap].plotWidget.removeItem(pt.cross[0])
             maps[oldMap].plotWidget.removeItem(pt.cross[1])
@@ -366,13 +366,13 @@ def calcProf(e):
     :return:
     '''
     global integrateLine
-    x0p, y0p = colorToProj(vpts[-1].cx, vpts[-1].cy)
+    x0p, y0p = colorToProj(markers[-1].cx, markers[-1].cy)
     y0 = np.array([x0p, y0p])
     t0, t1, dt = 0, 80, .1
     r = ode(getProfile).set_integrator('zvode', method='bdf')
     r.set_initial_value(y0, t0)
-    ox = [vpts[-1].cx]
-    oy = [vpts[-1].cy]
+    ox = [markers[-1].cx]
+    oy = [markers[-1].cy]
     while r.successful() and r.t < t1:
         # print(r.t+dt, r.integrate(r.t+dt))
         ai = r.integrate(r.t+dt)
@@ -392,10 +392,10 @@ def regionIntLine(e):
     :param e:
     :return:
     '''
-    xp0 = vpts[-1].cx
-    yp0 = vpts[-1].cy
-    xp1 = vpts[-2].cx
-    yp1 = vpts[-2].cy
+    xp0 = markers[-1].cx
+    yp0 = markers[-1].cy
+    xp1 = markers[-2].cx
+    yp1 = markers[-2].cy
     xril, yril, xrir, yrir = calcVelWidth(xp0, yp0, xp1, yp1, False)  # for vpts[-1]
 
     theta = np.arctan2((yril - yrir), (xril - xrir))

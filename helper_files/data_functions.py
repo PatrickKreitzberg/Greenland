@@ -2,6 +2,7 @@ import time
 import os
 from peakdetect import *
 from scipy import sqrt
+import numpy as np
 
 # LOCAL IMPORTS
 from gui import *
@@ -29,11 +30,11 @@ def cwLoop(e):
     :param e:
     :return:
     '''
-    calcVelWidth(vpts[0].cx, vpts[0].cy, vpts[1].cx, vpts[1].cy, True)
+    calcVelWidth(markers[0].cx, markers[0].cy, markers[1].cx, markers[1].cy, True)
 
-    for i in range(1, len(vpts)):
+    for i in range(1, len(markers)):
         # if not vpts[i][2]:
-        calcVelWidth(vpts[i - 1].cx, vpts[i - 1].cy, vpts[i].cx, vpts[i].cy, True)
+        calcVelWidth(markers[i - 1].cx, markers[i - 1].cy, markers[i].cx, markers[i].cy, True)
 
 def gaussian(x, A, x0, sig):
     return A*math.exp(-(x-x0)**2/(2.0*sig**2))
@@ -254,117 +255,10 @@ def calcVelWidth(x0, y0, x1, y1, draw):
     return endPoints[0][0], endPoints[0][1], endPoints[1][0], endPoints[1][1]
 
 
-# def getInterpolators(d1, choice, x0, y0, x1=-99, y1=-99, d2=None):
-#     '''
-#     Determines the local interpolator and returns it.
-#     Interpolates data d1 (and d2 if necessary)
-#     If x1,y1 not specified then creates a local interpolator of size 10x10 with
-#     the point x0,y0 in the middle.
-#
-#     :param d1:
-#     :param choice:  Which dataset to process
-#     :param x0:  IN MAP COORDINATES
-#     :param y0:  IN MAP COORDINATES
-#     :param x1:
-#     :param y1:
-#     :param d2:
-#     :return:
-#     '''
-#     # vel_x0 = -638000  # first x coordinate
-#     # vel_x1 = 864550  # last x coordinate
-#     # vel_y0 = -657600  # first y coordinate
-#     # vel_y1 = -3349350  # last y coordinate
-#     # vel_xarray = linspace(vel_x0, vel_x1, 10018, endpoint=True)
-#     # vel_yarray = linspace(vel_y1, vel_y0, 17946, endpoint=True)
-#
-#     # Make sure points are in bounds
-#     p0 = [x0, y0]
-#     p1 = [x1, y1]
-#     p0[0], p0[1] = np.floor(p0[0]), np.floor(p0[1])
-#
-#     if p0[0] < 0:
-#         p0[0] = 0
-#     if p0[0] > map['x1']:
-#         p0[0] = map['x1']
-#     if p0[1] < 0:
-#         p0[1] = 0
-#     if p0[1] > map['y1']:
-#         p0[1] = map['y1']
-#     if p1[0] == -99:
-#         # if the function is sent a single point then create interpolator around the point
-#         # in this case a 10x10 interpolator
-#         p1[0] = p0[0] - 5
-#         p1[1] = p0[1] - 5
-#         p0[0] = p0[0] + 5
-#         p0[1] = p0[1] + 5
-#     else:
-#         p1[0], p1[1] = np.floor(p1[0]), np.floor(p1[1])
-#         if p1[0] < 0:
-#             p1[0] = 0
-#         if p1[0] > map['x1']:
-#             p1[0] = map['x1']
-#         if p1[1] < 0:
-#             p1[1] = 0
-#         if p1[1] > map['y1']:
-#             p1[1] = map['y1']
-#
-#
-#     minSpacing = 10
-#     # p1, p2 in map coordinates
-#     projx0, projy0 = projCoord(p0[0], p0[1])
-#     projx1, projy1 = projCoord(p1[0], p1[1])
-#     #FIXME Should there be a minimum dx, dy?
-#     dx = 1 + math.fabs(p1[0] - p0[0])
-#     dy = 1 + math.fabs(p1[1] - p0[1])
-#
-#     if p0[1] < p1[1]:
-#         vel_yarray = linspace(projy1, projy0, int(dy), endpoint=True)
-#         y0 = p0[1]
-#         y1 = p1[1] + 1
-#     else:
-#         vel_yarray = linspace(projy0, projy1, int(dy), endpoint=True)
-#         y0 = p1[1]
-#         y1 = p0[1] + 1
-#     if p0[0] < p1[0]:
-#         vel_xarray = linspace(projx0, projx1, int(dx), endpoint=True)
-#         x0 = p0[0]
-#         x1 = p1[0] + 1
-#     else:
-#         vel_xarray = linspace(projx1, projx0, int(dx), endpoint=True)
-#         x0 = p1[0]
-#         x1 = p0[0] + 1
-#     y0, y1, x0, x1 = int(y0), int(y1), int(x0), int(x1)
-#     possibleChoices = ['velocity', 'bed', 'surface', 'smb', 'thickness']
-#     if choice == 'vxvy':
-#         return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose()), \
-#                RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d2[y0:y1, x0:x1])).transpose())
-#     elif choice in possibleChoices:
-#         return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
-#     # elif choice is 'bed':
-#     #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
-#     # elif choice is 'surface':
-#     #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
-#     # elif choice is 'smb':
-#     #     #smb and all other RACMO data is 'upside down' compared to the rest of the data
-#     #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
-#     # elif choice is 'v':
-#     #     #just velocity, not vx and vy
-#     #     return RectBivariateSpline(vel_xarray, vel_yarray, (np.flipud(d1[y0:y1, x0:x1])).transpose())
-#     else:
-#         print "ERROR: No interpolator selected!  ./helper_files/data_functions.getInterpolators()"
-#
-#
-#
-#     # RectBivariateSpline(vel_xarray, vel_yarray, (npk.flipud(vy)).transpose()) #FIXME SHOULD IT BE FLIPPED!?!?!?
-#     #FIXME Make sure flipping the transpose works!!!
-#     #FIXME changed the interpolator
-
-
 def interpolateData(runModel, dr, dataSetsToPopulate):
     '''
     Populates the data (velocity, thickness, etc.) along the path.
-    If staticPlotter, calculate all the data.  Else, calculate just bed/surface.
-    :return:
+    :parameter dataSetsToPopulate is a dictionary of the datasets to interpolate.
     '''
     # dr = float(model_res_lineEdit.text()) # dr = 150
     velValues = []
@@ -377,43 +271,38 @@ def interpolateData(runModel, dr, dataSetsToPopulate):
     vwValues = []
     graphX = []
 
+    # d = 0
+    # for i in range(1, len(markers)):
+    #     # Calculate total path distance (this is in units of 150meters
+    #     d += sqrt((markers[i - 1].cx - markers[i].cx) ** 2 + (markers[i - 1].cy - markers[i].cy) ** 2)
 
-
-    d = 0
-    for i in range(1, len(vpts)):
-        d += sqrt((vpts[i - 1].cx - vpts[i].cx) ** 2 + (vpts[i - 1].cy - vpts[i].cy) ** 2)
     # print 'distance is: ', d*150, 'divide', int(d*(150/dr))
 
-    for i in range(1, len(vpts)):
+    for i in range(1, len(markers)):
         '''
         This part compares neighbor points to each other. 
         '''
 
-        theta = np.arctan2(float(vpts[i].cy - vpts[i - 1].cy), float(vpts[i].cx - vpts[i - 1].cx))
-        # pvx0, pvy0 = projCoord(vpts[i-1].x, vpts[i-1].y)
-        # pvx1, pvy1 = projCoord(vpts[i].x, vpts[i].y)
-        # distance = (sqrt((vpts[i].getY() - vpts[i - 1].getY()) ** 2 + (vpts[i].getX() - vpts[i - 1].getX()) ** 2))
-        distance = sqrt((vpts[i - 1].cx - vpts[i].cx) ** 2 + (vpts[i - 1].cy - vpts[i].cy) ** 2)
-        # remainder = distance % dr
-        # Xline needs to be in map coordinates because tx,ty are in map coordinates
+        # For each two points (i and the pt before i) get an array of points between the two,
+        # roughly dr distance between the 2
+        theta = np.arctan2(float(markers[i].cy - markers[i - 1].cy), float(markers[i].cx - markers[i - 1].cx))
+        distance = sqrt((markers[i - 1].cx - markers[i].cx) ** 2 + (markers[i - 1].cy - markers[i].cy) ** 2)
         xline = linspace(0, distance, int(distance*(150/dr)), endpoint=True)  # * 1/dr*150 makes the resolution dr
 
-        '''
-        #FIXME NEED TO CHANGE SO IT LINES UP WITH FENICS MESH
-        '''
 
         # Rotation matrix:
-        rotMatrix = np.matrix([[np.cos(theta), -1 * np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+        # Takes points in a line and puts them along the path between the 2 markers
+        rotMatrix = np.matrix([[np.cos(theta), -1 * np.sin(theta)],
+                               [np.sin(theta),      np.cos(theta)]])
         px = []  # px, py are projected coordinates used to get values from the interpolator.  Projected meaning IRL values
         py = []
 
 
-
         for j in range(len(xline)):
-            # rotate coordinates
             t = rotMatrix * np.matrix([[xline[j]], [0.0]])
             # transform coordinates into projected coordinates
-            tx, ty = colorToProj(vpts[i - 1].cx + t[0, 0], vpts[i - 1].cy + t[1, 0])
+            # (the interpolators are set to use projected coordinates)
+            tx, ty = colorToProj(markers[i - 1].cx + t[0, 0], markers[i - 1].cy + t[1, 0])
             px.append(tx)
             py.append(ty)
             if len(px) > 1:
@@ -429,7 +318,6 @@ def interpolateData(runModel, dr, dataSetsToPopulate):
         ##    CALCULATE SURFACE ELEVATION     ##
         ########################################
         if runModel or 'sur' in dataSetsToPopulate:
-            # surfaceInterp = getInterpolators(surface.data, surface.name, mix, miy, x1=mxx, y1=mxy)
             localSurface = surface.interp(px, py, grid=False)
             surfValues.append(localSurface)
 
@@ -444,7 +332,6 @@ def interpolateData(runModel, dr, dataSetsToPopulate):
         ##        CALCULATE VELOCITY          ##
         ########################################
         if runModel or 'vel' in dataSetsToPopulate:
-
             vi = velocity.interp(px, py, grid=False)
             xValues.append(xline)
             velValues.append(vi)
@@ -462,10 +349,9 @@ def interpolateData(runModel, dr, dataSetsToPopulate):
             vwValues.append(vwd)
 
         ########################################
-        ##   CALCULATE SURFACE MASS-BALANCE   ##
+        ##   CALCULATE SURFACE MASS BALANCE   ##
         ########################################
         if runModel or 'smb' in dataSetsToPopulate:
-            # smbInterp = getInterpolators(smb.data, smb.name, mix, miy, x1=mxx, y1=mxy)
             'init smb'
             localSMB = smb.interp(px, py, grid=False)
             smbValues.append(localSMB)
@@ -521,10 +407,10 @@ def interpolateData(runModel, dr, dataSetsToPopulate):
         smb.pathData = smb.pathData*(1.0/1000.0)*(916.7/1000.0) # millimeters -> meters then water-equivalent to ice-equivalent
 
     dist = 0
-    for i in range(len(vpts) - 1):
+    for i in range(len(markers) - 1):
 
-        xd0, yd0 = colorToProj(vpts[i].cx, vpts[i].cy)
-        xd1, yd1 = colorToProj(vpts[i + 1].cx, vpts[i + 1].cy)
+        xd0, yd0 = colorToProj(markers[i].cx, markers[i].cy)
+        xd1, yd1 = colorToProj(markers[i + 1].cx, markers[i + 1].cy)
 
         dist += sqrt(((xd1 - xd0) ** 2 + (yd1 - yd0) ** 2))
 
