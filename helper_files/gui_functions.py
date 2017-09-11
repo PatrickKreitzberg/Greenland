@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.integrate import ode
 
-
 # LOCAL IMPORTS
 from math_functions import *
 from pens import *
@@ -52,8 +51,10 @@ def mouseClick(e):
             cx, cy = centerVelocityStream(cx, cy)
     if not vptSel:
         # If there is not a marker selected already
+        keyClicked = False
         for i in range(len(markers)):
             if markers[i].checkClicked(e.pos()):
+                keyClicked = True
                 # See if you clicked on an already existing point
                 if keysPress['shift']:
                     x0p, y0p = colorToProj(markers[i].cx, markers[i].cy)
@@ -63,17 +64,23 @@ def mouseClick(e):
                     r.set_initial_value(y0, t0)
                     ox = [markers[i].cx]
                     oy = [markers[i].cy]
-                    while r.successful() and r.t < t1:
-                        ai = r.integrate(r.t + dt)
-                        xi, yi = colorCoord(ai[0], ai[1])
-                        if np.sqrt((xi-ox[-1])**2 + (yi-oy[-1])**2):
-                            ox.append(np.real(xi))
-                            oy.append(np.real(yi))
-                    print 'ox, oy', len(ox), len(oy)
-                    print ox
-                    print oy
-                    intLines.append(pg.PlotDataItem(ox, oy, pen=whitePlotPen))
-                    iiContainer.currentWidget().addItem(intLines[-1])
+                    try:
+                        segLength = float(intResInput.text())
+                        while r.successful() and r.t < t1:
+                            ai = r.integrate(r.t + dt)
+                            xi, yi = colorCoord(ai[0], ai[1])
+                            if np.sqrt((xi-ox[-1])**2 + (yi-oy[-1])**2) > segLength/150:
+                                ox.append(np.real(xi))
+                                oy.append(np.real(yi))
+                        print 'ox, oy', len(ox), len(oy)
+                        print ox
+                        print oy
+
+                        intLines.append(pg.PlotDataItem(ox, oy, pen=whitePlotPen))
+                        iiContainer.currentWidget().addItem(intLines[-1])
+                    except ValueError:
+                        textOut.append(('\nMust enter valid number for integration line resolution!'))
+
                 elif keysPress['ctrl']:
                     # if you ctrl+click a maker it is deleted
                     if i > 0:
@@ -102,8 +109,17 @@ def mouseClick(e):
                     vptSel = True
                     vptCur = markers[i]
                 break # Exit loop if a marker has been clicked on
+        for ln in intLines:
+            if sqrt((e.pos().x() - ln.curve.getData()[0][-1])**2 + (e.pos().y() - ln.curve.getData()[1][-1])**2) < 2:
+                print 'Clicked end of line'
+                globalConstants['moveLine'] = True
 
-        if keysPress['ctrl']:
+        print 'out of forrest'
+        # if keysPress['alt']:
+        #     print 'Entering with alt pressed'
+
+        if not keyClicked and keysPress['ctrl']:
+            print 'control clicked'
             for m in range(len(intLines)):
                 cData = intLines[m].curve.getData()
                 imin = curveDistance(e.pos().x(), e.pos().y(), cData)
@@ -115,7 +131,9 @@ def mouseClick(e):
                     found = True
                 if found:
                     break
-        elif keysPress['alt']:
+
+        elif not keyClicked and keysPress['shift']: # elif not keyClicked and keysPress['alt']:
+            print 'Alt clicked'
             #FIXME finish making
             for m in range(len(intLines)):
                 cData = intLines[m].curve.getData()
@@ -123,11 +141,36 @@ def mouseClick(e):
                 if imin != -1:
                     # If you clicked within one pixel of the line
                     # FIXME need to make this line into the path data
+                    print 'shift clicked line'
+
+                    globalConstants['isPathIntLine'] = True
+                    globalConstants['lineData'] = intLines[m].curve.getData()
+                    globalConstants['lineIndex'] = m
+                    globalConstants['minIndex'] = len(globalConstants['lineData']) - 1
+                    globalConstants['minValue'] = 99#globalConstants['lineData'][-1]
+                    intLines[m].setPen(purplePlotPen)
+
+                    # Delete markers
+                    # del markers[:]
+                    # textOut.setText('')
+                    # modelButton.setEnabled(False)
+                    # cProfButton.setEnabled(False)
+                    # velocity.pathPlotItem.clear()
+                    # surface.pathPlotItem.clear()
+                    # smb.pathPlotItem.clear()
+                    # bed.pathPlotItem.clear()
+                    # thickness.pathPlotItem.clear()
+                    #
+                    # # Set markers to int line
+                    # for x,y in zip(cData[0], cData[1]):
+                    #     px, py = colorToProj(x, y)
+                    #     dx, dy = colorToData(x,y)
+                    #     markers.append(Marker(x, y, dx, dy, velocity.interp([px], [py], grid=False), iiContainer.currentWidget()))
+                    #     iiContainer.currentWidget().addItem(markers[-1].getCross()[0])
+                    #     iiContainer.currentWidget().addItem(markers[-1].getCross()[1])
                     break
-                    found = True
 
-
-        if not vptSel and not keysPress['ctrl'] and not keysPress['shift']:
+        elif not keyClicked and not keysPress['shift']:
             # no you did not click on a point
             if not first:
                 cx = e.pos().x() # in color coordinates
@@ -238,40 +281,13 @@ def changeMap(index):
 
 
 
-def calcBP():
+def openStaticPlotter():
     '''
     Calculate the data for bottom plot then populate the plot.
     :return:
     '''
     foo = StaticPlot(mw)
-    # t0 = time.time()
-    # # Empty the graph
-    # velocity.pathPlotItem.clear()
-    # surface.pathPlotItem.clear()
-    # smb.pathPlotItem.clear()
-    # bed.pathPlotItem.clear()
-    # velocityWidth.pathPlotItem.clear()
-    # thickness.pathPlotItem.clear()
-    # if len(vpts) > 0:
-    #     print 'Plotting...'
-    #     # nbed, nsurf, nv, nsmb, nvelWidth, linePoints, graphX = interpolateData(True)
-    #     interpolateData(False, 150)
-    #     if velocityCheck.checkState() == 2:
-    #         velocity.pathPlotItem.setData(velocity.distanceData          , velocity.pathData)
-    #     if smbCheck.checkState() == 2:
-    #         smb.pathPlotItem.setData(smb.distanceData                    , smb.pathData)
-    #     if vWidthCheck.checkState() == 2:
-    #         velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
-    #     if surfaceCheck.checkState() == 2:
-    #         surface.pathPlotItem.setData(surface.distanceData            , surface.pathData)
-    #     if bedCheck.checkState() == 2:
-    #         bed.pathPlotItem.setData(bed.distanceData                    , bed.pathData)
-    #     if thicknessCheck.checkState() == 2:
-    #         thickness.pathPlotItem.setData(thickness.distanceData, thickness.pathData)
-    #     if vWidthCheck.checkState() == 2:
-    #         velocityWidth.pathPlotItem.setData(velocityWidth.distanceData, velocityWidth.pathData)
-    #     pg.QtGui.QApplication.processEvents()
-    #     runStaticPlot()
+
 
 def mouseMoved(e):
     global vptSel, vptCur, integrateLine, currentMap
@@ -314,49 +330,27 @@ def mouseMoved(e):
                 vptCur.lines[1].setData([vptCur.cx, vptCur.lines[1].getData()[0][1]],
                                         [vptCur.cy, vptCur.lines[1].getData()[1][1]])  # next
 
+        elif globalConstants['moveLine']:
+            mi = len(globalConstants['lineData']) - 1
+            mv = globalConstants['minValue'] = globalConstants['lineData'][-1]
+            for i in range(len(globalConstants['lineData'][0])):
+                # globalConstants['minIndex'] = len(globalConstants['lineData']) - 1
+                # globalConstants['minValue'] = globalConstants['lineData'][-1]
+
+                if sqrt((globalConstants['lineData'][0][globalConstants['minIndex']] - e.pos().x())**2 +
+                        (globalConstants['lineData'][1][globalConstants['minIndex']] - e.pos().y())**2) < mv:
+                    mi = i
+                    mv = sqrt((globalConstants['lineData'][0][globalConstants['minIndex']] - e.pos().x())**2 +
+                         (globalConstants['lineData'][1][globalConstants['minIndex']] - e.pos().y())**2)
+                intLines[globalConstants['lineIndex']].curve.setData(globalConstants['lineData'][0][:mi], globalConstants['lineData'][0][:mi])
+
+
         x = int(np.floor(e.pos().x()))
         y = int(np.floor(e.pos().y()))
         if np.abs(x) <= map['cmap_x1'] and np.abs(y) <= map['cmap_y1']:
             mouseCoordinates.setText('x: ' + str(x) + '\ty: ' + str(y))# + '\n' + 'th: ' + str(thickness.data[y][x]))# + '\n' + 'oth: ' + str(oldthick.data[y][x]))
 
 
-
-# def mouseMovedBP(evt):
-#     global bpLegend, dataLen
-#     print 'mouse moved bottom plot'
-#     if botPlot:
-#         print 'is not not not none'
-#         pos = evt[0]  ## using signal proxy turns original arguments into a tuple
-#         if bp.getPlotItem().sceneBoundingRect().contains(pos):
-#             mousePoint = bp.getPlotItem().vb.mapSceneToView(pos)
-#             index = int(mousePoint.x())
-#             if index > 0 and index < len(velocity.pathData):
-#                 velocity.legendItem.setText('Velocity' + str(velocity.pathData[index]))
-#                 smb.legendItem.setText('SMB ' + str(smb.pathData[index]))
-#                 velocityWidth.legendItem.setText('Velocity Width ' + str(velocityWidth.pathData[index]))
-#                 surface.legendItem.setTxt('Surface ele ' + str(surface.pathData[index]))
-#     # else:
-#         # print 'It is NONE'
-
-
-def arrows():
-    ''''
-    Plot velocity vectors to see the velocity field and its borders
-    '''
-    print 'arrows'
-    print velocity.imageItem.getViewBox().viewRange() # [y0, y1] [x0, x1]
-    rngx, rngy = velocity.imageItem.getViewBox().viewRange()
-    print rngx
-    print rngy
-    print 'Starting arrows'
-    for i in range(int(rngx[0]),int(rngx[1])):
-        for j in range(int(rngy[0]), int(rngy[1])):
-            vdir = [velocity.vx[j][i], -velocity.vy[j][i]]
-            vmag = np.sqrt(velocity.vx[j][i]**2 +  velocity.vy[j][i]**2)
-            # theta = np.arctan2(vdir[1], vdir[0])
-            iiContainer.currentWidget().addItem(pg.PlotDataItem([(i+0.5),(i+0.5 + vdir[0]/(1.5*vmag))], [(j+0.5),(j+0.5 + vdir[1]/(1.5*vmag))], pen=whitePlotPen))
-            iiContainer.currentWidget().addItem(pg.PlotDataItem([i+0.5], [j+0.5]), pen=(255,255,255), symbolBrush=(255,0,0), symbolPen='w')
-    print 'finished arrows'
 
 
 def calcProf(e):
@@ -366,6 +360,7 @@ def calcProf(e):
     :return:
     '''
     global integrateLine
+    print 'calcProf'
     x0p, y0p = colorToProj(markers[-1].cx, markers[-1].cy)
     y0 = np.array([x0p, y0p])
     t0, t1, dt = 0, 80, .1
@@ -428,6 +423,7 @@ def ky(e):
             keysPress['ctrl'] = True
         elif e.key() == 16777251:
             keysPress['alt'] = True
+            print 'pressed alt'
     else:
         keysPress['ctrl'] = False
         keysPress['shift'] = False

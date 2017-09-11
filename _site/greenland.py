@@ -172,7 +172,7 @@ vptCur = None
 clearButton.clicked.connect(clearPoints)
 calcWidthButton.clicked.connect(cwLoop)
 intButton.clicked.connect(calcProf)
-cProfButton.clicked.connect(calcBP) #FIXME should change names so calcProf isn't the integration function
+cProfButton.clicked.connect(openStaticPlotter) #FIXME should change names so calcProf isn't the integration function
 cRegionButton.clicked.connect(intLine)
 cVelArrowsButton.clicked.connect(arrows)
 modelButton.clicked.connect(runModelButt)
