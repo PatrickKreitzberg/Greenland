@@ -450,10 +450,10 @@ def interpolateData(runModel, dr, staticPlotter=None):
         ########################################
         ##    CALCULATE SURFACE ELEVATION     ##
         ########################################
-        if staticPlotter is not None:
-            print 'staticPlotter true'
-        else:
-            print 'Static PLOTTER NOT TRUE'
+        # if staticPlotter is not None:
+        #     print 'staticPlotter true'
+        # else:
+        #     print 'Static PLOTTER NOT TRUE'
         if runModel or (staticPlotter and staticPlotter.surfaceCheck.checkState() == 2):
             # surfaceInterp = getInterpolators(surface.data, surface.name, mix, miy, x1=mxx, y1=mxy)
             localSurface = surface.interp(px, py, grid=False)

@@ -71,6 +71,7 @@ class ModelGUI(QtGui.QMainWindow):
         self.runButt = QtGui.QPushButton('Run Model')
         self.pauseButt = QtGui.QPushButton('Pause Model')
 
+
             # ADD TO LAYOUT
 
         # self.rightPanelLay.addWidget(self.inputWidget)
@@ -78,8 +79,19 @@ class ModelGUI(QtGui.QMainWindow):
         self.rightPanelLay.addWidget(self.runButt,   5, 0, 1, 2)
         self.rightPanelLay.addWidget(self.pauseButt, 6, 0, 1, 2)
         self.rightPanelW.setMaximumWidth(300)
-
         self.pauseButt.setEnabled(False)
+
+            # SAVE 1D MESH
+
+        self.save1DMeshLabel = QtGui.QLabel('Mesh File:')
+        self.save1DMeshLineEdit = QtGui.QLineEdit('./data/out1DMesh.h5')
+        self.save1DMeshButton = QtGui.QPushButton('Save 1D Mesh')
+        self.save1DMeshButton.clicked.connect(self.write1DMesh)
+        self.rightPanelLay.addWidget(self.save1DMeshLabel, 7, 0)
+        self.rightPanelLay.addWidget(self.save1DMeshLineEdit, 7, 1)
+        self.rightPanelLay.addWidget(self.save1DMeshButton, 8, 0, 1, 2)
+
+
 
         # LEFT SIDE
         self.leftPanelW = QtGui.QWidget()
@@ -110,6 +122,14 @@ class ModelGUI(QtGui.QMainWindow):
         self.show()
         self.closeEvent = self.windowClosed
 
+    def write1DMesh(self):
+        print "Writing 1D mesh to file ", self.save1DMeshLineEdit.text()
+        self.initModel(False)
+        print "Done writing 1D mesh to file ", self.save1DMeshLineEdit.text()
+
+    def runModelButt(self):
+        self.initModel(True)
+
     def windowClosed(self, e):
         if self.pPlt:
             self.pPlt.run = False
@@ -134,7 +154,7 @@ class ModelGUI(QtGui.QMainWindow):
             self.pauseButt.setText('Pause')
             self.runLoop()
 
-    def runModelButt(self):
+    def initModel(self, run):
         if len(vpts) > 0:
             try:
                 self.runButt.setEnabled(False)
@@ -160,6 +180,7 @@ class ModelGUI(QtGui.QMainWindow):
 
                 self.N = int(np.floor(bed.distanceData[-1] / float(self.dr)))  # length of path / resolution
 
+
                 self.x = np.arange(0, (self.N + 1) * self.dr, self.dr)  # start point, end point, number of segments. END POINT NOT INCLUDED!
                 self.mesh = fc.IntervalMesh(self.N, 0, self.dr * self.N)  # number of cells, start point, end point
 
@@ -174,10 +195,12 @@ class ModelGUI(QtGui.QMainWindow):
                 self.surfaceModelData[self.H <= self.THICKLIMIT] = self.bedModelData[self.H <= self.THICKLIMIT]
 
                 # FIXME the intervalMesh is consistantly 150 between each datapoint this not true for the data being sent
-                self.hdf_name = '.data/latest_profile.h5'
+                # FIXME this happens at line self.x = ...
+
+
+                self.hdf_name = str(self.save1DMeshLineEdit.text())
                 self.hfile = fc.HDF5File(self.mesh.mpi_comm(), self.hdf_name, "w")
                 self.V = fc.FunctionSpace(self.mesh, "CG", 1)
-
                 self.functThickness = fc.Function(self.V, name="Thickness")
                 self.functBed       = fc.Function(self.V, name="Bed")
                 self.functSurface   = fc.Function(self.V, name="Surface")
@@ -200,7 +223,8 @@ class ModelGUI(QtGui.QMainWindow):
                 self.hfile.write(self.functVelocity.vector(), "/velocity")
                 self.hfile.write(self.mesh, "/mesh")
                 self.hfile.close()
-                self.runModel()
+                if run:
+                    self.runModel()
 
             except ValueError:
                 print 'ERROR: Must have valid spatial resolution.'
