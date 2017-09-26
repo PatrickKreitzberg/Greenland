@@ -51,12 +51,15 @@ def mouseClick(e):
             cx, cy = centerVelocityStream(cx, cy)
     if not vptSel:
         # If there is not a marker selected already
-        keyClicked = False
+        markerClicked = False
         for i in range(len(markers)):
             if markers[i].checkClicked(e.pos()):
-                keyClicked = True
+                markerClicked = True
                 # See if you clicked on an already existing point
                 if keysPress['shift']:
+                    #
+                    #   Integrate line
+                    #
                     x0p, y0p = colorToProj(markers[i].cx, markers[i].cy)
                     y0 = np.array([x0p, y0p])
                     t0, t1, dt = 0, 80, .1
@@ -82,7 +85,9 @@ def mouseClick(e):
                         textOut.append(('\nMust enter valid number for integration line resolution!'))
 
                 elif keysPress['ctrl']:
-                    # if you ctrl+click a maker it is deleted
+                    #
+                    # Ctrl+click will delete marker or line
+                    #
                     if i > 0:
                         if i + 1 < len(markers):
                             # connect line from previous node to next point
@@ -110,15 +115,18 @@ def mouseClick(e):
                     vptCur = markers[i]
                 break # Exit loop if a marker has been clicked on
         for ln in intLines:
-            if sqrt((e.pos().x() - ln.curve.getData()[0][-1])**2 + (e.pos().y() - ln.curve.getData()[1][-1])**2) < 2:
+            if sqrt((e.pos().x() - ln.curve.getData()[0][-1])**2 + (e.pos().y() - ln.curve.getData()[1][-1])**2) < 20:
                 print 'Clicked end of line'
                 globalConstants['moveLine'] = True
+                globalConstants['lineData'] = ln.curve.getData()
+                globalConstants['minIndex'] = len(globalConstants['lineData']) - 1
+
 
         print 'out of forrest'
         # if keysPress['alt']:
         #     print 'Entering with alt pressed'
 
-        if not keyClicked and keysPress['ctrl']:
+        if not markerClicked and keysPress['ctrl']:
             print 'control clicked'
             for m in range(len(intLines)):
                 cData = intLines[m].curve.getData()
@@ -132,7 +140,8 @@ def mouseClick(e):
                 if found:
                     break
 
-        elif not keyClicked and keysPress['shift']: # elif not keyClicked and keysPress['alt']:
+        elif not markerClicked and keysPress['shift']: # elif not markerClicked and keysPress['alt']:
+
             print 'Alt clicked'
             #FIXME finish making
             for m in range(len(intLines)):
@@ -170,7 +179,7 @@ def mouseClick(e):
                     #     iiContainer.currentWidget().addItem(markers[-1].getCross()[1])
                     break
 
-        elif not keyClicked and not keysPress['shift']:
+        elif not markerClicked and not keysPress['shift'] and not globalConstants['moveLine']:
             # no you did not click on a point
             if not first:
                 cx = e.pos().x() # in color coordinates
@@ -337,8 +346,7 @@ def mouseMoved(e):
                 # globalConstants['minIndex'] = len(globalConstants['lineData']) - 1
                 # globalConstants['minValue'] = globalConstants['lineData'][-1]
 
-                if sqrt((globalConstants['lineData'][0][globalConstants['minIndex']] - e.pos().x())**2 +
-                        (globalConstants['lineData'][1][globalConstants['minIndex']] - e.pos().y())**2) < mv:
+                if sqrt((globalConstants['lineData'][0][globalConstants['minIndex']] - e.pos().x())**2 +(globalConstants['lineData'][1][globalConstants['minIndex']] - e.pos().y())**2) < mv:
                     mi = i
                     mv = sqrt((globalConstants['lineData'][0][globalConstants['minIndex']] - e.pos().x())**2 +
                          (globalConstants['lineData'][1][globalConstants['minIndex']] - e.pos().y())**2)
