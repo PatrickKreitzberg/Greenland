@@ -40,6 +40,9 @@ def centerVelocityStream(x, y):
     x, y = endPoints[0][0] + (d * -np.sin(theta)), endPoints[0][1] + (d * np.cos(theta))
     return x, y
 
+def linePressed(e):
+    print 'Line pressed'
+
 def mouseClick(e):
     global vptSel, vptCur#, integrateLine
     first = False
@@ -78,8 +81,10 @@ def mouseClick(e):
                         print 'ox, oy', len(ox), len(oy)
                         print ox
                         print oy
-
                         intLines.append(pg.PlotDataItem(ox, oy, pen=whitePlotPen))
+                        intLines[-1].curve.setClickable(True)
+                        intLines[-1].curve.opts['mouseWidth'] = 20  # Makes the clickable part of the line wider so it is easier to select
+                        intLines[-1].curve.sigClicked.connect(linePressed)
                         iiContainer.currentWidget().addItem(intLines[-1])
                     except ValueError:
                         textOut.append(('\nMust enter valid number for integration line resolution!'))

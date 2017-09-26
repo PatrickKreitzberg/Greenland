@@ -413,11 +413,3 @@ class ModelGUI(QtGui.QMainWindow):
             self.t += self.dt_float
             self.pPlt.refresh_plot(self.t)
             pg.QtGui.QApplication.processEvents()
-
-
-
-        
-
-
-
-
