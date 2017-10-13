@@ -3,7 +3,7 @@ from ..pens import *
 from ..math_functions import *
 
 class Marker:
-    def __init__(self, cx, cy, dx, dy, velocity, plotWidget):
+    def __init__(self, cx, cy, dx, dy, velocity, plotWidget, plotCross=True):
         self.plotWidget = plotWidget
         self.cx, self.cy = cx, cy  # color coordinates
         self.dx, self.dy = dx, dy  # data coordinates
@@ -12,10 +12,11 @@ class Marker:
         self.pen = blackPlotPen
         self.pen.setWidth(2)
         c = 3
-        self.cross = [
-            pg.PlotDataItem([self.cx - c, self.cx + c], [self.cy - c, self.cy + c], connect='all', pen=self.pen)
-            , pg.PlotDataItem([self.cx - c, self.cx + c], [self.cy + c, self.cy - c], connect='all', pen=self.pen)
-        ]
+        if plotCross:
+            self.cross = [
+                pg.PlotDataItem([self.cx - c, self.cx + c], [self.cy - c, self.cy + c], connect='all', pen=self.pen)
+                , pg.PlotDataItem([self.cx - c, self.cx + c], [self.cy + c, self.cy - c], connect='all', pen=self.pen)
+            ]
         self.lines = [None] * 2
         self.intLine = None
 
@@ -31,7 +32,6 @@ class Marker:
 
     def updateCross(self):
         c = 3
-
         self.dx, self.dy = colorToData(self.cx, self.cy)
         self.cross[0].setData([self.cx - c, self.cx + c], [self.cy - c, self.cy + c], connect='all', pen=self.pen)
         self.cross[1].setData([self.cx - c, self.cx + c], [self.cy + c, self.cy - c], connect='all', pen=self.pen)

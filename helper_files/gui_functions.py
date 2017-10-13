@@ -41,7 +41,61 @@ def centerVelocityStream(x, y):
     return x, y
 
 def linePressed(e):
-    print 'Line pressed'
+    '''
+    Check to see if the line was clicked while shift was held, if so:
+    1. set int line as data
+        -Delete markers past the marker associated with the line
+    2. add marker to end of line
+        -marker can be dragged back and forth to shorten line
+        -marker can be shift+clicked again to create a new int line
+        -new int line can then be selected
+            MAKE SURE IT CAN BE ADDED TO PATH
+
+    :param e: the plotDataItem
+    :return:
+    '''
+    if keysPress['shift']:
+
+        # find which marker got clicked
+        # delete all markers after clicked one
+        i = 0
+        while(e is not intLines[i][0] and i < len(intLines) -1):
+            i += 1
+        print i
+        j = 0
+        while(intLines[i][1] is not markers[j]):
+            j+=1
+        for k in range(j,len(markers)-1):
+            del markers[j+1]
+
+        # add line data as markers
+        # cx, cy = e.xdata[i], e.ydata[i]
+        # dx, dy = colorToData(cx, cy)
+        # markers.append(Marker(cx, cy, dx, dy, v0, iiContainer.currentWidget()))
+
+        # print e.xData
+        for l in range(1,len(e.xData)-2):
+            print 'df'
+            cx, cy = e.xData[l], e.yData[l]
+            dx, dy = colorToData(cx, cy)
+            px, py = colorToProj(cx, cy)
+            v0 = velocity.interp([px], [py], grid=False)
+            markers.append(Marker(cx, cy, dx, dy, v0, iiContainer.currentWidget(), plotCross=False))
+        print '# markers', len(markers)
+
+
+        # do last marker seperatly since want an X on the map for it
+
+
+
+
+
+
+
+
+
+
+
 
 def mouseClick(e):
     global vptSel, vptCur#, integrateLine
@@ -57,6 +111,10 @@ def mouseClick(e):
         markerClicked = False
         for i in range(len(markers)):
             if markers[i].checkClicked(e.pos()):
+                '''
+                Check to see if a marker is clicked
+                '''
+
                 markerClicked = True
                 # See if you clicked on an already existing point
                 if keysPress['shift']:
@@ -81,11 +139,11 @@ def mouseClick(e):
                         print 'ox, oy', len(ox), len(oy)
                         print ox
                         print oy
-                        intLines.append(pg.PlotDataItem(ox, oy, pen=whitePlotPen))
-                        intLines[-1].curve.setClickable(True)
-                        intLines[-1].curve.opts['mouseWidth'] = 20  # Makes the clickable part of the line wider so it is easier to select
-                        intLines[-1].curve.sigClicked.connect(linePressed)
-                        iiContainer.currentWidget().addItem(intLines[-1])
+                        intLines.append([pg.PlotDataItem(ox, oy, pen=whitePlotPen), markers[i]])
+                        intLines[-1][0].curve.setClickable(True)
+                        intLines[-1][0].curve.opts['mouseWidth'] = 20  # Makes the clickable part of the line wider so it is easier to select
+                        intLines[-1][0].sigClicked.connect(linePressed)
+                        iiContainer.currentWidget().addItem(intLines[-1][0])
                     except ValueError:
                         textOut.append(('\nMust enter valid number for integration line resolution!'))
 
@@ -120,10 +178,10 @@ def mouseClick(e):
                     vptCur = markers[i]
                 break # Exit loop if a marker has been clicked on
         for ln in intLines:
-            if sqrt((e.pos().x() - ln.curve.getData()[0][-1])**2 + (e.pos().y() - ln.curve.getData()[1][-1])**2) < 20:
+            if sqrt((e.pos().x() - ln[0].curve.getData()[0][-1])**2 + (e.pos().y() - ln[0].curve.getData()[1][-1])**2) < 20:
                 print 'Clicked end of line'
                 globalConstants['moveLine'] = True
-                globalConstants['lineData'] = ln.curve.getData()
+                globalConstants['lineData'] = ln[0].curve.getData()
                 globalConstants['minIndex'] = len(globalConstants['lineData']) - 1
 
 
@@ -134,7 +192,7 @@ def mouseClick(e):
         if not markerClicked and keysPress['ctrl']:
             print 'control clicked'
             for m in range(len(intLines)):
-                cData = intLines[m].curve.getData()
+                cData = intLines[m][0].curve.getData()
                 imin = curveDistance(e.pos().x(), e.pos().y(), cData)
                 found = False
                 if imin != -1:
@@ -146,11 +204,13 @@ def mouseClick(e):
                     break
 
         elif not markerClicked and keysPress['shift']: # elif not markerClicked and keysPress['alt']:
-
+            '''
+            This allows the user to set the white integration line as the data path!
+            '''
             print 'Alt clicked'
             #FIXME finish making
             for m in range(len(intLines)):
-                cData = intLines[m].curve.getData()
+                cData = intLines[m][0].curve.getData()
                 imin = curveDistance(e.pos().x(), e.pos().y(), cData)
                 if imin != -1:
                     # If you clicked within one pixel of the line
@@ -158,11 +218,11 @@ def mouseClick(e):
                     print 'shift clicked line'
 
                     globalConstants['isPathIntLine'] = True
-                    globalConstants['lineData'] = intLines[m].curve.getData()
+                    globalConstants['lineData'] = intLines[m][0].curve.getData()
                     globalConstants['lineIndex'] = m
                     globalConstants['minIndex'] = len(globalConstants['lineData']) - 1
                     globalConstants['minValue'] = 99#globalConstants['lineData'][-1]
-                    intLines[m].setPen(purplePlotPen)
+                    intLines[m][0].setPen(purplePlotPen)
 
                     # Delete markers
                     # del markers[:]
@@ -278,8 +338,8 @@ def changeMap(index):
         maps[index].imageItem.mouseClickEvent = mouseClick
         maps[index].plotWidget.getPlotItem().getViewBox().setRange(xRange=vr[0], yRange=vr[1], padding=0.0)
         for ln in intLines:
-            maps[oldMap].plotWidget.removeItem(ln)
-            maps[currentMap].plotWidget.addItem(ln)
+            maps[oldMap].plotWidget.removeItem(ln[0])
+            maps[currentMap].plotWidget.addItem(ln[0])
         for pt in markers:
             pt.plotWidget = maps[currentMap]
             maps[oldMap].plotWidget.removeItem(pt.cross[0])
@@ -313,7 +373,7 @@ def mouseMoved(e):
             #
             i = 0
             while i < len(intLines):
-                cData = intLines[i].curve.getData()
+                cData = intLines[i][0].curve.getData()
                 imin = curveDistance(e.pos().x(), e.pos().y(), cData)
                 if imin != -1:
                     # snap the cross to the line
@@ -355,7 +415,7 @@ def mouseMoved(e):
                     mi = i
                     mv = sqrt((globalConstants['lineData'][0][globalConstants['minIndex']] - e.pos().x())**2 +
                          (globalConstants['lineData'][1][globalConstants['minIndex']] - e.pos().y())**2)
-                intLines[globalConstants['lineIndex']].curve.setData(globalConstants['lineData'][0][:mi], globalConstants['lineData'][0][:mi])
+                intLines[globalConstants['lineIndex']][0].curve.setData(globalConstants['lineData'][0][:mi], globalConstants['lineData'][0][:mi])
 
 
         x = int(np.floor(e.pos().x()))
