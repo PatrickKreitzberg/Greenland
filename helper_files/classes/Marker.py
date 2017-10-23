@@ -5,6 +5,7 @@ from ..math_functions import *
 class Marker:
     def __init__(self, cx, cy, dx, dy, velocity, plotWidget, plotCross=True):
         self.plotWidget = plotWidget
+        self.plotCross = plotCross
         self.cx, self.cy = cx, cy  # color coordinates
         self.dx, self.dy = dx, dy  # data coordinates
         self.px, self.py = colorToProj(self.cx, self.cy)
@@ -13,6 +14,7 @@ class Marker:
         self.pen.setWidth(2)
         c = 3
         if plotCross:
+            print 'Plotting crosses '
             self.cross = [
                 pg.PlotDataItem([self.cx - c, self.cx + c], [self.cy - c, self.cy + c], connect='all', pen=self.pen)
                 , pg.PlotDataItem([self.cx - c, self.cx + c], [self.cy + c, self.cy - c], connect='all', pen=self.pen)
@@ -25,8 +27,9 @@ class Marker:
             self.plotWidget.removeItem(self.lines[0])
         if self.lines[1]:
             self.plotWidget.removeItem(self.lines[1])
-        self.plotWidget.removeItem(self.cross[0])
-        self.plotWidget.removeItem(self.cross[1])
+        if self.plotCross:
+            self.plotWidget.removeItem(self.cross[0])
+            self.plotWidget.removeItem(self.cross[1])
         if self.intLine:
             self.plotWidget.removeItem(self.intLine)
 

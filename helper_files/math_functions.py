@@ -50,7 +50,7 @@ def colorToData(x,y):
     return x*(float(map['x1'])/float(map['cmap_x1'])), y*(float(map['y1'])/float(map['cmap_y1']))
 
 def dataCoord(x,y):
-    #m ust assume data is in colormap or projected coord
+    #must assume data is in colormap or projected coord
     if y >= map['cmap_y0'] and y <=map['cmap_y1']:
         if x >= map['cmap_x0'] and x <= map['cmap_x1']:
            return colorToData(x,y)

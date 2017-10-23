@@ -42,7 +42,7 @@ def centerVelocityStream(x, y):
 
 def linePressed(e):
     '''
-    Check to see if the line was clicked while shift was held, if so:
+    Check to see if the white int. line was clicked while shift was held, if so:
     1. set int line as data
         -Delete markers past the marker associated with the line
     2. add marker to end of line
@@ -68,33 +68,29 @@ def linePressed(e):
         for k in range(j,len(markers)-1):
             del markers[j+1]
 
-        # add line data as markers
-        # cx, cy = e.xdata[i], e.ydata[i]
-        # dx, dy = colorToData(cx, cy)
-        # markers.append(Marker(cx, cy, dx, dy, v0, iiContainer.currentWidget()))
 
-        # print e.xData
         for l in range(1,len(e.xData)-2):
-            print 'df'
+            '''
+            Doesn't include last marker
+            '''
             cx, cy = e.xData[l], e.yData[l]
             dx, dy = colorToData(cx, cy)
             px, py = colorToProj(cx, cy)
             v0 = velocity.interp([px], [py], grid=False)
             markers.append(Marker(cx, cy, dx, dy, v0, iiContainer.currentWidget(), plotCross=False))
-        print '# markers', len(markers)
-
 
         # do last marker seperatly since want an X on the map for it
-
-
-
-
-
-
-
-
-
-
+        cx, cy = e.xData[-1], e.yData[-1]
+        dx, dy = colorToData(cx, cy)
+        px, py = colorToProj(cx, cy)
+        v0 = velocity.interp([px], [py], grid=False)
+        markers.append(Marker(cx, cy, dx, dy, v0, iiContainer.currentWidget()))
+        iiContainer.currentWidget().addItem(markers[-1].getCross()[0])
+        iiContainer.currentWidget().addItem(markers[-1].getCross()[1])
+        print '# markers', len(markers)
+        print 'last data point\n'
+        print 'cx,cy ', markers[-1].cx, markers[-1].cy
+        print 'dx,dy ', markers[-1].dx, markers[-1].dy
 
 
 def mouseClick(e):
@@ -177,12 +173,12 @@ def mouseClick(e):
                     vptSel = True
                     vptCur = markers[i]
                 break # Exit loop if a marker has been clicked on
-        for ln in intLines:
-            if sqrt((e.pos().x() - ln[0].curve.getData()[0][-1])**2 + (e.pos().y() - ln[0].curve.getData()[1][-1])**2) < 20:
-                print 'Clicked end of line'
-                globalConstants['moveLine'] = True
-                globalConstants['lineData'] = ln[0].curve.getData()
-                globalConstants['minIndex'] = len(globalConstants['lineData']) - 1
+        # for ln in intLines:
+        #     if sqrt((e.pos().x() - ln[0].curve.getData()[0][-1])**2 + (e.pos().y() - ln[0].curve.getData()[1][-1])**2) < 20:
+        #         print 'Clicked end of line'
+        #         globalConstants['moveLine'] = True
+        #         globalConstants['lineData'] = ln[0].curve.getData()
+        #         globalConstants['minIndex'] = len(globalConstants['lineData']) - 1
 
 
         print 'out of forrest'
@@ -207,7 +203,6 @@ def mouseClick(e):
             '''
             This allows the user to set the white integration line as the data path!
             '''
-            print 'Alt clicked'
             #FIXME finish making
             for m in range(len(intLines)):
                 cData = intLines[m][0].curve.getData()
@@ -223,25 +218,6 @@ def mouseClick(e):
                     globalConstants['minIndex'] = len(globalConstants['lineData']) - 1
                     globalConstants['minValue'] = 99#globalConstants['lineData'][-1]
                     intLines[m][0].setPen(purplePlotPen)
-
-                    # Delete markers
-                    # del markers[:]
-                    # textOut.setText('')
-                    # modelButton.setEnabled(False)
-                    # cProfButton.setEnabled(False)
-                    # velocity.pathPlotItem.clear()
-                    # surface.pathPlotItem.clear()
-                    # smb.pathPlotItem.clear()
-                    # bed.pathPlotItem.clear()
-                    # thickness.pathPlotItem.clear()
-                    #
-                    # # Set markers to int line
-                    # for x,y in zip(cData[0], cData[1]):
-                    #     px, py = colorToProj(x, y)
-                    #     dx, dy = colorToData(x,y)
-                    #     markers.append(Marker(x, y, dx, dy, velocity.interp([px], [py], grid=False), iiContainer.currentWidget()))
-                    #     iiContainer.currentWidget().addItem(markers[-1].getCross()[0])
-                    #     iiContainer.currentWidget().addItem(markers[-1].getCross()[1])
                     break
 
         elif not markerClicked and not keysPress['shift'] and not globalConstants['moveLine']:
@@ -394,6 +370,7 @@ def mouseMoved(e):
                                             [vptCur.cy, vptCur.lines[1].getData()[1][1]])  # next line
                 i += 1
         elif vptSel:
+            # Moving a marker but not near an integration line
             vptCur.cx = e.pos().x()
             vptCur.cy = e.pos().y()
             vptCur.updateCross()
