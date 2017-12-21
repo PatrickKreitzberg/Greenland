@@ -54,7 +54,9 @@ def linePressed(e):
     :param e: the plotDataItem
     :return:
     '''
+    print "line pressed no shift"
     if keysPress['shift']:
+        print "line pressed with shift"
 
         # find which marker got clicked
         # delete all markers after clicked one
@@ -79,6 +81,7 @@ def linePressed(e):
             v0 = velocity.interp([px], [py], grid=False)
             markers.append(Marker(cx, cy, dx, dy, v0, iiContainer.currentWidget(), plotCross=False))
 
+
         # do last marker seperatly since want an X on the map for it
         cx, cy = e.xData[-1], e.yData[-1]
         dx, dy = colorToData(cx, cy)
@@ -87,6 +90,10 @@ def linePressed(e):
         markers.append(Marker(cx, cy, dx, dy, v0, iiContainer.currentWidget()))
         iiContainer.currentWidget().addItem(markers[-1].getCross()[0])
         iiContainer.currentWidget().addItem(markers[-1].getCross()[1])
+        if not modelButton.isEnabled():
+            modelButton.setEnabled(True)
+            cProfButton.setEnabled(True)
+            meshButton.setEnabled(True)
         print '# markers', len(markers)
         print 'last data point\n'
         print 'cx,cy ', markers[-1].cx, markers[-1].cy
@@ -119,13 +126,14 @@ def mouseClick(e):
                     #
                     x0p, y0p = colorToProj(markers[i].cx, markers[i].cy)
                     y0 = np.array([x0p, y0p])
-                    t0, t1, dt = 0, 80, .1
+                    t0, dt = 0,  .1
                     r = ode(getProfile).set_integrator('zvode', method='bdf')
                     r.set_initial_value(y0, t0)
                     ox = [markers[i].cx]
                     oy = [markers[i].cy]
                     try:
                         segLength = float(intResInput.text())
+                        t1 = float(intTimeInput.text())
                         while r.successful() and r.t < t1:
                             ai = r.integrate(r.t + dt)
                             xi, yi = colorCoord(ai[0], ai[1])
@@ -141,9 +149,10 @@ def mouseClick(e):
                         intLines[-1][0].sigClicked.connect(linePressed)
                         iiContainer.currentWidget().addItem(intLines[-1][0])
                     except ValueError:
-                        textOut.append(('\nMust enter valid number for integration line resolution!'))
+                        textOut.append(('\nMust enter valid number for integration line resolution and time!'))
 
                 elif keysPress['ctrl']:
+                    print "made to ctrl"
                     #
                     # Ctrl+click will delete marker or line
                     #
@@ -181,7 +190,7 @@ def mouseClick(e):
         #         globalConstants['minIndex'] = len(globalConstants['lineData']) - 1
 
 
-        print 'out of forrest'
+        #print 'out of forrest'
         # if keysPress['alt']:
         #     print 'Entering with alt pressed'
 

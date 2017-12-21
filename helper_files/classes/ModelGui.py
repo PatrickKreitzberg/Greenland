@@ -140,7 +140,7 @@ class ModelGUI(QtGui.QMainWindow):
                 self.runButt.setEnabled(False)
                 self.dr = float(self.sptlResLineEdit.text())  # dr = 150
                 self.pauseButt.setEnabled(True)
-                interpolateData(True, self.dr)
+                interpolateData(True, self.dr, None)
 
                 ###########################################
                 ###  INTERPOLATE DATA SO EVEN INTERVAL  ###
@@ -203,6 +203,7 @@ class ModelGUI(QtGui.QMainWindow):
                 self.runModel()
 
             except ValueError:
+                print ValueError
                 print 'ERROR: Must have valid spatial resolution.'
 
     def runModel(self):

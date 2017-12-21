@@ -14,13 +14,12 @@ class Marker:
         self.pen.setWidth(2)
         c = 3
         if plotCross:
-            print 'Plotting crosses '
             self.cross = [
                 pg.PlotDataItem([self.cx - c, self.cx + c], [self.cy - c, self.cy + c], connect='all', pen=self.pen)
                 , pg.PlotDataItem([self.cx - c, self.cx + c], [self.cy + c, self.cy - c], connect='all', pen=self.pen)
-            ]
-        self.lines = [None] * 2
-        self.intLine = None
+            ] # X marker
+        self.lines = [None] * 2 #these are black lines that lead to and from the X
+        self.intLine = None     #line of integration
 
     def __del__(self):
         if self.lines[0]:

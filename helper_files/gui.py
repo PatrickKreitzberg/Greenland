@@ -54,6 +54,16 @@ intResInput = QtGui.QLineEdit('150')
 intResLay.addWidget(intResLabel)
 intResLay.addWidget(intResInput)
 
+# Int line resolution setup
+intTimeW = QtGui.QWidget()
+intTimeLay = QtGui.QHBoxLayout()
+intTimeW.setLayout(intTimeLay)
+intTimeLabel = QtGui.QLabel('Integration Time')
+intTimeInput = QtGui.QLineEdit('80')
+intTimeLay.addWidget(intTimeLabel)
+intTimeLay.addWidget(intTimeInput)
+
+
 instructionButton = QtGui.QPushButton('Instructions')
 clearButton      = QtGui.QPushButton('Clear Points')
 calcWidthButton  = QtGui.QPushButton('Calculate Velocity Width')
@@ -96,6 +106,8 @@ textOut.setMaximumWidth(maxWidth)
 buttonBox.addWidget(mapList)
 buttonBox.addWidget(autoCorrectVpt)
 buttonBox.addWidget(intResW)
+buttonBox.addWidget(intTimeW)
+
 buttonBox.addWidget(instructionButton)
 buttonBox.addWidget(clearButton)
 buttonBox.addWidget(calcWidthButton)
